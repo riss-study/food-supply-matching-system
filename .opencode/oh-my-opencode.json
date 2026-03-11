@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+
+  "agents": {
+    "oracle": {
+      "_comment": "아키텍처 결정, 코드리뷰, 디버깅",
+      "model": "openai/gpt-5.4",
+      "variant": "high"
+    },
+    "librarian": {
+      "_comment": "다중 저장소 분석, 문서 조회, 증거 기반 답변",
+      "model": "opencode/big-pickle"
+    },
+    "explore": {
+      "_comment": "빠른 코드베이스 탐색",
+      "model": "opencode/gpt-5-nano"
+    },
+    "multimodal-looker": {
+      "_comment": "이미지, 다이어그램 분석",
+      "model": "openai/gpt-5.4",
+      "variant": "medium"
+    },
+    "sisyphus": {
+      "_comment": "오케스트레이션",
+      "model": "openai/gpt-5.4",
+      "variant": "medium"
+    },
+    "metis": {
+      "_comment": "사전 계획 분석",
+      "model": "openai/gpt-5.4",
+      "variant": "high"
+    },
+    "momus": {
+      "_comment": "계획 검증",
+      "model": "openai/gpt-5.4",
+      "variant": "xhigh"
+    },
+    "prometheus": {
+      "_comment": "전략적 플래너",
+      "model": "openai/gpt-5.4",
+      "variant": "high"
+    },
+    "sisyphus-junior": {
+      "_comment": "경량 오케스트레이션",
+      "model": "openai/gpt-5.4",
+      "variant": "medium"
+    },
+    "atlas": {
+      "_comment": "브라우저 기반 작업 에이전트",
+      "model": "openai/gpt-5.4",
+      "variant": "medium"
+    }
+  }
+}
