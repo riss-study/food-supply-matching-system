@@ -55,6 +55,7 @@
 - `PATCH /api/requests/{requestId}`
 - `POST /api/requests/{requestId}/close`
 - `POST /api/requests/{requestId}/cancel`
+- `POST /api/requests/{requestId}/threads`
 
 ### Quotes
 
@@ -130,6 +131,7 @@
 - desired volume positive
 - request mode must be `public` or `targeted`
 - targeted mode requires at least one targeted supplier link
+- requester business state must be `approved` before request creation or update
 
 ### Quote
 
@@ -137,18 +139,25 @@
 - request must be `open`
 - price and MOQ values must be positive when present
 - supplier cannot submit duplicate active quote for same request
+- quote PATCH is allowed only while state is `submitted`
+- quote PATCH may update only `unit_price_estimate`, `moq`, `lead_time`, `sample_cost`, and `note`
+- quote PATCH must create revision history
 
 ### Thread and Message
 
 - sender must be thread participant
 - message body or attachment required
 - attachment validation uses file type/size rules
+- thread may be created either by first quote submission or by requester start action
+- manual thread creation must reuse existing requester-supplier-request thread if one already exists
 
 ### Contact Share
 
 - actor must be thread participant
 - contact reveal occurs only after bilateral approval
-- revoke is allowed only before final archival/closed thread policy blocks it
+- revoke is allowed only in `requested` or `one_side_approved`
+- retry is allowed after `revoked` by creating a new consent cycle
+- revoke does not hide contact details already revealed after `mutually_approved`
 
 ---
 

@@ -166,6 +166,7 @@ Both requesters and suppliers can register, and supplier visibility/privileges s
 1. Requesters can create requests.
 2. Requests can be public or directed to selected suppliers.
 3. Suppliers can view relevant requests and respond.
+4. Request creation and editing require requester business approval.
 
 ---
 
@@ -184,6 +185,7 @@ Both requesters and suppliers can register, and supplier visibility/privileges s
 1. Suppliers can submit quotations to requests.
 2. Requesters can compare received quotations.
 3. Requesters can continue follow-up discussion with selected suppliers.
+4. Quote PATCH is allowed only while the quote remains in `submitted` state and must preserve revision history.
 
 ---
 
@@ -200,6 +202,9 @@ Phase 1 communication is defined as **message threads**, not guaranteed real-tim
 3. Read state can be displayed.
 4. Contact details can be revealed after mutual agreement.
 5. Users can discover new messages from the web app.
+6. Threads may be created either by first quote submission or by requester-initiated consultation start.
+7. Only one active thread is allowed per requester-supplier-request tuple.
+8. Contact-share requests may be revoked in pre-final consent states and retried later.
 
 #### Not in Phase 1
 
@@ -219,6 +224,8 @@ Phase 1 communication is defined as **message threads**, not guaranteed real-tim
 3. Admins can change supplier state.
 4. Admins can post notices.
 5. Admins can view basic operational metrics.
+6. `hold` means more information is required; `reject` means the current submission is denied.
+7. Resubmission is allowed after both `hold` and `reject`.
 
 ---
 

@@ -90,12 +90,16 @@ Deferred / 보류:
 - request posting / 의뢰 등록
 - supplier quotation / 공급자 견적 제출
 - quotation comparison / 견적 비교
+- requester approval required before request posting / 요청자 승인 후 의뢰 등록 가능
+- quote patch allowed only before selection with history / 선택 전까지만 견적 수정 가능, 수정 이력 저장
 
 ### MESSAGE-001 Message Threads / 메시지 스레드
 
 - text + file attachments / 텍스트 + 파일 첨부
 - read state / 읽음 상태
 - contact release after mutual agreement / 상호 동의 후 연락처 공개
+- thread created by first quote or requester start / 첫 견적 또는 요청자 상담 시작으로 스레드 생성
+- contact-share revoke and retry allowed before final reveal / 최종 공개 전 연락처 공유 철회 및 재요청 가능
 
 ### ADMIN-001 Admin Basics / 관리자 기본 기능
 

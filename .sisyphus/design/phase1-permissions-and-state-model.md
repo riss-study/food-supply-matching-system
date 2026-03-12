@@ -15,6 +15,24 @@
 
 ---
 
+## 1.5 Requester Business Approval Gate
+
+### Requester Business State
+
+`not_submitted -> submitted -> approved`
+
+Additional exit:
+
+- `submitted -> rejected`
+
+### Rules
+
+- requester signup/login is allowed before approval
+- only `approved` requester business state may create, edit, or publish requests
+- `submitted` and `rejected` requester states may browse and manage account data, but may not create requests
+
+---
+
 ## 2. Verification State Model
 
 ### Supplier Verification State
@@ -23,6 +41,8 @@
 
 Additional exits:
 
+- `under_review -> hold`
+- `hold -> submitted`
 - `under_review -> rejected`
 - `rejected -> submitted`
 - `approved -> suspended`
@@ -35,6 +55,7 @@ Additional exits:
 | draft | supplier has not submitted full verification |
 | submitted | supplier requested review |
 | under_review | admin is actively processing |
+| hold | supplier must supplement documents or information |
 | approved | supplier is trusted for normal Phase 1 operations |
 | rejected | supplier must fix and resubmit |
 | suspended | supplier visibility/eligibility restricted by admin |
@@ -48,6 +69,7 @@ Additional exits:
 | draft | hidden | owner/admin only | no |
 | submitted | hidden | owner/admin only | no |
 | under_review | hidden | owner/admin only | no |
+| hold | hidden | owner/admin only | no |
 | approved | visible | public/requester visible | yes |
 | rejected | hidden | owner/admin only | no |
 | suspended | hidden | owner/admin only | no |
@@ -82,9 +104,12 @@ Additional exits:
 
 Rules:
 
-- supplier creates at most one active quote per request unless update mode is explicitly supported
+- supplier creates at most one active quote per request
 - requester can move a quote to `selected` or `declined`
 - supplier can move own submitted quote to `withdrawn` before selection
+- quote PATCH is allowed only while state is `submitted`
+- quote PATCH may modify only price/MOQ/lead-time/sample-cost/note fields
+- quote PATCH must store revision history
 
 ---
 
@@ -99,7 +124,9 @@ Additional exit:
 Rules:
 
 - external contact details are visible only in `mutually_approved`
-- a new consent record may be created after revoke if business rules allow retry
+- revoke is allowed only in `requested` and `one_side_approved`
+- a new consent cycle may be created after `revoked`
+- revoke does not hide contact details that were already revealed in `mutually_approved`
 
 ---
 
@@ -109,8 +136,8 @@ Rules:
 |-------------------|-------|-----------|----------|-------|
 | View public supplier list | yes | yes | yes | yes |
 | View approved supplier detail | limited | yes | yes | yes |
-| Create request | no | yes | no | no |
-| Edit own request | no | yes | no | yes |
+| Create request | no | approved requester only | no | no |
+| Edit own request | no | approved requester only | no | yes |
 | View open request | no | owner + eligible supplier | eligible supplier | yes |
 | Submit quote | no | no | approved supplier only | no |
 | Compare quotes | no | request owner | no | yes |
@@ -138,8 +165,9 @@ Rules:
 ### Review Outcomes
 
 - approve
+- hold
 - reject
-- hold / request resubmission
+- resubmission
 
 ### Minimum Admin Inputs
 
@@ -148,3 +176,14 @@ Rules:
 - timestamp
 - internal note
 - user-visible note when rejected or resubmission is required
+
+### Outcome Meanings
+
+- `hold`: more information is needed; supplier remains hidden and ineligible; resubmission is expected
+- `reject`: current submission is denied; supplier remains hidden and ineligible; a later resubmission is allowed
+- `resubmission`: supplier action that moves a held or rejected submission back to `submitted`
+
+### User-Facing Text
+
+- `hold`: `추가 서류 또는 정보 보완이 필요합니다. 내용을 보완한 뒤 다시 제출해주세요.`
+- `reject`: `이번 제출은 승인되지 않았습니다. 내용을 수정한 뒤 다시 제출해주세요.`

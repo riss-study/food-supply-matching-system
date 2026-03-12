@@ -117,7 +117,7 @@
 ### Flow B: Request Posting
 
 - Entry: requester chooses create request
-- Preconditions: requester account exists; requester business submission accepted or allowed state satisfied
+- Preconditions: requester account exists; requester business state is `approved`
 - Happy path:
   1. requester fills request form
   2. requester chooses public or targeted mode
@@ -142,12 +142,12 @@
   - request closed/cancelled
   - duplicate quote policy violation
 - Postconditions:
-  - quote state updated; thread may be opened/continued
+  - quote state updated; if no thread exists for the requester-supplier-request tuple, one thread is created automatically
 
 ### Flow D: Messaging and Contact Sharing
 
 - Entry: requester or supplier opens thread linked to request context
-- Preconditions: thread exists or can be created by allowed trigger
+- Preconditions: thread already exists, or requester creates/opens it from request context, or it was auto-created by first quote submission
 - Happy path:
   1. party sends message
   2. other party reads and replies
@@ -157,9 +157,10 @@
 - Failure paths:
   - one-sided consent only
   - revoked consent
+  - duplicate thread creation request returns existing thread
   - attachment validation failure
 - Postconditions:
-  - conversation history preserved with auditable contact-share state
+  - conversation history preserved with auditable contact-share state and auditable consent retry history
 
 ### Flow E: Admin Review and Notice Operations
 
@@ -173,6 +174,7 @@
 - Failure paths:
   - invalid transition from already-final state
   - missing reason on rejection
+  - hold or reject without user-visible guidance
 
 ---
 
