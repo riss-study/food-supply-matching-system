@@ -5,6 +5,7 @@
 > **상태**: 기록용 유지  
 > **목적**: 사용자 답변과 보류 항목을 담은 의사결정 기록  
 > **해석 기준**: 이 문서 자체가 최종 요구사항 문서는 아니며, 현재 기준 문서는 `1st-phase-requirements-final.md`와 `.sisyphus/plans/document-structure-plan.md`입니다.
+> **현재 역할**: 지금 당장 막히는 질문은 `phase1-pre-coding-questions.md`에서 먼저 받고, 이 문서는 나중에 결정해도 되는 항목을 계속 모아두는 저장소로 사용합니다.
 
 ---
 
