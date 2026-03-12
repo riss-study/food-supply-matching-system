@@ -1,4 +1,4 @@
-# Product Requirements Document (PRD) - v1.0 MVP
+# 제품 요구사항 문서 (PRD) - v1.0 MVP
 
 > Project / 프로젝트: food2008-matching
 > Version / 버전: 1.0.0-MVP

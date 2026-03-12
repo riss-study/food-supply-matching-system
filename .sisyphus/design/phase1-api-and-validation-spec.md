@@ -1,40 +1,40 @@
-# Phase 1 API and Validation Spec
+# Phase 1 API 및 검증 스펙
 
-> Version: 1.0
-> Status: Active
-> Parent: `phase1-design-baseline.md`
-
----
-
-## 1. API Grouping
-
-- Auth and Accounts
-- Business and Supplier Verification
-- Supplier Discovery
-- Requests
-- Quotes
-- Message Threads and Messages
-- Contact Share
-- Notices
-- Admin Review and Stats
+> 버전: 1.0
+> 상태: Active
+> 상위 문서: `phase1-design-baseline.md`
 
 ---
 
-## 2. Endpoint Inventory
+## 1. API 그룹
 
-### Auth and Accounts
+- 인증 및 계정
+- 사업자 / 공급자 검수
+- 공급자 탐색
+- 의뢰
+- 견적
+- 메시지 스레드 및 메시지
+- 연락처 공유
+- 공지
+- 관리자 검수 및 통계
+
+---
+
+## 2. 엔드포인트 목록
+
+### 인증 및 계정
 
 - `POST /api/auth/signup`
 - `POST /api/auth/login`
 - `GET /api/me`
 
-### Requester / Business
+### 요청자 / 사업자
 
 - `POST /api/requester/business-profile`
 - `GET /api/requester/business-profile`
 - `PATCH /api/requester/business-profile`
 
-### Supplier Profile and Verification
+### 공급자 프로필 및 검수
 
 - `POST /api/supplier/profile`
 - `GET /api/supplier/profile`
@@ -42,12 +42,12 @@
 - `POST /api/supplier/verification-submissions`
 - `GET /api/supplier/verification-submissions/latest`
 
-### Supplier Discovery
+### 공급자 탐색
 
 - `GET /api/suppliers`
 - `GET /api/suppliers/{supplierId}`
 
-### Requests
+### 의뢰
 
 - `POST /api/requests`
 - `GET /api/requests`
@@ -57,7 +57,7 @@
 - `POST /api/requests/{requestId}/cancel`
 - `POST /api/requests/{requestId}/threads`
 
-### Quotes
+### 견적
 
 - `POST /api/requests/{requestId}/quotes`
 - `GET /api/requests/{requestId}/quotes`
@@ -66,7 +66,7 @@
 - `POST /api/quotes/{quoteId}/select`
 - `POST /api/quotes/{quoteId}/decline`
 
-### Message Threads
+### 메시지 스레드
 
 - `GET /api/threads`
 - `GET /api/threads/{threadId}`
@@ -74,18 +74,18 @@
 - `POST /api/threads/{threadId}/attachments`
 - `POST /api/threads/{threadId}/read`
 
-### Contact Share
+### 연락처 공유
 
 - `POST /api/threads/{threadId}/contact-share/request`
 - `POST /api/threads/{threadId}/contact-share/approve`
 - `POST /api/threads/{threadId}/contact-share/revoke`
 
-### Notices
+### 공지
 
 - `GET /api/notices`
 - `GET /api/notices/{noticeId}`
 
-### Admin
+### 관리자
 
 - `GET /api/admin/reviews`
 - `GET /api/admin/reviews/{reviewId}`
@@ -99,83 +99,83 @@
 
 ---
 
-## 3. Validation Rules
+## 3. 검증 규칙
 
-### Common
+### 공통
 
-- all ids must be server-generated
-- all write endpoints require authenticated actor except public browse endpoints
-- unauthorized access returns `403`
-- invalid payload returns `400`
-- unknown resource returns `404`
+- 모든 id는 서버가 생성해야 한다.
+- 공개 탐색 엔드포인트를 제외한 모든 write 엔드포인트는 인증된 사용자만 접근할 수 있다.
+- 권한 없는 접근은 `403`
+- 잘못된 payload는 `400`
+- 없는 리소스는 `404`
 
-### Supplier Profile
+### 공급자 프로필
 
-- `company_name` required
-- `region` required
-- at least one category required
-- `monthly_capacity` positive number
-- `moq` positive number
+- `company_name` 필수
+- `region` 필수
+- category는 최소 1개 이상 필수
+- `monthly_capacity`는 양수
+- `moq`는 양수
 
-### Verification Submission
+### 검수 제출
 
-- supplier profile must exist before submission
-- submission requires at least one business proof document
-- file type restricted to approved MIME list
-- file size and file count capped by server rules
+- 공급자 프로필이 먼저 있어야 제출 가능
+- 최소 1개 이상의 사업자 증빙 문서 필요
+- 파일 형식은 허용된 MIME 목록만 가능
+- 파일 크기와 개수는 서버 규칙으로 제한
 
-### Request
+### 의뢰
 
-- title required
-- category required
-- desired volume positive
-- request mode must be `public` or `targeted`
-- targeted mode requires at least one targeted supplier link
-- requester business state must be `approved` before request creation or update
+- title 필수
+- category 필수
+- desired volume은 양수
+- request mode는 `public` 또는 `targeted`
+- targeted 모드는 최소 1개 이상의 targeted supplier link 필요
+- 요청자 사업자 상태가 `approved`여야 의뢰 생성 / 수정 가능
 
-### Quote
+### 견적
 
-- only approved supplier can submit
-- request must be `open`
-- price and MOQ values must be positive when present
-- supplier cannot submit duplicate active quote for same request
-- quote PATCH is allowed only while state is `submitted`
-- quote PATCH may update only `unit_price_estimate`, `moq`, `lead_time`, `sample_cost`, and `note`
-- quote PATCH must create revision history
+- 승인된 공급자만 제출 가능
+- 의뢰는 `open` 상태여야 함
+- 가격과 MOQ는 입력 시 양수여야 함
+- 같은 공급자는 같은 의뢰에 active 견적을 중복 제출할 수 없음
+- 견적 PATCH는 `submitted` 상태에서만 가능
+- PATCH는 `unit_price_estimate`, `moq`, `lead_time`, `sample_cost`, `note`만 수정 가능
+- PATCH 시 수정 이력을 남겨야 함
 
-### Thread and Message
+### 스레드와 메시지
 
-- sender must be thread participant
-- message body or attachment required
-- attachment validation uses file type/size rules
-- thread may be created either by first quote submission or by requester start action
-- manual thread creation must reuse existing requester-supplier-request thread if one already exists
+- sender는 스레드 참여자여야 함
+- message body 또는 attachment 중 하나는 있어야 함
+- 첨부 파일은 type/size 규칙으로 검증
+- 스레드는 첫 견적 제출 또는 요청자 `상담 시작` 액션으로 생성 가능
+- 수동 스레드 생성은 기존 requester-supplier-request 조합의 스레드가 있으면 재사용해야 함
 
-### Contact Share
+### 연락처 공유
 
-- actor must be thread participant
-- contact reveal occurs only after bilateral approval
-- revoke is allowed only in `requested` or `one_side_approved`
-- retry is allowed after `revoked` by creating a new consent cycle
-- revoke does not hide contact details already revealed after `mutually_approved`
-
----
-
-## 4. Response Shape Guidelines
-
-- list endpoints support pagination
-- search endpoint supports filter query params for category, region, verification, capacity, MOQ, OEM, ODM
-- state fields should be explicit enums, not free text
-- audit-sensitive internal notes must never be exposed to non-admin callers
+- actor는 스레드 참여자여야 함
+- 연락처는 상호 동의 완료 후에만 공개
+- revoke는 `requested` 또는 `one_side_approved` 상태에서만 가능
+- retry는 `revoked` 이후 새로운 consent cycle을 생성하는 방식으로 허용
+- 이미 `mutually_approved` 후 공개된 연락처는 revoke로 다시 숨기지 않음
 
 ---
 
-## 5. Error Model
+## 4. 응답 형태 가이드
 
-| Code | Meaning |
-|------|---------|
+- list 엔드포인트는 pagination을 지원해야 한다.
+- search 엔드포인트는 category, region, verification, capacity, MOQ, OEM, ODM query param을 지원해야 한다.
+- 상태 필드는 자유 문자열이 아니라 명시적 enum이어야 한다.
+- 감사용 internal note는 non-admin 호출자에게 노출되면 안 된다.
+
+---
+
+## 5. 에러 모델
+
+| 코드 | 의미 |
+|------|------|
 | 400 | validation failure |
 | 401 | unauthenticated |
-| 403 | forbidden by role or state |
+| 403 | role 또는 state 기반 접근 금지 |
 | 404 | resource not found |
-| 409 | state conflict or duplicate active submission |
+| 409 | state conflict 또는 duplicate active submission |

@@ -1,73 +1,73 @@
-# Phase 1 Development Guide Plan
+# Phase 1 개발 가이드 계획서
 
-## TL;DR
-> **Summary**: Create one thin pre-coding development entry guide that tells implementers where to start, which documents are authoritative, how to execute slices, and what must not be re-decided.
-> **Deliverables**:
+## 요약
+> **요약**: 구현자가 어디서부터 시작하고, 어떤 문서가 기준이며, 슬라이스를 어떤 순서로 실행해야 하는지 알려주는 얇은 개발 진입 가이드를 만든다.
+> **산출물**:
 > - `.sisyphus/drafts/phase1-development-entry-guide.md`
-> - updated references from execution-foundation and implementation-breakdown docs if needed
-> - split triggers for when a future multi-doc guide layer becomes justified
-> **Effort**: Short
-> **Parallel**: NO
-> **Critical Path**: 1 -> 2 -> 3 -> 4 -> 5
+> - 필요 시 `phase1-execution-foundation.md`, `phase1-implementation-breakdown-plan.md` 참조 갱신
+> - 미래에 다문서 가이드로 분리할 조건 정리
+> **난이도**: Short
+> **병렬화**: NO
+> **크리티컬 패스**: 1 -> 2 -> 3 -> 4 -> 5
 
-## Context
-### Original Request
-Before coding, consider whether a development-guide document like the user-provided example should be created first.
+## 배경
+### 원래 요청
+코딩 전에, 사용자가 보여준 예시처럼 개발 가이드 문서를 먼저 만드는 것이 좋은지 검토하고 계획을 세운다.
 
-### Interview Summary
-- The user prefers creating guide documentation before coding.
-- The pasted example is a useful pattern, but our workspace is still planning-only.
-- Current `.sisyphus` docs already cover scope, PRD, design, policy closure, and execution planning.
-- The real gap is an execution entrypoint, not another large documentation hierarchy.
+### 인터뷰 요약
+- 사용자는 코딩 전에 가이드 문서가 있기를 원한다.
+- 붙여준 예시는 좋은 패턴이지만, 현재 워크스페이스는 아직 planning-only 상태다.
+- 현재 `.sisyphus` 문서들은 이미 범위, PRD, 설계, 정책 고정, 실행 계획을 갖고 있다.
+- 지금 진짜 부족한 것은 거대한 문서 계층이 아니라, 실행 관점의 진입점이다.
 
-### Metis Review (gaps addressed)
-- Keep the guide execution-only; do not create a second PRD or architecture layer.
-- Avoid a new root `docs/` tree because there is no product codebase yet.
-- Prevent authority loops by making the guide explicitly subordinate to the current source-of-truth chain.
-- Preserve evidence, QA, and commit conventions already defined in the implementation breakdown plan.
+### Metis 검토 (반영 완료)
+- 가이드는 execution-only 문서여야 하며, 두 번째 PRD나 아키텍처 문서가 되면 안 된다.
+- 아직 코드베이스가 없으므로 새로운 root `docs/` tree는 만들지 않는다.
+- authority loop를 막기 위해, 가이드는 현재 source-of-truth chain 아래에 둔다.
+- evidence, QA, commit, doc-sync 규칙은 기존 계획서를 그대로 따른다.
 
-## Work Objectives
-### Core Objective
-Produce a decision-complete plan for one master development entry guide that helps future executors start implementation without duplicating existing planning/design documents.
+## 작업 목표
+### 핵심 목표
+기존 planning/design 문서를 중복하지 않으면서, 미래 작업자가 구현을 시작할 때 가장 먼저 보는 단일 개발 진입 가이드를 만들기 위한 decision-complete 계획을 세운다.
 
-### Deliverables
+### 산출물
 - `.sisyphus/plans/phase1-development-guide-plan.md`
 - `.sisyphus/drafts/phase1-development-entry-guide.md`
-- optional reference updates in `.sisyphus/drafts/phase1-execution-foundation.md`
-- optional reference updates in `.sisyphus/plans/phase1-implementation-breakdown-plan.md`
+- 필요 시 `.sisyphus/drafts/phase1-execution-foundation.md` 참조 갱신
+- 필요 시 `.sisyphus/plans/phase1-implementation-breakdown-plan.md` 참조 갱신
 
-### Definition of Done (verifiable conditions with commands)
-- `read .sisyphus/plans/phase1-development-guide-plan.md` shows a single-guide strategy, not a multi-doc guide tree.
-- `grep "development entry guide|Authority Chain|Execution Order|Do Not Use This For" .sisyphus/plans/phase1-development-guide-plan.md` confirms the core sections are planned.
-- `grep "docs/|backend-guide|frontend-guide|design-system" .sisyphus/plans/phase1-development-guide-plan.md` does not imply immediate creation of a full docs hierarchy.
+### 완료 기준 (명령으로 검증 가능)
+- `read .sisyphus/plans/phase1-development-guide-plan.md`를 보면 single-guide 전략이 보이고 multi-doc guide tree를 강제하지 않아야 한다.
+- `grep "development entry guide|Authority Chain|Execution Order|Do Not Use This For" .sisyphus/plans/phase1-development-guide-plan.md` 결과가 나와야 한다.
+- `grep "docs/|backend-guide|frontend-guide|design-system" .sisyphus/plans/phase1-development-guide-plan.md`로 immediate full docs hierarchy를 요구하지 않음을 확인할 수 있어야 한다.
 
-### Must Have
-- one single-file guide as the immediate target
-- explicit authority chain
-- explicit execution order tied to the 9-slice plan
-- QA/evidence/commit/doc-sync rules
-- split triggers for future guide expansion
+### 필수 포함 사항
+- 지금 당장 목표는 단일 파일 가이드 1개
+- 명확한 authority chain
+- 9-slice 계획과 연결된 실행 순서
+- QA / evidence / commit / doc-sync 규칙
+- 나중에 분리할 조건 명시
 
-### Must NOT Have
-- no duplicate PRD content
-- no duplicate API/state-model definitions
-- no new root `docs/` tree yet
-- no setup/runtime commands invented before scaffolding exists
-- no Phase 2 or infra-vendor guidance
+### 포함하면 안 되는 사항
+- PRD 중복 작성 금지
+- API / 상태 모델 중복 정의 금지
+- 새로운 root `docs/` tree 금지
+- 스캐폴딩 전 setup/runtime command 발명 금지
+- Phase 2 / infra-vendor guidance 금지
 
-## Verification Strategy
-> ZERO HUMAN INTERVENTION - all verification is agent-executed.
-- Test decision: tests-after for the document artifact.
-- QA policy: the guide must be verifiable with `read` and `grep` only.
-- Evidence: `.sisyphus/evidence/task-{N}-{slug}.{ext}`
+## 검증 전략
+> ZERO HUMAN INTERVENTION - 모든 검증은 agent가 실행 가능해야 한다.
+- 문서 산출물 기준 tests-after
+- 가이드는 `read`, `grep`만으로 검증 가능해야 한다.
+- Evidence 경로: `.sisyphus/evidence/task-{N}-{slug}.{ext}`
 
-## Execution Strategy
-### Parallel Execution Waves
-Wave 1: establish guide boundaries and authority chain
-Wave 2: define guide content and execution sections
-Wave 3: normalize references, review duplication risks, and handoff
+## 실행 전략
+### 병렬 실행 Wave
+Wave 1: 가이드 범위와 authority chain 확정
+Wave 2: 가이드 섹션 구조와 실행 연결 정리
+Wave 3: 참조 정규화, 중복 위험 점검, handoff 정리
 
-### Dependency Matrix (full, all tasks)
+### 의존성 매트릭스
 | Task | Depends On | Enables |
 |------|------------|---------|
 | 1 | none | 2, 3, 4, 5 |
@@ -76,222 +76,113 @@ Wave 3: normalize references, review duplication risks, and handoff
 | 4 | 1, 2, 3 | 5 |
 | 5 | 1, 2, 3, 4 | Final verification |
 
-### Agent Dispatch Summary
+### 에이전트 배치 요약
 | Wave | Task Count | Categories |
 |------|------------|------------|
 | 1 | 1 | writing |
 | 2 | 2 | writing, unspecified-high |
 | 3 | 2 | writing |
 
-## TODOs
-> Implementation + Test = ONE task. Never separate.
-> EVERY task MUST have: Agent Profile + Parallelization + QA Scenarios.
+## 작업 목록
 
-- [ ] 1. Define Guide Scope And Authority
+- [ ] 1. 가이드 범위와 권위 정의
 
-  **What to do**: Lock the guide as a single execution-entry document and explicitly place it below the current authority chain: master plan -> requirements -> PRD -> design -> policy closure -> execution foundation. State that the guide does not own scope, architecture, or product decisions.
-  **Must NOT do**: Do not create a new documentation layer that competes with existing source-of-truth files.
+  **What to do**: 개발 진입 가이드를 단일 execution-entry 문서로 고정하고, 현재 authority chain(마스터 계획 -> 요구사항 -> PRD -> 설계 -> 정책 고정 -> 실행 기반) 아래에 둔다. 이 문서는 scope, architecture, product decision을 새로 만들지 않는다고 명시한다.
+  **Must NOT do**: 기존 source-of-truth 파일과 경쟁하는 새 문서 계층을 만들면 안 된다.
 
   **Recommended Agent Profile**:
-  - Category: `writing` - Reason: this is a documentation-authority definition task.
-  - Skills: [`session-markdown-documentor`] - why needed: precise, readable structure.
-  - Omitted: [`frontend-ui-ux`] - why not needed: not a UI artifact.
+  - Category: `writing` - Reason: 문서 권위와 역할을 정하는 작업이다.
+  - Skills: [`session-markdown-documentor`] - why needed: 읽기 쉬운 정확한 구조화가 필요하다.
+  - Omitted: [`frontend-ui-ux`] - why not needed: UI 산출물이 아니다.
 
   **Parallelization**: Can Parallel: NO | Wave 1 | Blocks: 2, 3, 4, 5 | Blocked By: none
 
   **References**:
-  - Pattern: `.sisyphus/plans/document-structure-plan.md:35` - existing authority chain.
-  - Pattern: `.sisyphus/drafts/phase1-execution-foundation.md:96` - says the next artifact is a pre-coding TASK/doc structure.
-  - Pattern: `.sisyphus/drafts/phase1-development-guide-strategy.md:10` - draft rationale for a thin guide.
+  - `.sisyphus/plans/document-structure-plan.md`
+  - `.sisyphus/drafts/phase1-execution-foundation.md`
 
   **Acceptance Criteria**:
-  - [ ] The plan states the guide is subordinate to the existing authority chain.
-  - [ ] The plan explicitly forbids turning the guide into a second PRD or architecture spec.
+  - [ ] 가이드가 기존 authority chain 아래에 있음을 명시한다.
+  - [ ] 가이드가 두 번째 PRD / 아키텍처 문서가 되어서는 안 된다고 명시한다.
 
-  **QA Scenarios**:
-  ```text
-  Scenario: Authority chain is explicit
-    Tool: Bash
-    Steps: Run `grep "authority chain|master plan|requirements|PRD|design|policy closure|execution foundation" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: The plan clearly defines the guide's place in the hierarchy.
-    Evidence: .sisyphus/evidence/task-1-guide-scope.txt
+- [ ] 2. 마스터 개발 진입 가이드 구조 설계
 
-  Scenario: No parallel doc-layer expansion
-    Tool: Bash
-    Steps: Run `grep "new root docs|full guide tree|backend-guide|frontend-guide|design-system" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: The plan does not require immediate expansion to a large guide suite.
-    Evidence: .sisyphus/evidence/task-1-guide-scope-error.txt
-  ```
-
-  **Commit**: YES | Message: `docs(plan): define development guide scope` | Files: `.sisyphus/plans/phase1-development-guide-plan.md`
-
-- [ ] 2. Design The Master Development Entry Guide Structure
-
-  **What to do**: Define the exact section structure of `.sisyphus/drafts/phase1-development-entry-guide.md`. At minimum include: Purpose, When To Use, Authority Chain, Current Workspace Reality, Definition of Ready To Start Coding, Execution Order, Per-Slice Required Inputs, QA/Evidence Rules, Commit Rules, Doc-Sync Rules, and Do Not Use This For.
-  **Must NOT do**: Do not restate detailed state models, API payloads, or PRD feature lists already covered elsewhere.
+  **What to do**: `.sisyphus/drafts/phase1-development-entry-guide.md`의 정확한 섹션 구조를 정의한다. 최소한 Purpose, When To Use, Authority Chain, Current Workspace Reality, Definition of Ready To Start Coding, Execution Order, Per-Slice Required Inputs, QA/Evidence Rules, Commit Rules, Doc-Sync Rules, Do Not Use This For가 있어야 한다.
+  **Must NOT do**: 이미 다른 문서에 있는 상세 state model, API payload, PRD 기능 목록을 다시 쓰면 안 된다.
 
   **Recommended Agent Profile**:
-  - Category: `writing` - Reason: this is structural document design.
-  - Skills: [`session-markdown-documentor`] - why needed: exact section organization.
-  - Omitted: [`playwright`] - why not needed: no browser interaction.
+  - Category: `writing` - Reason: 문서 구조 설계 작업이다.
+  - Skills: [`session-markdown-documentor`] - why needed: 섹션 배치가 중요하다.
+  - Omitted: [`playwright`] - why not needed: 브라우저 작업이 아니다.
 
   **Parallelization**: Can Parallel: YES | Wave 2 | Blocks: 4, 5 | Blocked By: 1
 
-  **References**:
-  - Pattern: `.sisyphus/drafts/phase1-execution-foundation.md:82` - next planning steps.
-  - Pattern: `.sisyphus/plans/phase1-implementation-breakdown-plan.md:68` - execution waves.
-  - Test: `.sisyphus/design/phase1-acceptance-scenarios-and-backlog.md:104` - definition of ready concepts.
-
   **Acceptance Criteria**:
-  - [ ] The plan lists the exact guide sections to be created.
-  - [ ] Each section is mapped to an existing upstream source document.
+  - [ ] 필요한 가이드 섹션이 명시된다.
+  - [ ] 각 섹션이 기존 upstream 문서와 연결된다.
 
-  **QA Scenarios**:
-  ```text
-  Scenario: Required guide sections present
-    Tool: Bash
-    Steps: Run `grep "Purpose|When To Use|Authority Chain|Current Workspace Reality|Execution Order|QA|Commit|Doc-Sync|Do Not Use This For" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: All required sections are present in the plan.
-    Evidence: .sisyphus/evidence/task-2-guide-structure.txt
+- [ ] 3. 가이드 내용을 기존 실행 규칙에 연결
 
-  Scenario: No duplicated deep-spec sections
-    Tool: Bash
-    Steps: Run `grep "API payload schema|full ERD|full state table|feature scope appendix" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: The plan does not demand duplicated deep-spec content.
-    Evidence: .sisyphus/evidence/task-2-guide-structure-error.txt
-  ```
-
-  **Commit**: YES | Message: `docs(plan): define development entry guide structure` | Files: `.sisyphus/plans/phase1-development-guide-plan.md`
-
-- [ ] 3. Bind Guide Content To Existing Execution Rules
-
-  **What to do**: Map the guide’s execution sections to the existing 9-slice implementation order, Wave 0 requirements, evidence naming conventions, TDD expectations, and atomic commit boundaries. Make the guide point outward to authoritative docs instead of copying them.
-  **Must NOT do**: Do not let the guide redefine slice order or policy decisions.
+  **What to do**: 가이드가 현재 9-slice 실행 순서, Wave 0 요구사항, evidence naming, TDD expectation, atomic commit 경계를 그대로 따르도록 연결한다. 가이드는 원문을 복사하지 않고 authoritative doc로 연결만 한다.
+  **Must NOT do**: 슬라이스 순서나 정책 결정을 다시 정의하면 안 된다.
 
   **Recommended Agent Profile**:
-  - Category: `unspecified-high` - Reason: this task prevents guide-vs-plan divergence.
-  - Skills: [] - why needed: upstream docs already exist.
-  - Omitted: [`git-master`] - why not needed: no repo-history work.
+  - Category: `unspecified-high` - Reason: guide-vs-plan drift를 막는 연결 작업이다.
+  - Skills: [] - why needed: upstream 문서가 이미 존재한다.
+  - Omitted: [`git-master`] - why not needed: history 분석 불필요.
 
   **Parallelization**: Can Parallel: YES | Wave 2 | Blocks: 4, 5 | Blocked By: 1, 2
 
-  **References**:
-  - Pattern: `.sisyphus/plans/phase1-implementation-breakdown-plan.md:68` - execution waves.
-  - Pattern: `.sisyphus/plans/phase1-implementation-breakdown-plan.md:100` - task/slice structure.
-  - Pattern: `.sisyphus/plans/phase1-implementation-breakdown-plan.md:542` - commit strategy.
-  - Pattern: `.sisyphus/plans/phase1-implementation-breakdown-plan.md:66` - evidence naming pattern.
-
   **Acceptance Criteria**:
-  - [ ] The plan explicitly binds the future guide to the existing 9-slice order.
-  - [ ] Evidence, QA, and commit rules are referenced from upstream docs instead of rewritten from scratch.
+  - [ ] 가이드가 9-slice 순서를 명시적으로 따르도록 연결된다.
+  - [ ] evidence, QA, commit 규칙이 새로 발명되지 않고 기존 문서를 참조한다.
 
-  **QA Scenarios**:
-  ```text
-  Scenario: Execution mapping is explicit
-    Tool: Bash
-    Steps: Run `grep "Wave 0|9-slice|evidence|atomic commit|TDD" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: Execution rules are clearly mapped into the guide plan.
-    Evidence: .sisyphus/evidence/task-3-guide-binding.txt
+- [ ] 4. 미래 가이드 분리 조건 정의
 
-  Scenario: No slice-order divergence
-    Tool: Bash
-    Steps: Run `grep "redefine slice order|change wave order|override policy" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: The plan does not permit redefinition of existing execution order or policies.
-    Evidence: .sisyphus/evidence/task-3-guide-binding-error.txt
-  ```
-
-  **Commit**: YES | Message: `docs(plan): bind guide to existing execution rules` | Files: `.sisyphus/plans/phase1-development-guide-plan.md`
-
-- [ ] 4. Define Split Triggers For Future Guide Expansion
-
-  **What to do**: Define explicit conditions under which the single-file guide may later split into setup/run/backend/frontend/qa guides. Use real triggers only: actual scaffolded codebase, multiple executors, repeated onboarding confusion, or stable runtime commands.
-  **Must NOT do**: Do not authorize immediate splitting based on preference alone.
+  **What to do**: setup/run/backend/frontend/qa guide로 나중에 분리할 수 있는 조건을 정의한다. 실제 scaffolded codebase, multiple executors, repeated onboarding confusion, stable runtime commands 같은 현실 조건만 허용한다.
+  **Must NOT do**: 단순 취향만으로 지금 즉시 분리하는 것을 허용하면 안 된다.
 
   **Recommended Agent Profile**:
-  - Category: `writing` - Reason: this is a future-structure guardrail task.
-  - Skills: [] - why needed: grounded in current workspace reality.
-  - Omitted: [`frontend-ui-ux`] - why not needed: no UI work.
+  - Category: `writing` - Reason: 미래 구조의 가드레일을 정하는 작업이다.
+  - Skills: [] - why needed: 현재 워크스페이스 현실 기준으로 쓰면 된다.
+  - Omitted: [`frontend-ui-ux`] - why not needed: UI 작업 아님.
 
   **Parallelization**: Can Parallel: NO | Wave 3 | Blocks: 5 | Blocked By: 2, 3
 
-  **References**:
-  - Pattern: `.sisyphus/drafts/phase1-execution-foundation.md:27` - planning-only workspace reality.
-  - Pattern: `.sisyphus/drafts/phase1-execution-foundation.md:45` - commands are not real yet.
-  - Pattern: `.sisyphus/drafts/phase1-development-guide-strategy.md:21` - avoid unnecessary document bulk.
-
   **Acceptance Criteria**:
-  - [ ] The plan lists objective split triggers for future guide expansion.
-  - [ ] The plan explicitly says a full multi-doc guide suite is premature today.
+  - [ ] future split trigger가 객관적으로 적혀 있어야 한다.
+  - [ ] 지금 full multi-doc guide suite는 premature라고 명시되어야 한다.
 
-  **QA Scenarios**:
-  ```text
-  Scenario: Expansion triggers are objective
-    Tool: Bash
-    Steps: Run `grep "multiple executors|scaffolded codebase|runtime commands|onboarding confusion" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: Future split triggers are concrete and objective.
-    Evidence: .sisyphus/evidence/task-4-guide-expansion.txt
+- [ ] 5. 참조 정규화 및 handoff 정리
 
-  Scenario: No premature guide-suite mandate
-    Tool: Bash
-    Steps: Run `grep "must create backend guide now|must create frontend guide now|must create docs tree now" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: The plan does not prematurely force a large guide suite.
-    Evidence: .sisyphus/evidence/task-4-guide-expansion-error.txt
-  ```
-
-  **Commit**: YES | Message: `docs(plan): define future guide split triggers` | Files: `.sisyphus/plans/phase1-development-guide-plan.md`
-
-- [ ] 5. Normalize References And Handoff
-
-  **What to do**: Finish the plan by specifying how the new guide will be referenced from execution-foundation and implementation-breakdown docs, and how executors should use it first before diving into detailed design docs. Include final handoff wording and non-goals.
-  **Must NOT do**: Do not create authority loops where the guide becomes upstream of the design stack.
+  **What to do**: 새 가이드가 execution-foundation, implementation-breakdown 문서에서 어떻게 참조되는지 정하고, 구현자는 guide -> detailed source docs 순으로 봐야 한다는 handoff를 넣는다. non-goal도 같이 정리한다.
+  **Must NOT do**: guide가 design stack보다 상위가 되는 authority loop를 만들면 안 된다.
 
   **Recommended Agent Profile**:
-  - Category: `writing` - Reason: final normalization and handoff.
-  - Skills: [`session-markdown-documentor`] - why needed: concise handoff structure.
-  - Omitted: [`playwright`] - why not needed: no browser requirement.
+  - Category: `writing` - Reason: 최종 정리와 handoff 작업이다.
+  - Skills: [`session-markdown-documentor`] - why needed: concise handoff 구조가 필요하다.
+  - Omitted: [`playwright`] - why not needed: 브라우저 필요 없음.
 
   **Parallelization**: Can Parallel: NO | Wave 3 | Blocks: Final verification | Blocked By: 1, 2, 3, 4
 
-  **References**:
-  - Pattern: `.sisyphus/drafts/phase1-execution-foundation.md:96` - next artifact context.
-  - Pattern: `.sisyphus/plans/phase1-implementation-breakdown-plan.md:497` - handoff task style.
-  - Pattern: `.sisyphus/drafts/phase1-policy-closure-log.md:171` - propagation targets.
-
   **Acceptance Criteria**:
-  - [ ] The plan specifies how the guide is referenced without creating circular authority.
-  - [ ] The plan explains the implementer entry sequence: guide first, then detailed source docs.
-  - [ ] The plan includes non-goals to prevent duplication.
+  - [ ] guide가 circular authority 없이 참조되는 방식이 명시된다.
+  - [ ] implementer가 guide 먼저, 그다음 detailed source docs를 보는 순서가 설명된다.
+  - [ ] non-goal이 포함되어 중복을 방지한다.
 
-  **QA Scenarios**:
-  ```text
-  Scenario: Handoff sequence is explicit
-    Tool: Bash
-    Steps: Run `grep "guide first|then detailed source docs|non-goals|authority loop" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: Handoff order and anti-loop rules are present.
-    Evidence: .sisyphus/evidence/task-5-guide-handoff.txt
-
-  Scenario: No circular authority
-    Tool: Bash
-    Steps: Run `grep "guide is upstream of PRD|guide overrides design" ".sisyphus/plans/phase1-development-guide-plan.md"`
-    Expected: The plan does not allow circular authority or override behavior.
-    Evidence: .sisyphus/evidence/task-5-guide-handoff-error.txt
-  ```
-
-  **Commit**: YES | Message: `docs(plan): finalize development guide plan` | Files: `.sisyphus/plans/phase1-development-guide-plan.md`
-
-## Final Verification Wave (4 parallel agents, ALL must APPROVE)
+## 최종 검증 Wave (4 parallel agents, ALL must APPROVE)
 - [ ] F1. Plan Compliance Audit - oracle
 - [ ] F2. Code Quality Review - unspecified-high
 - [ ] F3. Real Manual QA - unspecified-high
 - [ ] F4. Scope Fidelity Check - deep
 
-## Commit Strategy
-- Commit after the guide-scope/authority definition if created incrementally.
-- Keep the future guide artifact in one commit if possible because it is a single-entry document.
-- Any reference updates in execution-foundation or implementation-breakdown must be committed together with the guide artifact.
+## 커밋 전략
+- 가이드 범위 / 권위 정의를 점진적으로 만들 경우 첫 커밋으로 분리 가능
+- 미래 guide artifact는 가능하면 한 커밋으로 묶는다. 단일 진입 문서이기 때문이다.
+- execution-foundation 또는 implementation-breakdown 참조 갱신이 있으면 가이드 커밋과 같이 묶는다.
 
-## Success Criteria
-- The team has one clear pre-coding development entry guide and not a competing new doc layer.
-- The guide points to existing authority documents instead of duplicating them.
-- The guide explains how to start implementation once scaffolding exists.
-- The plan avoids over-documentation while preserving execution clarity.
+## 성공 기준
+- 팀이 중복 문서 계층이 아니라 명확한 pre-coding 개발 진입 가이드 1개를 갖게 된다.
+- 가이드는 기존 authority 문서를 복제하지 않고 가리킨다.
+- 스캐폴딩 이후 구현 시작 방식을 설명할 수 있다.
+- 과도한 문서화 없이 실행 명확성을 유지한다.

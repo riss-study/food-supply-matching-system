@@ -1,4 +1,4 @@
-# Phase 1 Policy Closure Log
+# Phase 1 정책 확정 로그
 
 > 버전: v1.0
 > 작성일: 2026-03-12

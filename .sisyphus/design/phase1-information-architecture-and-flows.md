@@ -1,201 +1,201 @@
-# Phase 1 Information Architecture and Flows
+# Phase 1 정보 구조 및 사용자 흐름
 
-> Version: 1.0
-> Status: Active
-> Parent: `phase1-design-baseline.md`
-
----
-
-## 1. Surface Map
-
-### Public
-
-- landing page
-- supplier search/listing preview
-- notices
-
-### Requester Area
-
-- requester onboarding/business submission
-- supplier search/list/detail
-- request list/detail/create/edit
-- quote comparison
-- message thread list/detail
-- contact-share requests
-
-### Supplier Area
-
-- supplier onboarding
-- supplier profile edit
-- verification submission status
-- eligible request list/detail
-- quote list/detail/create/update/withdraw
-- message thread list/detail
-- contact-share requests
-
-### Admin Area
-
-- review queue
-- supplier/business detail review
-- supplier state management
-- notices management
-- basic stats dashboard
+> 버전: 1.0
+> 상태: Active
+> 상위 문서: `phase1-design-baseline.md`
 
 ---
 
-## 2. Primary Navigation
+## 1. 화면 영역 지도
 
-### Requester
+### 공개 영역
 
-- Dashboard
-- Suppliers
-- Requests
-- Quotes
-- Messages
-- Account
+- 랜딩 페이지
+- 공급자 검색/리스트 미리보기
+- 공지사항
 
-### Supplier
+### 요청자 영역
 
-- Dashboard
-- Profile
-- Verification
-- Requests
-- Quotes
-- Messages
-- Account
+- 요청자 온보딩 / 사업자 정보 제출
+- 공급자 검색 / 리스트 / 상세
+- 의뢰 목록 / 상세 / 생성 / 수정
+- 견적 비교
+- 메시지 스레드 목록 / 상세
+- 연락처 공유 요청
 
-### Admin
+### 공급자 영역
 
-- Review Queue
-- Suppliers
-- Requesters
-- Notices
-- Stats
+- 공급자 온보딩
+- 공급자 프로필 수정
+- 검수 제출 상태 확인
+- 응답 가능한 의뢰 목록 / 상세
+- 견적 목록 / 상세 / 생성 / 수정 / 철회
+- 메시지 스레드 목록 / 상세
+- 연락처 공유 요청
 
----
+### 관리자 영역
 
-## 3. Screen Inventory
-
-| Screen | Actor | Primary Object |
-|--------|-------|----------------|
-| Landing | Public | Notice / SupplierPreview |
-| Supplier Search | Public/Requester | SupplierSearchView |
-| Supplier Detail | Public/Requester | SupplierProfileReadModel |
-| Request Create/Edit | Requester | Request |
-| Request Detail | Requester/Supplier | Request |
-| Quote Compare | Requester | QuoteCollection |
-| Quote Form | Supplier | Quote |
-| Thread List | Requester/Supplier | MessageThreadSummary |
-| Thread Detail | Requester/Supplier | MessageThread |
-| Verification Submission | Supplier | VerificationSubmission |
-| Review Queue | Admin | AdminReviewItem |
-| Review Detail | Admin | VerificationSubmission |
-| Notice List/Edit | Admin | Notice |
-| Stats Dashboard | Admin | PlatformStatSummary |
+- 검수 큐
+- 공급자 / 사업자 상세 검토
+- 공급자 상태 관리
+- 공지사항 관리
+- 기본 통계 대시보드
 
 ---
 
-## 4. Core Flow Catalog
+## 2. 주요 내비게이션
 
-### Flow A: Supplier Verification
+### 요청자
 
-- Entry: supplier signs up and reaches verification screen
-- Preconditions: supplier account exists
-- Happy path:
-  1. supplier enters company/profile basics
-  2. supplier uploads business/certification documents
-  3. supplier submits verification
-  4. admin reviews submission
-  5. admin approves or rejects
-- Failure paths:
-  - missing required document
-  - invalid file type/size
-  - rejection with resubmission required
-- Postconditions:
-  - supplier state changes and impacts visibility/eligibility
+- 대시보드
+- 공급자
+- 의뢰
+- 견적
+- 메시지
+- 계정
 
-### Flow B: Request Posting
+### 공급자
 
-- Entry: requester chooses create request
-- Preconditions: requester account exists; requester business state is `approved`
-- Happy path:
-  1. requester fills request form
-  2. requester chooses public or targeted mode
-  3. requester publishes request
-- Failure paths:
-  - incomplete required fields
-  - invalid category or production range inputs
-- Postconditions:
-  - request becomes visible according to mode and state
+- 대시보드
+- 프로필
+- 검수
+- 의뢰
+- 견적
+- 메시지
+- 계정
 
-### Flow C: Quote Submission and Comparison
+### 관리자
 
-- Entry: supplier opens eligible request detail
-- Preconditions: supplier is eligible to quote; request is open
-- Happy path:
-  1. supplier creates quote
-  2. requester receives quote
-  3. requester compares multiple quotes
-  4. requester selects follow-up target
-- Failure paths:
-  - supplier not eligible
-  - request closed/cancelled
-  - duplicate quote policy violation
-- Postconditions:
-  - quote state updated; if no thread exists for the requester-supplier-request tuple, one thread is created automatically
-
-### Flow D: Messaging and Contact Sharing
-
-- Entry: requester or supplier opens thread linked to request context
-- Preconditions: thread already exists, or requester creates/opens it from request context, or it was auto-created by first quote submission
-- Happy path:
-  1. party sends message
-  2. other party reads and replies
-  3. one party requests contact sharing
-  4. both parties consent
-  5. external contact details become visible
-- Failure paths:
-  - one-sided consent only
-  - revoked consent
-  - duplicate thread creation request returns existing thread
-  - attachment validation failure
-- Postconditions:
-  - conversation history preserved with auditable contact-share state and auditable consent retry history
-
-### Flow E: Admin Review and Notice Operations
-
-- Entry: admin opens queue or notices
-- Preconditions: admin authenticated
-- Happy path:
-  1. admin filters review queue
-  2. admin opens submission
-  3. admin approves/rejects/holds
-  4. admin posts notice if needed
-- Failure paths:
-  - invalid transition from already-final state
-  - missing reason on rejection
-  - hold or reject without user-visible guidance
+- 검수 큐
+- 공급자
+- 요청자
+- 공지
+- 통계
 
 ---
 
-## 5. Object-to-Screen Mapping
+## 3. 화면 목록
 
-| Object | Create | Read | Update | Admin Action |
-|--------|--------|------|--------|-------------|
-| SupplierProfile | Supplier Profile | Supplier Detail | Supplier Profile | Review visibility |
-| VerificationSubmission | Verification Submission | Review Detail | Resubmit | Approve/Reject/Hold |
-| Request | Request Create | Request Detail | Request Edit | Moderate if needed |
-| Quote | Quote Form | Quote Compare | Quote Update/Withdraw | Inspect if needed |
-| MessageThread | System/triggered | Thread Detail | N/A | Audit access |
-| ContactShareConsent | Thread Detail | Thread Detail | Consent response | Audit access |
-| Notice | Notice Editor | Landing/Notice List | Notice Editor | Publish/Archive |
+| 화면 | 사용자 | 주요 객체 |
+|------|--------|-----------|
+| 랜딩 | 공개 | Notice / SupplierPreview |
+| 공급자 검색 | 공개 / 요청자 | SupplierSearchView |
+| 공급자 상세 | 공개 / 요청자 | SupplierProfileReadModel |
+| 의뢰 생성 / 수정 | 요청자 | Request |
+| 의뢰 상세 | 요청자 / 공급자 | Request |
+| 견적 비교 | 요청자 | QuoteCollection |
+| 견적 작성 | 공급자 | Quote |
+| 스레드 목록 | 요청자 / 공급자 | MessageThreadSummary |
+| 스레드 상세 | 요청자 / 공급자 | MessageThread |
+| 검수 제출 | 공급자 | VerificationSubmission |
+| 검수 큐 | 관리자 | AdminReviewItem |
+| 검수 상세 | 관리자 | VerificationSubmission |
+| 공지 목록 / 편집 | 관리자 | Notice |
+| 통계 대시보드 | 관리자 | PlatformStatSummary |
 
 ---
 
-## 6. UI Decision Rules
+## 4. 핵심 흐름 목록
 
-1. Public users can browse but cannot transact.
-2. Supplier trust state must be visible on list and detail surfaces.
-3. Request mode must clearly differentiate `public` and `targeted`.
-4. Contact details must remain hidden before bilateral consent.
-5. Admin review status must be reflected in supplier-side UI without exposing internal-only notes.
+### Flow A: 공급자 검수
+
+- 진입: 공급자가 가입 후 검수 화면으로 이동
+- 선행 조건: 공급자 계정 존재
+- 정상 흐름:
+  1. 공급자가 회사 / 프로필 기본 정보를 입력
+  2. 공급자가 사업자 / 인증 서류를 업로드
+  3. 공급자가 검수를 제출
+  4. 관리자가 제출 내용을 검토
+  5. 관리자가 승인 또는 반려
+- 실패 흐름:
+  - 필수 서류 누락
+  - 잘못된 파일 형식 / 크기
+  - 반려 후 재제출 필요
+- 결과:
+  - 공급자 상태가 변경되고 노출 / 참여 가능 여부에 영향이 생김
+
+### Flow B: 의뢰 등록
+
+- 진입: 요청자가 의뢰 생성 선택
+- 선행 조건: 요청자 계정 존재, 요청자 사업자 상태가 `approved`
+- 정상 흐름:
+  1. 요청자가 의뢰 폼 입력
+  2. 요청자가 공개형 또는 타겟형 모드 선택
+  3. 요청자가 의뢰를 게시
+- 실패 흐름:
+  - 필수 입력 누락
+  - 잘못된 카테고리 또는 수량/가격 범위 입력
+- 결과:
+  - 의뢰가 모드와 상태에 맞게 노출됨
+
+### Flow C: 견적 제출 및 비교
+
+- 진입: 공급자가 응답 가능한 의뢰 상세 화면을 엶
+- 선행 조건: 공급자가 견적 제출 가능 상태이고, 의뢰가 `open`
+- 정상 흐름:
+  1. 공급자가 견적 생성
+  2. 요청자가 견적 수신
+  3. 요청자가 여러 견적 비교
+  4. 요청자가 후속 진행 대상을 선택
+- 실패 흐름:
+  - 공급자가 응답 자격 없음
+  - 의뢰가 종료 / 취소됨
+  - 중복 견적 정책 위반
+- 결과:
+  - 견적 상태가 갱신되고, 요청자-공급자-의뢰 조합에 스레드가 없으면 자동 생성됨
+
+### Flow D: 메시지와 연락처 공유
+
+- 진입: 요청자 또는 공급자가 의뢰 맥락의 스레드 열기
+- 선행 조건: 스레드가 이미 있거나, 요청자가 의뢰 맥락에서 생성 / 진입하거나, 첫 견적 제출로 자동 생성됨
+- 정상 흐름:
+  1. 한쪽이 메시지를 보냄
+  2. 상대가 읽고 답장함
+  3. 한쪽이 연락처 공유 요청
+  4. 양쪽이 모두 동의
+  5. 외부 연락처가 공개됨
+- 실패 흐름:
+  - 한쪽만 동의함
+  - 철회됨
+  - 중복 스레드 생성 요청은 기존 스레드로 연결됨
+  - 첨부 파일 검증 실패
+- 결과:
+  - 대화 이력과 연락처 공유 이력이 감사 가능하게 보존됨
+
+### Flow E: 관리자 검수 및 공지 운영
+
+- 진입: 관리자가 검수 큐 또는 공지 화면을 엶
+- 선행 조건: 관리자 인증 완료
+- 정상 흐름:
+  1. 관리자가 검수 큐 필터링
+  2. 관리자 검수 제출 건 열기
+  3. 관리자 승인 / 보류 / 반려
+  4. 필요 시 공지 게시
+- 실패 흐름:
+  - 이미 최종 상태인 건에 대한 잘못된 전이
+  - 반려 시 사유 누락
+  - 보류 / 반려 시 사용자에게 보여줄 안내 문구 누락
+
+---
+
+## 5. 객체-화면 매핑
+
+| 객체 | 생성 | 조회 | 수정 | 관리자 액션 |
+|------|------|------|------|-------------|
+| SupplierProfile | 공급자 프로필 | 공급자 상세 | 공급자 프로필 | 검수 기반 노출 조정 |
+| VerificationSubmission | 검수 제출 | 검수 상세 | 재제출 | 승인 / 반려 / 보류 |
+| Request | 의뢰 생성 | 의뢰 상세 | 의뢰 수정 | 필요 시 관리 |
+| Quote | 견적 작성 | 견적 비교 | 견적 수정 / 철회 | 필요 시 조회 |
+| MessageThread | 시스템 / 트리거 생성 | 스레드 상세 | N/A | 감사용 접근 |
+| ContactShareConsent | 스레드 상세 | 스레드 상세 | 동의 응답 | 감사용 접근 |
+| Notice | 공지 편집 | 랜딩 / 공지 목록 | 공지 편집 | 게시 / 보관 |
+
+---
+
+## 6. UI 결정 규칙
+
+1. 공개 사용자는 탐색만 가능하고 거래 행동은 할 수 없다.
+2. 공급자 신뢰 상태는 리스트와 상세 모두에서 보여야 한다.
+3. 의뢰 모드는 `public`과 `targeted`가 분명히 구분되어야 한다.
+4. 연락처는 상호 동의 전까지 숨겨야 한다.
+5. 관리자 검수 상태는 공급자 UI에 반영하되, 내부 전용 메모는 노출하면 안 된다.

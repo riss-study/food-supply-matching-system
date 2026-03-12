@@ -1,4 +1,4 @@
-# Phase 1 Development Entry Guide
+# Phase 1 개발 진입 가이드
 
 > 버전: v1.0
 > 작성일: 2026-03-12
@@ -204,6 +204,24 @@
 - 한 커밋에는 하나의 coherent slice만 담는다
 - 서로 먼 슬라이스를 한 번에 섞지 않는다
 - 정책/설계 기준이 바뀌면 관련 문서를 같은 커밋에서 같이 수정해야 한다
+- 앞으로 커밋 메시지는 **prefix + 한글 설명** 형식을 기본으로 한다
+
+권장 prefix:
+
+- `feat`: 기능 추가
+- `fix`: 버그 수정
+- `docs`: 문서 작성/수정
+- `design`: 설계 문서/구조/흐름 변경
+- `refactor`: 동작 변화 없는 구조 개선
+- `test`: 테스트 추가/수정
+- `chore`: 설정, 도구, 유지보수 작업
+
+예시:
+
+- `feat: 요청자 사업자 승인 게이트 추가`
+- `docs: 개발 진입 가이드 추가`
+- `design: 메시지 스레드 생성 규칙 반영`
+- `chore: Task Master MCP 설정 추가`
 
 세부 commit 전략은 `phase1-implementation-breakdown-plan.md`를 따른다.
 
