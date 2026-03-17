@@ -5,10 +5,12 @@
 > 상태: 답변 완료
 > 목적: 코딩 시작 전에 **지금 꼭 필요한 것만** 빠르게 확정하기 위한 질문지
 > 기준 문서:
-> - `.sisyphus/plans/phase1-implementation-breakdown-plan.md`
+> - `.sisyphus/drafts/phase1-active-baseline.md`
+> - `.sisyphus/plans/phase1-execution-plan.md`
+> - `.sisyphus/plans/phase1-subplans-index.md`
 > - `.sisyphus/drafts/1st-phase-requirements-final.md`
 > - `.sisyphus/drafts/PRD-v1.0-MVP-Korean.md`
-> - `.sisyphus/design/*.md`
+> - `.sisyphus/drafts/system-architecture.md`, `.sisyphus/drafts/data-model.md`, `.sisyphus/drafts/api-spec.md`
 > 나중에 결정할 것 저장 위치: `.sisyphus/drafts/1st-phase-questionnaire-v2.md`
 
 ---

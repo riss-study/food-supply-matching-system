@@ -4,7 +4,7 @@
 > 작성일: 2026-03-12
 > 상태: Active
 > 목적: 현재 워크스페이스 상태와 코딩 시작 전 실행 기반을 고정하는 문서
-> 상위 기준: `phase1-policy-closure-log.md`, `phase1-implementation-breakdown-plan.md`
+> 상위 기준: `phase1-policy-closure-log.md`, `phase1-execution-plan.md`, `phase1-subplans-index.md`
 
 ---
 

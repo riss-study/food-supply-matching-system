@@ -5,7 +5,7 @@
 > 상태: Active
 > 목적: 실제 코딩을 시작하기 전에 개발자가 가장 먼저 열어야 하는 진입 가이드
 > 성격: 실행 안내 문서
-> 상위 기준: `.sisyphus/plans/document-structure-plan.md`
+> 상위 기준: `.sisyphus/drafts/phase1-active-baseline.md`, `.sisyphus/plans/phase1-execution-plan.md`
 
 ---
 
@@ -63,18 +63,20 @@
 
 문서가 충돌하면 아래 순서를 따른다.
 
-1. `.sisyphus/plans/document-structure-plan.md`
+1. `.sisyphus/drafts/phase1-active-baseline.md`
 2. `.sisyphus/drafts/1st-phase-requirements-final.md`
 3. `.sisyphus/drafts/PRD-v1.0-MVP-Korean.md`
-4. `.sisyphus/design/phase1-design-baseline.md`
-5. `.sisyphus/design/phase1-information-architecture-and-flows.md`
-6. `.sisyphus/design/phase1-permissions-and-state-model.md`
-7. `.sisyphus/design/phase1-domain-and-data-model.md`
-8. `.sisyphus/design/phase1-api-and-validation-spec.md`
-9. `.sisyphus/design/phase1-acceptance-scenarios-and-backlog.md`
-10. `.sisyphus/drafts/phase1-policy-closure-log.md`
-11. `.sisyphus/drafts/phase1-execution-foundation.md`
-12. `.sisyphus/plans/phase1-implementation-breakdown-plan.md`
+4. `.sisyphus/drafts/system-architecture.md`
+5. `.sisyphus/drafts/data-model.md`
+6. `.sisyphus/drafts/api-spec.md`
+7. `.sisyphus/drafts/backend-guide.md`
+8. `.sisyphus/drafts/frontend-guide.md`
+9. `.sisyphus/drafts/design-system.md`
+10. `.sisyphus/drafts/acceptance-scenarios-and-backlog.md`
+11. `.sisyphus/drafts/phase1-policy-closure-log.md`
+12. `.sisyphus/plans/phase1-execution-plan.md`
+13. `.sisyphus/plans/phase1-subplans-index.md`
+14. `.sisyphus/plans/phase1-subplans/`
 
 주의:
 
@@ -91,23 +93,25 @@
 
 1. `.sisyphus/drafts/1st-phase-requirements-final.md`
 2. `.sisyphus/drafts/PRD-v1.0-MVP-Korean.md`
-3. `.sisyphus/design/phase1-design-baseline.md`
+3. `.sisyphus/drafts/system-architecture.md`
 4. `.sisyphus/drafts/phase1-policy-closure-log.md`
 
 ### 2차 구현 준비
 
 실제 구현 전에는 아래까지 읽어야 한다.
 
-5. `.sisyphus/design/phase1-information-architecture-and-flows.md`
-6. `.sisyphus/design/phase1-permissions-and-state-model.md`
-7. `.sisyphus/design/phase1-domain-and-data-model.md`
-8. `.sisyphus/design/phase1-api-and-validation-spec.md`
-9. `.sisyphus/design/phase1-acceptance-scenarios-and-backlog.md`
-10. `.sisyphus/plans/phase1-implementation-breakdown-plan.md`
+5. `.sisyphus/drafts/data-model.md`
+6. `.sisyphus/drafts/api-spec.md`
+7. `.sisyphus/drafts/backend-guide.md`
+8. `.sisyphus/drafts/frontend-guide.md`
+9. `.sisyphus/drafts/design-system.md`
+10. `.sisyphus/drafts/acceptance-scenarios-and-backlog.md`
+11. `.sisyphus/plans/phase1-execution-plan.md`
+12. `.sisyphus/plans/phase1-subplans-index.md`
 
 ### 3차 실행 확인
 
-11. `.sisyphus/drafts/phase1-execution-foundation.md`
+13. `.sisyphus/drafts/phase1-execution-foundation.md`
 
 ---
 
@@ -123,7 +127,7 @@
 - 연락처 공유는 revoke 가능, 이후 retry 가능
 - 관리자 `hold` / `reject` / `resubmission` 의미는 정책 문서 기준으로 고정
 
-세부 문구와 상태 전이는 반드시 `phase1-policy-closure-log.md`와 `phase1-permissions-and-state-model.md`를 따른다.
+세부 문구와 상태 전이는 반드시 `phase1-policy-closure-log.md`, `data-model.md`, `api-spec.md`를 따른다.
 
 ---
 
@@ -151,13 +155,13 @@
 
 현재 구현 순서는 아래를 따른다.
 
-### Wave 0
+### Task 01
 
 - 실행 기반 확인
 - 정책 고정 반영 확인
 - 코딩 전 TASK 구조 준비
 
-### Slice Order
+### Task Order
 
 1. auth / role / requester onboarding
 2. supplier profile / verification submission
@@ -169,7 +173,7 @@
 8. contact-share consent
 9. notices / admin summary / basic stats
 
-정확한 파동/의존성/QA 시나리오는 반드시 `phase1-implementation-breakdown-plan.md`를 따른다.
+정확한 task 의존성/QA 시나리오는 반드시 `phase1-execution-plan.md`와 `phase1-subplans-index.md`를 따른다.
 
 ---
 
@@ -177,12 +181,12 @@
 
 | 작업 종류 | 반드시 같이 볼 문서 |
 |-----------|----------------------|
-| 인증/권한 | `phase1-permissions-and-state-model.md`, `phase1-api-and-validation-spec.md` |
-| 의뢰/견적 | `PRD-v1.0-MVP-Korean.md`, `phase1-information-architecture-and-flows.md`, `phase1-api-and-validation-spec.md` |
-| 메시지/연락처 공유 | `phase1-policy-closure-log.md`, `phase1-permissions-and-state-model.md`, `phase1-information-architecture-and-flows.md` |
-| 검색/리드모델 | `phase1-domain-and-data-model.md`, `phase1-api-and-validation-spec.md` |
-| 관리자 검수 | `phase1-policy-closure-log.md`, `phase1-permissions-and-state-model.md`, `PRD-v1.0-MVP-Korean.md` |
-| QA | `phase1-acceptance-scenarios-and-backlog.md`, `phase1-implementation-breakdown-plan.md` |
+| 인증/권한 | `data-model.md`, `api-spec.md` |
+| 의뢰/견적 | `PRD-v1.0-MVP-Korean.md`, `data-model.md`, `api-spec.md` |
+| 메시지/연락처 공유 | `phase1-policy-closure-log.md`, `data-model.md`, `api-spec.md` |
+| 검색/리드모델 | `data-model.md`, `api-spec.md` |
+| 관리자 검수 | `phase1-policy-closure-log.md`, `data-model.md`, `api-spec.md`, `PRD-v1.0-MVP-Korean.md` |
+| QA | `acceptance-scenarios-and-backlog.md`, `phase1-execution-plan.md`, `phase1-subplans-index.md` |
 
 ---
 
@@ -223,7 +227,7 @@
 - `design: 메시지 스레드 생성 규칙 반영`
 - `chore: Task Master MCP 설정 추가`
 
-세부 commit 전략은 `phase1-implementation-breakdown-plan.md`를 따른다.
+세부 commit 전략은 `phase1-execution-plan.md`를 따른다.
 
 ---
 
@@ -262,9 +266,9 @@
 
 ## 13. 앞으로 언제 가이드를 분리하나
 
-지금은 단일 entry guide만 유지한다.
+지금은 entry guide와 역할별 guide를 함께 유지한다.
 
-아래 조건이 생기면 나중에 분리한다.
+추가 분리가 필요한 조건은 아래와 같다.
 
 - 실제 프론트엔드/백엔드 프로젝트가 생성됨
 - 실행/빌드/테스트 명령이 실제로 확정됨
@@ -278,7 +282,7 @@
 - design handoff guide
 - setup / runbook guide
 
-하지만 지금은 아직 이 단계가 아니다.
+현재는 `backend-guide.md`, `frontend-guide.md`, `design-system.md`까지 active guide로 분리된 상태고, setup/runbook 수준 분리는 아직 하지 않는다.
 
 ---
 

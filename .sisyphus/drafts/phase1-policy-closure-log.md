@@ -172,13 +172,15 @@
 
 이 문서 내용은 최소 아래 문서에 연쇄 반영해야 한다.
 
-- `.sisyphus/plans/phase1-implementation-breakdown-plan.md`
+- `.sisyphus/plans/phase1-execution-plan.md`
+- `.sisyphus/plans/phase1-subplans-index.md`
 - `.sisyphus/drafts/1st-phase-requirements-final.md`
 - `.sisyphus/drafts/PRD-v1.0-MVP-Korean.md`
 - `.sisyphus/drafts/PRD-v1.0-MVP-English.md`
-- `.sisyphus/design/phase1-information-architecture-and-flows.md`
-- `.sisyphus/design/phase1-permissions-and-state-model.md`
-- `.sisyphus/design/phase1-api-and-validation-spec.md`
+- `.sisyphus/drafts/system-architecture.md`
+- `.sisyphus/drafts/data-model.md`
+- `.sisyphus/drafts/api-spec.md`
+- `.sisyphus/drafts/acceptance-scenarios-and-backlog.md`
 
 ---
 

@@ -137,13 +137,14 @@ Still open / 미확정:
 - `requirements-final-summary-v1.1.md`
 - `PRD-v1.0-MVP-Korean.md`
 - `PRD-v1.0-MVP-English.md`
-- `.sisyphus/plans/document-structure-plan.md`
-- `.sisyphus/design/phase1-design-baseline.md`
-- `.sisyphus/design/phase1-information-architecture-and-flows.md`
-- `.sisyphus/design/phase1-permissions-and-state-model.md`
-- `.sisyphus/design/phase1-domain-and-data-model.md`
-- `.sisyphus/design/phase1-api-and-validation-spec.md`
-- `.sisyphus/design/phase1-acceptance-scenarios-and-backlog.md`
+- `.sisyphus/drafts/phase1-active-baseline.md`
+- `.sisyphus/drafts/system-architecture.md`
+- `.sisyphus/drafts/data-model.md`
+- `.sisyphus/drafts/api-spec.md`
+- `.sisyphus/drafts/backend-guide.md`
+- `.sisyphus/drafts/frontend-guide.md`
+- `.sisyphus/drafts/design-system.md`
+- `.sisyphus/drafts/acceptance-scenarios-and-backlog.md`
 
 ---
 
