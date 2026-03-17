@@ -1,9 +1,13 @@
 # Phase 1 MVP 설계 기준선
 
 > 버전: 1.0
-> 상태: Active
+> 상태: Archived
 > 범위: 신뢰형 매칭 코어만 포함
-> 상위 기준: `../plans/document-structure-plan.md`, `../drafts/1st-phase-requirements-final.md`, `../drafts/PRD-v1.0-MVP-Korean.md`
+> 상위 기준: `.sisyphus/drafts/phase1-active-baseline.md`, `.sisyphus/drafts/1st-phase-requirements-final.md`, `.sisyphus/drafts/PRD-v1.0-MVP-Korean.md`
+
+> 대체 문서: `.sisyphus/drafts/system-architecture.md`, `.sisyphus/drafts/data-model.md`, `.sisyphus/drafts/api-spec.md`
+
+> 보관 사유: 새 architecture 3문서 세트가 이 문서의 기준선 역할을 대체했다.
 
 ---
 

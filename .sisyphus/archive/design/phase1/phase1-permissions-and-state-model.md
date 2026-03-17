@@ -1,8 +1,12 @@
 # Phase 1 권한 및 상태 모델
 
 > 버전: 1.0
-> 상태: Active
-> 상위 문서: `phase1-design-baseline.md`
+> 상태: Archived
+> 상위 문서: `.sisyphus/archive/design/phase1/phase1-design-baseline.md`
+
+> 대체 문서: `.sisyphus/drafts/data-model.md`, `.sisyphus/drafts/api-spec.md`
+
+> 보관 사유: 권한 매트릭스, 상태 전이, 관리자 검수 의미와 사용자 노출 문구가 새 draft 세트로 이관되었다.
 
 ---
 

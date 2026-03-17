@@ -1,6 +1,9 @@
 # Phase 1 개발 가이드 계획서
 
 ## 요약
+> 상태: Archived
+> 대체 문서: `.sisyphus/drafts/phase1-development-entry-guide.md`, `.sisyphus/plans/phase1-execution-plan.md`, `.sisyphus/plans/phase1-subplans-index.md`
+
 > **요약**: 구현자가 어디서부터 시작하고, 어떤 문서가 기준이며, 슬라이스를 어떤 순서로 실행해야 하는지 알려주는 얇은 개발 진입 가이드를 만든다.
 > **산출물**:
 > - `.sisyphus/drafts/phase1-development-entry-guide.md`

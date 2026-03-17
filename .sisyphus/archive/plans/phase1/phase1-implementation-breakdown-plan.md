@@ -1,6 +1,9 @@
 # Phase 1 구현 분해 계획서
 
 ## 요약
+> 상태: Archived
+> 대체 문서: `.sisyphus/plans/phase1-execution-plan.md`, `.sisyphus/plans/phase1-subplans-index.md`, `.sisyphus/plans/phase1-subplans/`
+
 > **요약**: 현재 Phase 1 신뢰형 매칭 설계 세트를 기반으로, 실제 실행 가능한 구현 백로그와 슬라이스 순서, 정책 반영 작업, 검증 규칙을 고정한다.
 > **산출물**:
 > - 실제 로컬 명령과 fixture 전략을 담은 execution foundation

@@ -1,8 +1,12 @@
 # Phase 1 도메인 및 데이터 모델
 
 > 버전: 1.0
-> 상태: Active
-> 상위 문서: `phase1-design-baseline.md`
+> 상태: Archived
+> 상위 문서: `.sisyphus/archive/design/phase1/phase1-design-baseline.md`
+
+> 대체 문서: `.sisyphus/drafts/data-model.md`
+
+> 보관 사유: command/write model, read model, ownership, projection 기준이 새 `data-model.md`로 이관되었다.
 
 ---
 

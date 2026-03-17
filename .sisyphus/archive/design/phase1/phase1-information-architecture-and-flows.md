@@ -1,8 +1,12 @@
 # Phase 1 정보 구조 및 사용자 흐름
 
 > 버전: 1.0
-> 상태: Active
-> 상위 문서: `phase1-design-baseline.md`
+> 상태: Archived
+> 상위 문서: `.sisyphus/archive/design/phase1/phase1-design-baseline.md`
+
+> 대체 문서: `.sisyphus/drafts/system-architecture.md`, `.sisyphus/drafts/frontend-guide.md`, `.sisyphus/drafts/design-system.md`, `.sisyphus/drafts/acceptance-scenarios-and-backlog.md`
+
+> 보관 사유: 화면 흐름, 내비게이션, 객체-화면 매핑, UI 노출 규칙이 새 draft 세트로 이관되었다.
 
 ---
 

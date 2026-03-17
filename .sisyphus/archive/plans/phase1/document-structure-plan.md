@@ -2,8 +2,12 @@
 
 > 버전: 2.0
 > 작성일: 2026-03-11
-> 상태: Active
+> 상태: Archived
 > 작성자: GPT
+
+> 대체 문서: `.sisyphus/drafts/phase1-active-baseline.md`
+
+> 보관 사유: 현재 active 문서 우선순위와 실행 진입점은 `phase1-active-baseline.md`, `phase1-execution-plan.md`, `phase1-subplans-index.md`로 이관되었다.
 
 ---
 
@@ -270,13 +274,14 @@
 1. 기준 요구사항 문서 정리
 2. 요약 문서 정리
 3. 상세 PRD 정리
-4. `../design/phase1-design-baseline.md`
-5. `../design/phase1-information-architecture-and-flows.md`
-6. `../design/phase1-permissions-and-state-model.md`
-7. `../design/phase1-domain-and-data-model.md`
-8. `../design/phase1-api-and-validation-spec.md`
-9. `../design/phase1-acceptance-scenarios-and-backlog.md`
-10. 구현용 작업 분해 문서
+4. `../drafts/system-architecture.md`
+5. `../drafts/data-model.md`
+6. `../drafts/api-spec.md`
+7. `../drafts/backend-guide.md`
+8. `../drafts/frontend-guide.md`
+9. `../drafts/design-system.md`
+10. `../drafts/acceptance-scenarios-and-backlog.md`
+11. 구현용 작업 분해 문서
 
 ---
 

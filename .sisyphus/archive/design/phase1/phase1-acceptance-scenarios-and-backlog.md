@@ -1,8 +1,12 @@
 # Phase 1 수용 시나리오 및 백로그
 
 > 버전: 1.0
-> 상태: Active
-> 상위 문서: `phase1-design-baseline.md`
+> 상태: Archived
+> 상위 문서: `.sisyphus/archive/design/phase1/phase1-design-baseline.md`
+
+> 대체 문서: `.sisyphus/drafts/acceptance-scenarios-and-backlog.md`
+
+> 보관 사유: acceptance 시나리오, seed data, traceability, slice backlog 기준이 새 실행 준비 문서로 이관되었다.
 
 ---
 

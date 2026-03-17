@@ -1,8 +1,12 @@
 # Phase 1 API 및 검증 스펙
 
 > 버전: 1.0
-> 상태: Active
-> 상위 문서: `phase1-design-baseline.md`
+> 상태: Archived
+> 상위 문서: `.sisyphus/archive/design/phase1/phase1-design-baseline.md`
+
+> 대체 문서: `.sisyphus/drafts/api-spec.md`
+
+> 보관 사유: endpoint group, validation, error contract 기준이 새 `api-spec.md`로 이관되었다.
 
 ---
 
