@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | YES |
 | **Blocks** | Task 5, 7, 10 |
 | **Blocked By** | Task 1, 2 |
@@ -23,9 +23,26 @@
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 4.1 | 🔴 Not Started | 미착수 |
+| 4.2 | 🔴 Not Started | 미착수 |
+| 4.3 | 🔴 Not Started | 미착수 |
+| 4.4 | 🔴 Not Started | 미착수 |
+| 4.5 | 🔴 Not Started | 미착수 |
+| 4.6 | 🔴 Not Started | 미착수 |
+| 4.7 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 4.1 공급자 프로필 도메인 모델
+### 🔴 SubTask 4.1: 공급자 프로필 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -39,7 +56,7 @@
   - [ ] `CreateSupplierProfile`
   - [ ] `UpdateSupplierProfile` (draft/hold/rejected 상태에서만)
 
-### 4.2 공급자 프로필 CRUD API
+### 🔴 SubTask 4.2: 공급자 프로필 CRUD API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -55,7 +72,7 @@
   - [ ] Partial update
   - [ ] approved 상태에서는 수정 불가 (403)
 
-### 4.3 파일 첨부 시스템
+### 🔴 SubTask 4.3: 파일 첨부 시스템
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -69,7 +86,7 @@
   - [ ] 파일 저장 및 metadata 반환
   - [ ] Swagger: multipart/form-data 명시
 
-### 4.4 검수 제출 (Verification Submission)
+### 🔴 SubTask 4.4: 검수 제출 (Verification Submission)
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -86,7 +103,7 @@
   - [ ] 최신 제출 상태 조회
   - [ ] reviewNotePublic 포함 (사용자 표시용)
 
-### 4.5 공급자 상태 노출 규칙
+### 🔴 SubTask 4.5: 공급자 상태 노출 규칙
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -100,7 +117,7 @@
   - [ ] SupplierHoldEvent
 - [ ] Projection: supplier_search_view 갱신
 
-### 4.6 프론트엔드 공급자 프로필 UI
+### 🔴 SubTask 4.6: 프론트엔드 공급자 프로필 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -118,7 +135,7 @@
   - [ ] 인증서 추가 업로드
   - [ ] 제출 전 확인 모달
 
-### 4.7 공급자 대시보드 상태 UI
+### 🔴 SubTask 4.7: 공급자 대시보드 상태 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일

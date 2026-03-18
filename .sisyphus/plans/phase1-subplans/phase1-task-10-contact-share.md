@@ -10,7 +10,7 @@
 | **스토리 포인트** | 8 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | YES |
 | **Blocks** | Task 11 |
 | **Blocked By** | Task 1, 4, 9 |
@@ -23,9 +23,25 @@
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 10.1 | 🔴 Not Started | 미착수 |
+| 10.2 | 🔴 Not Started | 미착수 |
+| 10.3 | 🔴 Not Started | 미착수 |
+| 10.4 | 🔴 Not Started | 미착수 |
+| 10.5 | 🔴 Not Started | 미착수 |
+| 10.6 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 10.1 연락처 공유 도메인 모델
+### 🔴 SubTask 10.1: 연락처 공유 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -48,7 +64,7 @@
   - [ ] bilateral reveal: 양측 모두 승인 시에만 공개
   - [ ] revoke는 승인 전에만 가능
 
-### 10.2 연락처 공유 API
+### 🔴 SubTask 10.2: 연락처 공유 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -68,7 +84,7 @@
   - [ ] Effect: state -> `revoked`
   - [ ] Error: mutually_approved 상태에서는 철회 불가 (4039)
 
-### 10.3 연락처 공개 규칙
+### 🔴 SubTask 10.3: 연락처 공개 규칙
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -83,7 +99,7 @@
   - [ ] requester: name, phone, email (BusinessProfile 기준)
   - [ ] supplier: name, phone, email (SupplierProfile 기준)
 
-### 10.4 연락처 공유 프로젝션
+### 🔴 SubTask 10.4: 연락처 공유 프로젝션
 
 **작업자:** Backend  
 **예상 소요:** 0.25일
@@ -96,7 +112,7 @@
   - [ ] `ContactShareApprovedEvent`
   - [ ] `ContactShareRevokedEvent`
 
-### 10.5 연락처 공유 요청 UI
+### 🔴 SubTask 10.5: 연락처 공유 요청 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -111,7 +127,7 @@
 - [ ] 일방 승인 상태
   - [ ] `one_side_approved`: "상대방 승인 대기 중" 또는 "승인 완료, 상대방 대기 중"
 
-### 10.6 연락처 공개 UI
+### 🔴 SubTask 10.6: 연락처 공개 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일

@@ -10,7 +10,7 @@
 | **스토리 포인트** | 8 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | YES |
 | **Blocks** | Task 6, 7 |
 | **Blocked By** | Task 1, 2 |
@@ -23,9 +23,25 @@
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 3.1 | 🔴 Not Started | 미착수 |
+| 3.2 | 🔴 Not Started | 미착수 |
+| 3.3 | 🔴 Not Started | 미착수 |
+| 3.4 | 🔴 Not Started | 미착수 |
+| 3.5 | 🔴 Not Started | 미착수 |
+| 3.6 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 3.1 사업자 프로필 도메인 모델
+### 🔴 SubTask 3.1: 사업자 프로필 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -40,7 +56,7 @@
   - [ ] 사업자등록번호 형식 검증
   - [ ] 이미 승인된 프로필은 수정 불가
 
-### 3.2 사업자 정보 제출 API
+### 🔴 SubTask 3.2: 사업자 정보 제출 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -53,7 +69,7 @@
   - [ ] 하나의 계정당 하나의 active business profile
   - [ ] 이미 submitted/approved 상태면 reject
 
-### 3.3 사업자 정보 조회/수정 API
+### 🔴 SubTask 3.3: 사업자 정보 조회/수정 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -66,7 +82,7 @@
   - [ ] Partial update 지원
   - [ ] Swagger: 상태별 수정 가능 필드 명시
 
-### 3.4 승인 게이트 강제
+### 🔴 SubTask 3.4: 승인 게이트 강제
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -77,7 +93,7 @@
 - [ ] `GET /api/me` 응답에 `businessApprovalState` 포함
 - [ ] Projection: business profile 상태 변경 이벤트 발행
 
-### 3.5 프론트엔드 사업자 등록 UI
+### 🔴 SubTask 3.5: 프론트엔드 사업자 등록 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -92,7 +108,7 @@
   - [ ] "승인 대기 중" 안내 메시지
   - [ ] 승인 완료 시 알림/리다이렉트
 
-### 3.6 상태별 화면 제어
+### 🔴 SubTask 3.6: 상태별 화면 제어
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일

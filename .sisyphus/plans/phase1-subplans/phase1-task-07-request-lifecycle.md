@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | YES |
 | **Blocks** | Task 8, 9 |
 | **Blocked By** | Task 1, 4, 5, 6 |
@@ -23,9 +23,26 @@
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 7.1 | 🔴 Not Started | 미착수 |
+| 7.2 | 🔴 Not Started | 미착수 |
+| 7.3 | 🔴 Not Started | 미착수 |
+| 7.4 | 🔴 Not Started | 미착수 |
+| 7.5 | 🔴 Not Started | 미착수 |
+| 7.6 | 🔴 Not Started | 미착수 |
+| 7.7 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 7.1 의뢰 도메인 모델
+### 🔴 SubTask 7.1: 의뢰 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -44,7 +61,7 @@
   - [ ] `CloseRequest` (open -> closed)
   - [ ] `CancelRequest` (draft/open -> cancelled)
 
-### 7.2 의뢰 CRUD API
+### 🔴 SubTask 7.2: 의뢰 CRUD API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -63,7 +80,7 @@
   - [ ] 권한: 소유자 또는 지정 공급자 (targeted 모드)
   - [ ] targetSuppliers[] 포함 (targeted 모드)
 
-### 7.3 의뢰 상태 변경 API
+### 🔴 SubTask 7.3: 의뢰 상태 변경 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -81,7 +98,7 @@
   - [ ] Request: reason (선택)
   - [ ] Effect: state -> `cancelled`
 
-### 7.4 의뢰 프로젝션 및 피드
+### 🔴 SubTask 7.4: 의뢰 프로젝션 및 피드
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -99,7 +116,7 @@
   - [ ] `RequestClosedEvent`: feed에서 제거
   - [ ] `QuoteSubmittedEvent`: quoteCount 증가
 
-### 7.5 공급자 의뢰 접근 권한
+### 🔴 SubTask 7.5: 공급자 의뢰 접근 권한
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -112,7 +129,7 @@
   - [ ] 내가 볼 수 있는 의뢰 목록 (피드)
   - [ ] public + targeted (내가 지정된) 필터링
 
-### 7.6 프론트엔드 의뢰 관리 UI
+### 🔴 SubTask 7.6: 프론트엔드 의뢰 관리 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -128,7 +145,7 @@
   - [ ] 상태별 수정 가능 필드 표시
   - [ ] 게시/종료/취소 액션 버튼
 
-### 7.7 공급자 의뢰 피드 UI
+### 🔴 SubTask 7.7: 공급자 의뢰 피드 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일

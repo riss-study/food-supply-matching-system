@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack + QA |
 | **우선순위** | P0 (Final) |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | NO (Sequential) |
 | **Blocks** | Phase 1 완료 |
 | **Blocked By** | Task 1-10 |
@@ -23,9 +23,29 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 11.1 | 🔴 Not Started | 미착수 |
+| 11.2 | 🔴 Not Started | 미착수 |
+| 11.3 | 🔴 Not Started | 미착수 |
+| 11.4 | 🔴 Not Started | 미착수 |
+| 11.5 | 🔴 Not Started | 미착수 |
+| 11.6 | 🔴 Not Started | 미착수 |
+| 11.7 | 🔴 Not Started | 미착수 |
+| 11.8 | 🔴 Not Started | 미착수 |
+| 11.9 | 🔴 Not Started | 미착수 |
+| 11.10 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 11.1 공지 도메인 모델
+### 🔴 SubTask 11.1: 공지 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -39,7 +59,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] `PublishNotice` (draft -> published)
   - [ ] `ArchiveNotice` (published -> archived)
 
-### 11.2 관리자 공지 API
+### 🔴 SubTask 11.2: 관리자 공지 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -55,7 +75,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] Partial update
   - [ ] state 변경 가능 (draft <-> published <-> archived)
 
-### 11.3 공개 공지 API
+### 🔴 SubTask 11.3: 공개 공지 API
 
 **작업자:** Backend  
 **예상 소요:** 0.25일
@@ -70,7 +90,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] viewCount increment
   - [ ] Response: 전체 body, attachments
 
-### 11.4 통계 및 대시보드 API
+### 🔴 SubTask 11.4: 통계 및 대시보드 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -87,7 +107,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] 기초 통계 집계용
   - [ ] 주기적 업데이트 또는 실시간 계산
 
-### 11.5 관리자 사이트 공지/통계 UI
+### 🔴 SubTask 11.5: 관리자 사이트 공지/통계 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -104,7 +124,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] 의뢰 현황
   - [ ] 기간 선택 필터
 
-### 11.6 공개 공지 UI
+### 🔴 SubTask 11.6: 공개 공지 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.25일
@@ -117,7 +137,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] 첨부 파일 다운로드
   - [ ] 목록으로 돌아가기
 
-### 11.7 Seeded Acceptance 테스트
+### 🔴 SubTask 11.7: Seeded Acceptance 테스트
 
 **작업자:** QA  
 **예상 소요:** 1일
@@ -134,7 +154,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] 미승인 공급자 견적 제출 시도 (4037)
   - [ ] 타인 의뢰 조회 시도 (403)
 
-### 11.8 회귀 테스트 및 버그 수정
+### 🔴 SubTask 11.8: 회귀 테스트 및 버그 수정
 
 **작업자:** QA + Full-stack  
 **예상 소요:** 1일
@@ -151,7 +171,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] File upload
 - [ ] 버그 수정 및 재검증
 
-### 11.9 Swagger 검증 및 문서화
+### 🔴 SubTask 11.9: Swagger 검증 및 문서화
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -168,7 +188,7 @@ Phase 1의 마무리 작업으로, 관리자 공지 CRUD, 공개 공지 조회, 
   - [ ] 별도 OpenAPI YAML 파일 없음 확인
   - [ ] Annotation 기반 문서화만 사용
 
-### 11.10 백로그 정규화 및 Handoff
+### 🔴 SubTask 11.10: 백로그 정규화 및 Handoff
 
 **작업자:** Full-stack  
 **예상 소요:** 0.5일

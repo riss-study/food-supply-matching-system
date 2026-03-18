@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | YES |
 | **Blocks** | Task 7, 8 |
 | **Blocked By** | Task 1, 2 |
@@ -23,9 +23,26 @@
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 6.1 | 🔴 Not Started | 미착수 |
+| 6.2 | 🔴 Not Started | 미착수 |
+| 6.3 | 🔴 Not Started | 미착수 |
+| 6.4 | 🔴 Not Started | 미착수 |
+| 6.5 | 🔴 Not Started | 미착수 |
+| 6.6 | 🔴 Not Started | 미착수 |
+| 6.7 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 6.1 공급자 검색 Read Model
+### 🔴 SubTask 6.1: 공급자 검색 Read Model
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -39,7 +56,7 @@
   - [ ] Certifications, portfolio images included
   - [ ] Visible to all users
 
-### 6.2 공급자 프로젝션
+### 🔴 SubTask 6.2: 공급자 프로젝션
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -55,7 +72,7 @@
   - [ ] `SupplierProfileUpdatedEvent`
   - [ ] `CertificationAddedEvent`
 
-### 6.3 공급자 검색 API
+### 🔴 SubTask 6.3: 공급자 검색 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -75,7 +92,7 @@
   - [ ] 인증 여부와 관계없이 공개 정보 반환
   - [ ] 404: 승인되지 않은 공급자 조회 시
 
-### 6.4 카테고리 및 지역 목록 API
+### 🔴 SubTask 6.4: 카테고리 및 지역 목록 API
 
 **작업자:** Backend  
 **예상 소요:** 0.25일
@@ -88,7 +105,7 @@
   - [ ] 각 지역별 공급자 수
 - [ ] Swagger: 간단한 목록 응답 문서화
 
-### 6.5 프론트엔드 공급자 검색 UI
+### 🔴 SubTask 6.5: 프론트엔드 공급자 검색 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -107,7 +124,7 @@
   - [ ] URL query string 동기화
   - [ ] 필터 초기화 버튼
 
-### 6.6 공급자 상세 페이지 UI
+### 🔴 SubTask 6.6: 공급자 상세 페이지 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -124,7 +141,7 @@
   - [ ] 인증된 요청자: "의뢰하기" 버튼 (targeted request로 연결)
   - [ ] 미인증 사용자: "로그인 후 이용하기" 안내
 
-### 6.7 검색 최적화
+### 🔴 SubTask 6.7: 검색 최적화
 
 **작업자:** Backend  
 **예상 소요:** 0.25일

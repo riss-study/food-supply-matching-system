@@ -10,7 +10,7 @@
 | **스토리 포인트** | 8 |
 | **작업자** | Full-stack |
 | **우선순위** | P0 |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | YES |
 | **Blocks** | Task 6, 8 |
 | **Blocked By** | Task 1 |
@@ -23,9 +23,25 @@
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 2.1 | 🔴 Not Started | 미착수 |
+| 2.2 | 🔴 Not Started | 미착수 |
+| 2.3 | 🔴 Not Started | 미착수 |
+| 2.4 | 🔴 Not Started | 미착수 |
+| 2.5 | 🔴 Not Started | 미착수 |
+| 2.6 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 2.1 회원가입 (Signup)
+### 🔴 SubTask 2.1: 회원가입 (Signup)
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -39,7 +55,7 @@
   - [ ] Swagger annotation 적용
 - [ ] Test: 중복 이메일, 비밀번호 정책 위반 케이스
 
-### 2.2 로그인 (Login)
+### 🔴 SubTask 2.2: 로그인 (Login)
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -55,7 +71,7 @@
   - [ ] TanStack Query mutation 설정
   - [ ] Token storage (httpOnly cookie 권장)
 
-### 2.3 내 정보 조회 (Me)
+### 🔴 SubTask 2.3: 내 정보 조회 (Me)
 
 **작업자:** Backend + Frontend  
 **예상 소요:** 0.5일
@@ -69,7 +85,7 @@
   - [ ] `useMe()` hook
   - [ ] 로그인 상태 persistence
 
-### 2.4 JWT 인증 필터
+### 🔴 SubTask 2.4: JWT 인증 필터
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -84,7 +100,7 @@
   - [ ] 권한 없음 (403)
 - [ ] Swagger: `@SecurityRequirement(name = "bearerAuth")` 적용
 
-### 2.5 역할 기반 접근 제어 (RBAC)
+### 🔴 SubTask 2.5: 역할 기반 접근 제어 (RBAC)
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -98,7 +114,7 @@
   - [ ] Custom permission evaluator (필요시)
 - [ ] API별 권한 매핑 문서화
 
-### 2.6 인증 관련 UI
+### 🔴 SubTask 2.6: 인증 관련 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일

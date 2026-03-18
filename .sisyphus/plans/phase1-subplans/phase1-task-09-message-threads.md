@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | YES |
 | **Blocks** | Task 10, 11 |
 | **Blocked By** | Task 1, 7, 8 |
@@ -23,9 +23,26 @@
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 9.1 | 🔴 Not Started | 미착수 |
+| 9.2 | 🔴 Not Started | 미착수 |
+| 9.3 | 🔴 Not Started | 미착수 |
+| 9.4 | 🔴 Not Started | 미착수 |
+| 9.5 | 🔴 Not Started | 미착수 |
+| 9.6 | 🔴 Not Started | 미착수 |
+| 9.7 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 9.1 메시지 스레드 도메인 모델
+### 🔴 SubTask 9.1: 메시지 스레드 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -45,7 +62,7 @@
   - [ ] thread 참여자만 메시지 전송 가능
   - [ ] 관리자는 감사 목적으로 읽기만 가능
 
-### 9.2 스레드 생성 규칙
+### 🔴 SubTask 9.2: 스레드 생성 규칙
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -61,7 +78,7 @@
   - [ ] 동일 (request, requester, supplier) 조합 1개만
   - [ ] Duplicate 시 기존 threadId 반환
 
-### 9.3 메시지 API
+### 🔴 SubTask 9.3: 메시지 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -81,7 +98,7 @@
   - [ ] Validation: body 또는 attachmentIds 중 하나는 필수
   - [ ] Swagger: request/response 예시
 
-### 9.4 파일 첨부 및 읽음 처리
+### 🔴 SubTask 9.4: 파일 첨부 및 읽음 처리
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -98,7 +115,7 @@
   - [ ] Message에 attachmentIds 포함
   - [ ] Attachment 메타데이터 반환
 
-### 9.5 스레드 및 메시지 프로젝션
+### 🔴 SubTask 9.5: 스레드 및 메시지 프로젝션
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -114,7 +131,7 @@
   - [ ] `MessageSentEvent`: thread_summary_view 업데이트
   - [ ] `ThreadMarkedAsReadEvent`: unreadCount 갱신
 
-### 9.6 메시지 목록 및 상세 UI
+### 🔴 SubTask 9.6: 메시지 목록 및 상세 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -129,7 +146,7 @@
   - [ ] 첨부 파일 표시 (이미지 미리보기, 파일 다운로드)
   - [ ] 입력 폼: 텍스트 + 파일 첨부
 
-### 9.7 파일 업로드 및 미리보기
+### 🔴 SubTask 9.7: 파일 업로드 및 미리보기
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일

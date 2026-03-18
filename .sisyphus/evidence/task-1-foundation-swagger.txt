@@ -1,0 +1,63 @@
+Task 01 Foundation, Runtime, Swagger/OpenAPI Bootstrap - Evidence
+=================================================================
+Date: 2026-03-17
+Status: complete, local infrastructure verified
+
+Verification Summary
+--------------------
+1. Frontend workspace foundation
+   - Yarn Berry workspace initialized
+   - apps/main-site and apps/admin-site generated
+   - packages/ui, packages/types, packages/utils, packages/config created
+   - Command: `yarn build` -> PASS
+   - Command: `yarn test` -> PASS
+
+2. Backend multi-module foundation
+   - shared-core, projection, api-server, admin-server created
+   - command-domain-* and query-model-* modules created
+   - Command: `./gradlew test` -> PASS
+
+3. JWT / security skeleton
+   - JwtProperties and JwtTokenProvider implemented
+   - JwtTokenProviderTest passes
+   - WebFlux security filter chain skeleton added to both servers
+
+4. Response / error envelope
+   - ApiSuccessResponse implemented with `code`, `message`, `data`, `meta`
+   - ApiErrorResponse implemented with `code`, `message`, `errors`, `traceId`
+   - GlobalApiExceptionHandler implemented
+
+5. Swagger / OpenAPI bootstrap
+   - `api-server` and `admin-server` expose `/v3/api-docs`
+   - `bearerAuth` security scheme present in both OpenAPI documents
+   - `/swagger-ui.html` redirects to Swagger UI webjar entry
+   - Command/Check: curl `/api/bootstrap/health`, `/api/admin/bootstrap/health`, `/v3/api-docs` -> PASS
+
+6. Local profile overrides
+   - Local R2DBC port override: 13306
+   - Local MongoDB port override: 27018
+   - Files: `application-local.yml` in both servers
+
+7. Local Docker infrastructure
+   - `backend/compose.local.yml` added
+   - Colima context verified
+   - MariaDB 11.4 healthy on `13306`
+   - MongoDB 4.4 healthy on `27018`
+   - `./scripts/local/init-mariadb.sh` -> PASS
+   - `./scripts/local/seed-mariadb.sh` -> PASS
+   - `./scripts/local/init-mongodb.sh` -> PASS
+   - `./scripts/local/seed-mongodb.sh` -> PASS
+
+8. Seed / test baseline
+   - `backend/dev-seed/` created with sample requester/supplier/request seed files
+   - Frontend MSW baseline created under `packages/utils/src/testing/msw`
+
+9. Local profile backend health
+   - `api-server` local profile actuator health -> Mongo `UP`, R2DBC `UP`
+   - `admin-server` local profile actuator health -> Mongo `UP`, R2DBC `UP`
+
+Notes
+-----
+- Swagger UI uses `springdoc-openapi-starter-webflux-api` + swagger-ui webjar + explicit redirect controller.
+- Local DB verification was completed against Colima-backed Docker containers.
+- Task 01 foundation acceptance criteria are satisfied.

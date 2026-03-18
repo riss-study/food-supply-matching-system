@@ -10,7 +10,7 @@
 | **스토리 포인트** | 8 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 계획 중 |
+| **상태** | 🔴 Not Started |
 | **Can Parallel** | YES |
 | **Blocks** | Task 7, 10 |
 | **Blocked By** | Task 1, 3, 4 |
@@ -23,9 +23,25 @@
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🔴 Not Started
+- 메모: 선행 task 완료 후 시작 예정.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 5.1 | 🔴 Not Started | 미착수 |
+| 5.2 | 🔴 Not Started | 미착수 |
+| 5.3 | 🔴 Not Started | 미착수 |
+| 5.4 | 🔴 Not Started | 미착수 |
+| 5.5 | 🔴 Not Started | 미착수 |
+| 5.6 | 🔴 Not Started | 미착수 |
+
+---
+
 ## SubTask 목록
 
-### 5.1 관리자 검수 도메인 모델
+### 🔴 SubTask 5.1: 관리자 검수 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -42,7 +58,7 @@
 - [ ] Audit trail
   - [ ] 각 결정마다 actor, timestamp, reason 기록
 
-### 5.2 관리자 검수 큐 API
+### 🔴 SubTask 5.2: 관리자 검수 큐 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -57,7 +73,7 @@
   - [ ] noteInternal/notesPublic 포함
   - [ ] file download URLs 포함
 
-### 5.3 검수 결정 액션 API
+### 🔴 SubTask 5.3: 검수 결정 액션 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -76,7 +92,7 @@
   - [ ] notePublic 필수 (반려 사유 안내)
 - [ ] All APIs: Swagger documentation with response examples
 
-### 5.4 프로젝션 및 감사 로그
+### 🔴 SubTask 5.4: 프로젝션 및 감사 로그
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -91,7 +107,7 @@
   - [ ] actor_user_id, action_type, target_type, target_id, payload_snapshot
   - [ ] 모든 검수 결정 액션 기록
 
-### 5.5 관리자 사이트 검수 큐 UI
+### 🔴 SubTask 5.5: 관리자 사이트 검수 큐 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -108,7 +124,7 @@
   - [ ] approved: green
   - [ ] rejected: red
 
-### 5.6 검수 상세 및 결정 UI
+### 🔴 SubTask 5.6: 검수 상세 및 결정 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일

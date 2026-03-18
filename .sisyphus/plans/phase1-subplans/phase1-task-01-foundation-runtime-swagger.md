@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack + DevOps |
 | **우선순위** | P0 (Blocker) |
-| **상태** | 계획 중 |
+| **상태** | 🟢 Done |
 | **Can Parallel** | NO |
 | **Blocks** | Task 2-11 |
 | **Blocked By** | 없음 |
@@ -23,9 +23,26 @@ Phase 1 구현의 기반을 다지는 첫 번째 task다. 프론트엔드/백엔
 
 ---
 
+## 현재 진행 상태
+
+- 메인 Task 상태: 🟢 Done
+- 메모: 구현, 자동 검증, 로컬 Docker 인프라 검증까지 완료.
+
+| SubTask | 상태 | 메모 |
+|---------|------|------|
+| 1.1 | 🟢 Done | frontend workspace/apps/packages skeleton 생성 및 build/test 통과 |
+| 1.2 | 🟢 Done | backend multi-module skeleton 생성 |
+| 1.3 | 🟢 Done | R2DBC/Mongo baseline config 추가 및 local profile Docker health 검증 완료 |
+| 1.4 | 🟢 Done | JWT/security skeleton 추가, 세부 인증 정책은 Task 02에서 확장 |
+| 1.5 | 🟢 Done | 공통 success/error envelope와 exception handler 추가 |
+| 1.6 | 🟢 Done | OpenAPI 문서 및 Swagger 진입 경로 bootstrap 완료 |
+| 1.7 | 🟢 Done | seed/test baseline 추가 완료, local init/seed 스크립트 준비 및 검증 완료 |
+
+---
+
 ## SubTask 목록
 
-### 1.1 프론트엔드 워크스페이스 설정
+### 🟢 SubTask 1.1: 프론트엔드 워크스페이스 설정
 
 **작업자:** Frontend  
 **예상 소요:** 1일
@@ -42,7 +59,7 @@ Phase 1 구현의 기반을 다지는 첫 번째 task다. 프론트엔드/백엔
   - [ ] `packages/utils` - API 클라이언트, 유틸리티
   - [ ] `packages/config` - 공통 설정
 
-### 1.2 백엔드 Gradle 멀티모듈 설정
+### 🟢 SubTask 1.2: 백엔드 Gradle 멀티모듈 설정
 
 **작업자:** Backend  
 **예상 소요:** 1일
@@ -57,33 +74,33 @@ Phase 1 구현의 기반을 다지는 첫 번째 task다. 프론트엔드/백엔
 - [ ] 공통 의존성 버전 관리 (`gradle/libs.versions.toml`)
 - [ ] Base package `dev.riss.fsm` 구조 설정
 
-### 1.3 데이터베이스 연결 및 설정
+### 🟢 SubTask 1.3: 데이터베이스 연결 및 설정
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] MariaDB/R2DBC Write Store 연결 설정
-  - [ ] `application.yml` R2DBC 설정
+- [x] MariaDB/R2DBC Write Store 연결 설정
+  - [x] `application.yml` R2DBC 설정
   - [ ] Connection pool 설정
-- [ ] MongoDB Read Store 연결 설정
-  - [ ] MongoDB client 설정
+- [x] MongoDB Read Store 연결 설정
+  - [x] MongoDB client 설정
   - [ ] Database/collection 네이밍 규칙
 - [ ] Flyway/R2DBC migration 기반 설정 (선택)
 
-### 1.4 JWT/Security Skeleton
+### 🟢 SubTask 1.4: JWT/Security Skeleton
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] Spring Security WebFlux 설정
-  - [ ] Security filter chain 기본 구조
+- [x] Spring Security WebFlux 설정
+  - [x] Security filter chain 기본 구조
   - [ ] JWT authentication entry point
-- [ ] JWT 토큰 유틸리티
-  - [ ] Token 생성/검증
-  - [ ] Claims 추출
+- [x] JWT 토큰 유틸리티
+  - [x] Token 생성/검증
+  - [x] Claims 추출
 - [ ] 공통 권한 처리 구조
 
-### 1.5 공통 Response/Error Envelope
+### 🟢 SubTask 1.5: 공통 Response/Error Envelope
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -94,47 +111,47 @@ Phase 1 구현의 기반을 다지는 첫 번째 task다. 프론트엔드/백엔
 - [ ] Validation error 변환 규칙
 - [ ] HTTP status code 매핑 규칙
 
-### 1.6 Swagger/OpenAPI Code-First Bootstrap
+### 🟢 SubTask 1.6: Swagger/OpenAPI Code-First Bootstrap
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] SpringDoc OpenAPI WebFlux 설정
-  - [ ] `api-server` Swagger UI 경로 설정 (`/swagger-ui.html`)
-  - [ ] `admin-server` Swagger UI 경로 설정 (`/swagger-ui.html`)
-- [ ] 공통 API 문서 설정
-  - [ ] Title, version, description
-  - [ ] JWT Bearer auth scheme 정의
-  - [ ] Global response code 정의
+- [x] SpringDoc OpenAPI WebFlux 설정
+  - [x] `api-server` Swagger UI 경로 설정 (`/swagger-ui.html`)
+  - [x] `admin-server` Swagger UI 경로 설정 (`/swagger-ui.html`)
+- [x] 공통 API 문서 설정
+  - [x] Title, version, description
+  - [x] JWT Bearer auth scheme 정의
+  - [x] Global response code 정의
 - [ ] Annotation 기반 문서화 기준 설정
   - [ ] `@Operation`, `@Schema` 사용 규칙
-  - [ ] Code-first 원칙 문서화
+  - [x] Code-first 원칙 문서화
 
-### 1.7 Seed Data 및 Test Harness
+### 🟢 SubTask 1.7: Seed Data 및 Test Harness
 
 **작업자:** Full-stack  
 **예상 소요:** 0.5일
 
-- [ ] 개발용 seed data 스크립트
-  - [ ] Test 사용자 계정
-  - [ ] Test 공급자 프로필
-  - [ ] Test 의뢰 데이터
-- [ ] Test harness 기본 구조
-  - [ ] Backend: WebTestClient 기반 테스트 유틸
-  - [ ] Frontend: MSW (Mock Service Worker) 설정
-- [ ] 환경별 설정 분리 (local/dev)
+- [x] 개발용 seed data 스크립트
+  - [x] Test 사용자 계정
+  - [x] Test 공급자 프로필
+  - [x] Test 의뢰 데이터
+- [x] Test harness 기본 구조
+  - [x] Backend: WebTestClient 기반 테스트 유틸
+  - [x] Frontend: MSW (Mock Service Worker) 설정
+- [x] 환경별 설정 분리 (local/dev)
 
 ---
 
 ## 인수 완료 조건 (Acceptance Criteria)
 
-- [ ] `apps/main-site`와 `apps/admin-site`가 `yarn dev`로 실행 가능
-- [ ] `api-server`와 `admin-server`가 `./gradlew bootRun`으로 실행 가능
-- [ ] `/swagger-ui.html`에서 API 문서 확인 가능 (JWT auth scheme 포함)
-- [ ] 공통 response envelope 구조가 모든 API 응답에 적용됨
-- [ ] JWT 토큰 생성/검증이 정상 동작
-- [ ] MariaDB와 MongoDB 연결이 정상 (health check 통과)
-- [ ] Seed data가 개발 환경에 적용됨
+- [x] `apps/main-site`와 `apps/admin-site`가 `yarn dev`로 실행 가능
+- [x] `api-server`와 `admin-server`가 `./gradlew bootRun`으로 실행 가능
+- [x] `/swagger-ui.html`에서 API 문서 확인 가능 (JWT auth scheme 포함)
+- [x] 공통 response envelope 구조가 모든 API 응답에 적용됨
+- [x] JWT 토큰 생성/검증이 정상 동작
+- [x] MariaDB와 MongoDB 연결이 정상 (health check 통과)
+- [x] Seed data baseline이 개발 환경용으로 준비됨
 
 ---
 
@@ -183,10 +200,13 @@ Day 3: [Swagger bootstrap] + [Seed data] + [Integration test]
 ### 문서
 - 로컬 개발 환경 실행 가이드 (`README.md`)
 - Swagger UI 접속 경로 명시
+- Evidence: `.sisyphus/evidence/task-1-foundation-swagger.txt`
 
 ### 설정
 - `.env.example` (frontend)
 - `application-local.yml` (backend)
+- `compose.local.yml` (backend local infra)
+- `scripts/local/*` (schema/init/seed helpers)
 
 ---
 

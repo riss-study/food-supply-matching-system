@@ -86,6 +86,22 @@
 - 실행자는 main plan을 상위 spine으로 보고, 실제 작업 직전에는 반드시 대응 sub-plan 문서를 함께 읽는다.
 - 코드 리뷰와 완료 판정도 task 단위로 수행한다.
 
+### 현재 Task 상태
+
+| Task | 상태 | 상세 문서 |
+|------|------|-----------|
+| 01 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-01-foundation-runtime-swagger.md` |
+| 02 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-02-auth-role-skeleton.md` |
+| 03 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-03-requester-approval-gate.md` |
+| 04 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-04-supplier-verification.md` |
+| 05 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-05-admin-review-queue.md` |
+| 06 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-06-supplier-discovery.md` |
+| 07 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-07-request-lifecycle.md` |
+| 08 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-08-quote-lifecycle.md` |
+| 09 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-09-message-threads.md` |
+| 10 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-10-contact-share.md` |
+| 11 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-11-admin-notices-stabilization.md` |
+
 ### 의존성 매트릭스
 | Task | Depends On | Enables |
 |------|------------|---------|
@@ -105,6 +121,7 @@
 > Implementation + Test + Docs sync = ONE task. Never separate.
 > EVERY task MUST have: Agent Profile + Parallelization + QA Scenarios.
 > 실제 실행/리뷰 단위는 각 task이며, wave는 참고 정보다.
+> 각 task의 현재 상태는 아래 요약표와 개별 sub-plan 문서를 함께 확인한다.
 
 - [ ] 1. Task 01 - Foundation, Runtime, Swagger/OpenAPI Bootstrap
 
