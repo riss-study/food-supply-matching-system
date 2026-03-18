@@ -1,0 +1,19 @@
+{
+  "name": "@fsm/frontend-root",
+  "private": true,
+  "packageManager": "yarn@4.5.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:main-site": "yarn workspace @fsm/main-site dev",
+    "dev:admin-site": "yarn workspace @fsm/admin-site dev",
+    "build": "yarn workspaces foreach -A -t run build",
+    "test": "yarn workspaces foreach -A -t run test",
+    "type-check": "yarn workspaces foreach -A -t run type-check"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

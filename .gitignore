@@ -1,0 +1,25 @@
+# Frontend
+frontend/node_modules/
+frontend/.pnp.*
+frontend/.yarn/*
+!frontend/.yarn/releases/
+!frontend/.yarn/plugins/
+!frontend/.yarn/patches/
+!frontend/.yarn/versions/
+!frontend/.yarn/sdks/
+!frontend/.yarn/install-state.gz
+frontend/apps/*/dist/
+frontend/packages/*/dist/
+frontend/apps/*/tsconfig.tsbuildinfo
+frontend/packages/*/tsconfig.tsbuildinfo
+
+# Backend
+backend/.gradle/
+backend/.kotlin/
+backend/**/build/
+backend/.tmp-bootstrap/
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
