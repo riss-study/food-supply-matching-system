@@ -1,9 +1,9 @@
 # Design System - Remote Standard
 
-> **버전**: 1.0.0  
-> **작성일**: 2026-02-27  
-> **상태**: Approved  
-> **설계 철학**: Warm Depth (Soft minimalism + Warm depth)
+> **상태**: Reference Only  
+> **성격**: 외부/이전 프로젝트에서 가져온 참조 가이드  
+> **현재 기준 문서**: `.sisyphus/drafts/design-system.md`, `.sisyphus/drafts/frontend-guide.md`, `.sisyphus/drafts/phase1-active-baseline.md`  
+> **비고**: 아래 내용은 참고용이며, 현재 저장소의 active 실행 기준으로 직접 사용하지 않는다.
 
 ---
 

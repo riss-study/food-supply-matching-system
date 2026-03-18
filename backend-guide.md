@@ -2,13 +2,16 @@
 
 # Backend Development Guide
 
-> **프로젝트**: remote-standard 백엔드  
-> **버전**: 2.0.0  
-> **마지막 수정일**: 2026-03-12
+> **상태**: Reference Only  
+> **성격**: 외부/이전 프로젝트에서 가져온 참조 가이드  
+> **현재 기준 문서**: `.sisyphus/drafts/backend-guide.md`, `.sisyphus/drafts/system-architecture.md`, `.sisyphus/drafts/data-model.md`, `.sisyphus/drafts/api-spec.md`, `.sisyphus/drafts/phase1-active-baseline.md`  
+> **비고**: 아래 내용은 참고용이며, 현재 저장소의 active 실행 기준으로 직접 사용하지 않는다.
 
 ---
 
 ## 관련 문서
+
+현재 프로젝트에서는 위 링크 대신 `.sisyphus/drafts/` 아래 active 문서 세트를 우선한다.
 
 | 문서 | 위치 | 설명 |
 |------|------|------|
