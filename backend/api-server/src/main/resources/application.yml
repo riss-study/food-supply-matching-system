@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: api-server
+  r2dbc:
+    url: r2dbc:mariadb://localhost:3306/fsm_command
+    username: fsm
+    password: fsm
+  mongodb:
+    uri: mongodb://localhost:27017/fsm_read
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+security:
+  jwt:
+    issuer: dev.riss.fsm
+    secret: task01-local-secret-task01-local-secret
+    access-token-ttl-seconds: 7200
+server:
+  port: 8080
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

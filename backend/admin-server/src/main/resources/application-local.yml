@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  r2dbc:
+    url: r2dbc:mariadb://localhost:13306/fsm_command
+    username: fsm
+    password: fsm
+  mongodb:
+    uri: mongodb://localhost:27018/fsm_read
+management:
+  endpoint:
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true
+    mongo:
+      enabled: true
