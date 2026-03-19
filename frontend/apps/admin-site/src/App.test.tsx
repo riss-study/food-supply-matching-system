@@ -1,15 +1,18 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { render, screen } from "@testing-library/react"
-import { BrowserRouter } from "react-router-dom"
+import { MemoryRouter } from "react-router-dom"
 import App from "./App"
 
 describe("admin-site app", () => {
-  it("renders foundation heading", () => {
+  it("renders review workspace heading", () => {
     render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>,
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter initialEntries={["/"]}>
+          <App />
+        </MemoryRouter>
+      </QueryClientProvider>,
     )
 
-    expect(screen.getByRole("heading", { name: "Admin Site Foundation" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Admin Review Workspace" })).toBeInTheDocument()
   })
 })
