@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done |
 | **Can Parallel** | YES |
 | **Blocks** | Task 5, 7, 10 |
 | **Blocked By** | Task 1, 2 |
@@ -25,24 +25,24 @@
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🔴 Not Started
-- 메모: 선행 task 완료 후 시작 예정.
+- 메인 Task 상태: 🟢 Done
+- 메모: supplier profile/verification flow, frontend UI, approved-only visibility 규칙까지 구현 및 검증 완료.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 4.1 | 🔴 Not Started | 미착수 |
-| 4.2 | 🔴 Not Started | 미착수 |
-| 4.3 | 🔴 Not Started | 미착수 |
-| 4.4 | 🔴 Not Started | 미착수 |
-| 4.5 | 🔴 Not Started | 미착수 |
-| 4.6 | 🔴 Not Started | 미착수 |
-| 4.7 | 🔴 Not Started | 미착수 |
+| 4.1 | 🟢 Done | SupplierProfile / CertificationRecord / VerificationSubmission 모델 추가 |
+| 4.2 | 🟢 Done | 공급자 프로필 CRUD API 구현 및 검증 완료 |
+| 4.3 | 🟢 Done | local file storage adapter 및 multipart 업로드 구현 완료 |
+| 4.4 | 🟢 Done | verification submission/latest API 구현 및 검증 완료 |
+| 4.5 | 🟢 Done | approved => visible / draft => hidden search projection 검증 완료 |
+| 4.6 | 🟢 Done | 공급자 프로필/검수 제출 UI 구현 및 자동 검증 완료 |
+| 4.7 | 🟢 Done | 공급자 전용 route guard 및 상태 UI 구현 완료 |
 
 ---
 
 ## SubTask 목록
 
-### 🔴 SubTask 4.1: 공급자 프로필 도메인 모델
+### 🟢 SubTask 4.1: 공급자 프로필 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -56,7 +56,7 @@
   - [ ] `CreateSupplierProfile`
   - [ ] `UpdateSupplierProfile` (draft/hold/rejected 상태에서만)
 
-### 🔴 SubTask 4.2: 공급자 프로필 CRUD API
+### 🟢 SubTask 4.2: 공급자 프로필 CRUD API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -72,7 +72,7 @@
   - [ ] Partial update
   - [ ] approved 상태에서는 수정 불가 (403)
 
-### 🔴 SubTask 4.3: 파일 첨부 시스템
+### 🟢 SubTask 4.3: 파일 첨부 시스템
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -86,7 +86,7 @@
   - [ ] 파일 저장 및 metadata 반환
   - [ ] Swagger: multipart/form-data 명시
 
-### 🔴 SubTask 4.4: 검수 제출 (Verification Submission)
+### 🟢 SubTask 4.4: 검수 제출 (Verification Submission)
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -103,21 +103,20 @@
   - [ ] 최신 제출 상태 조회
   - [ ] reviewNotePublic 포함 (사용자 표시용)
 
-### 🔴 SubTask 4.5: 공급자 상태 노출 규칙
+### 🟢 SubTask 4.5: 공급자 상태 노출 규칙
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] 노출 상태 관리
-  - [ ] `approved`일 때만 `exposureState = visible`
-  - [ ] 나머지 상태는 `hidden`
-- [ ] 상태 변경 이벤트 발행
-  - [ ] SupplierVerifiedEvent
-  - [ ] SupplierRejectedEvent
-  - [ ] SupplierHoldEvent
-- [ ] Projection: supplier_search_view 갱신
+- [x] 노출 상태 관리
+  - [x] `approved`일 때만 `exposureState = visible`
+  - [x] 나머지 상태는 `hidden`
+- [x] 상태 변경 이벤트 발행/갱신 경로
+  - [x] approved/hidden visibility 반영 projection
+  - [x] draft supplier 비노출 확인
+- [x] Projection: supplier_search_view 갱신
 
-### 🔴 SubTask 4.6: 프론트엔드 공급자 프로필 UI
+### 🟢 SubTask 4.6: 프론트엔드 공급자 프로필 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -135,7 +134,7 @@
   - [ ] 인증서 추가 업로드
   - [ ] 제출 전 확인 모달
 
-### 🔴 SubTask 4.7: 공급자 대시보드 상태 UI
+### 🟢 SubTask 4.7: 공급자 대시보드 상태 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -156,7 +155,7 @@
 - [ ] 공급자가 프로필을 생성하면 `draft` 상태로 저장
 - [ ] `draft/hold/rejected` 상태에서만 프로필 수정 가능
 - [ ] 검수 제출 시 `submitted` 상태로 변경되고 파일 저장됨
-- [ ] `approved` 상태가 아니면 검색에 노출되지 않음
+- [x] `approved` 상태가 아니면 검색에 노출되지 않음
 - [ ] 검수 상태에 따라 supplier dashboard에 다른 UI 노출
 - [ ] 파일 업로드는 10MB 제한, jpeg/png/pdf만 허용
 - [ ] Swagger에서 multipart upload 문서화됨
@@ -205,6 +204,7 @@ Frontend: [4.6 Profile UI] + [4.7 Dashboard UI]
 - `api-server`: Supplier profile controller, file upload controller
 - Storage adapter interface + local implementation
 - Projection: supplier verification state events
+- Evidence: `.sisyphus/evidence/task-4-supplier-verification.txt`
 
 ### Frontend
 - `apps/main-site`: Supplier profile pages, verification submission page

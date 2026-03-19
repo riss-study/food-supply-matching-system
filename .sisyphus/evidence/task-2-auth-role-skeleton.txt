@@ -1,0 +1,59 @@
+Task 02 Auth and Role Skeleton - Evidence
+=========================================
+Date: 2026-03-19
+Status: complete, review warnings resolved and final green-path verified
+
+Verification Summary
+--------------------
+1. Backend auth domain
+    - `UserRole` enum added in shared-core
+    - `UserAccountEntity`, `BusinessProfileEntity`, repositories, `AuthCommandService` added
+    - requester signup now accepts `businessName` and creates initial business profile row
+    - `UserMeQueryService` reads Mongo-backed user me document
+    - Command/query/user modules compile and auth-related tests pass
+
+2. JWT / security
+   - Access token and refresh token issuance implemented
+   - JWT claims include `sub`, `email`, `role`, `tokenType`
+   - WebFlux JWT auth filter added
+   - 401/403 JSON error envelope added for security layer
+   - Method-security role skeleton added
+
+3. API endpoints
+    - `POST /api/auth/signup`
+    - `POST /api/auth/login`
+    - `GET /api/me`
+    - signup request now includes `businessName`
+    - Swagger/OpenAPI auth endpoint docs remain generated from source code annotations/config
+
+4. Frontend auth skeleton
+   - `main-site` login/signup pages added
+   - Zustand auth store added
+   - `useLogin`, `useSignup`, `useMe` hooks added
+   - Protected route added
+   - React Query provider wired into `main-site`
+
+5. Automated verification
+    - Backend: `./gradlew :shared-core:test :command-domain-user:test :query-model-user:test :projection:test :api-server:test` -> PASS
+    - Frontend: `yarn build` -> PASS
+    - Frontend: `yarn test` -> PASS
+
+6. Manual API verification
+    - Final green-path verified with fresh requester account on local profile
+    - `POST /api/auth/signup` -> HTTP 201, body `code=100`, `businessName` included in request
+    - `POST /api/auth/login` -> HTTP 200, body `code=100`, `accessToken` + `refreshToken`
+    - `GET /api/me` with bearer token -> HTTP 200, body `code=100`, role and `businessApprovalState=not_submitted`
+    - Local verification executed with MariaDB `13306` + MongoDB `27018` on Colima-backed Docker
+
+7. Manual frontend verification
+    - unauthenticated `/dashboard` access redirects to `/login`
+    - signup via browser flow transitions to login screen
+    - login via browser flow transitions to `/dashboard`
+    - after Vite React dedupe fix, console errors are gone (only React Router future warnings remain)
+
+Notes
+-----
+- Role-based access skeleton is currently proven by method-level annotation tests and JWT role propagation; real role-specific business endpoints arrive in later tasks.
+- `businessApprovalState` is exposed as `not_submitted` for requester accounts without a submitted profile, matching current Task 02 scope.
+- `admin-site` auth UI is intentionally out of scope for Task 02.
+- Review warning fixes applied: `businessName` alignment, access token TTL=3600, Mongo-backed `/api/me` projection.

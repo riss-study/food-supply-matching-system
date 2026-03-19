@@ -1,0 +1,47 @@
+Task 03 Requester Business Approval Gate - Evidence
+===================================================
+Date: 2026-03-19
+Status: complete, approval gate enforcement verified
+
+Verification Summary
+--------------------
+1. Backend business profile flow
+   - `POST /api/requester/business-profile` implemented
+   - `GET /api/requester/business-profile` implemented
+   - `PATCH /api/requester/business-profile` implemented
+   - requester business profile command service and projection service added
+   - business profile state now projects into Mongo read models
+
+2. Approval gate enforcement
+   - `RequesterApprovalGuard` added
+   - `POST /api/requests` minimal create endpoint added
+   - unapproved requester now receives `4034` from actual request-creation API
+
+3. Frontend approval UX
+   - business profile registration/management page added
+   - approval status UI added for `submitted`, `approved`, `rejected`
+   - `/requests/new` requester gate redirects non-approved requester to `/business-profile`
+   - requester sees CTA and approval-state aware UI in `main-site`
+
+4. Automated verification
+   - Backend: `./gradlew :command-domain-user:test :query-model-user:compileKotlin :projection:compileKotlin :api-server:test` -> PASS
+   - Frontend: `yarn build` -> PASS
+   - Frontend: `yarn test` -> PASS
+
+5. Manual backend verification (local profile + Colima)
+   - requester signup/login completed successfully
+   - `POST /api/requester/business-profile` -> HTTP 201, body `code=100`
+   - `GET /api/requester/business-profile` -> HTTP 200, body `code=100`
+   - `PATCH /api/requester/business-profile` -> HTTP 200, body `code=100`
+   - `POST /api/requests` by non-approved requester -> HTTP 403, body `code=4034`
+
+6. Manual frontend verification
+   - unauthenticated `/requests/new` access redirects to `/login`
+   - authenticated non-approved requester navigating to `/requests/new` is redirected to `/business-profile`
+   - business profile registration form and approval-state UI rendered in browser
+
+Notes
+-----
+- Task 03 now includes the minimal request-creation gate endpoint needed to prove `4034` behavior.
+- Actual full request lifecycle remains Task 06 scope.
+- Actual admin approval action semantics remain Task 05 scope.

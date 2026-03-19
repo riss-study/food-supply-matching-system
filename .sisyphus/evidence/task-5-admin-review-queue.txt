@@ -1,0 +1,56 @@
+Task 05 Admin Review Queue and Decision Actions - Evidence
+===========================================================
+Date: 2026-03-19
+Status: complete, code review approved
+
+Verification Summary
+--------------------
+1. Backend admin review flow
+   - `GET /api/admin/reviews` implemented with state filter and pagination meta
+   - `GET /api/admin/reviews/{reviewId}` implemented
+   - `POST /api/admin/reviews/{reviewId}/approve` implemented
+   - `POST /api/admin/reviews/{reviewId}/hold` implemented
+   - `POST /api/admin/reviews/{reviewId}/reject` implemented
+
+2. Projection and audit
+   - `admin_review_queue_view` read model added
+   - `admin_review_detail_view` read model added
+   - verification submission now projects into admin review views
+   - review actions update admin review views and supplier visibility projection
+   - `audit_log` write table and persistence added
+
+3. Automated verification
+   - Backend: `./gradlew :query-model-admin-review:compileKotlin :admin-server:compileKotlin` -> PASS
+   - Backend: `./gradlew :api-server:test` -> PASS
+   - Frontend: `yarn workspace @fsm/admin-site type-check` -> PASS
+   - Frontend: `yarn build` -> PASS
+   - Frontend: `yarn test` -> PASS
+
+4. Manual backend verification (local profile + Colima)
+   - supplier creates verification submission successfully
+   - admin login succeeds
+   - `GET /api/admin/reviews?state=submitted&page=1&size=20` -> HTTP 200, `code=100`, `meta` present
+   - `GET /api/admin/reviews/{reviewId}` -> HTTP 200, `code=100`
+   - `POST /api/admin/reviews/{reviewId}/hold` -> HTTP 200, `code=100`
+   - supplier latest verification reflects `hold` state and `reviewNotePublic`
+   - audit log contains `review_hold`
+
+5. Manual frontend verification
+   - admin-site login succeeds with admin account
+   - review queue page loads
+   - review detail page loads after CORS fix
+   - file list, internal/public note fields, and decision buttons render
+
+6. Code review result
+   - Task 05 re-review result: APPROVED FOR MERGE
+   - No blocking issues remain
+   - Remaining non-blockers:
+     - `reviewHistory` projection not yet exposed in detail response
+     - `fromDate`/`toDate` filters not yet implemented
+     - `sort`/`order` parameters still simplified
+     - minor cleanup: unused temp variable removal / query optimization opportunities
+
+Notes
+-----
+- Task 05 currently verifies the `hold` decision path end-to-end. `approve` and `reject` actions are implemented in the same decision service/controller path and should be code-reviewed together.
+- General backoffice expansion remains out of scope.

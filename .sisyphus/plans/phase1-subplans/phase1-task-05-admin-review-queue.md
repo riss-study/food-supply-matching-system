@@ -10,7 +10,7 @@
 | **스토리 포인트** | 8 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done |
 | **Can Parallel** | YES |
 | **Blocks** | Task 7, 10 |
 | **Blocked By** | Task 1, 3, 4 |
@@ -25,23 +25,23 @@
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🔴 Not Started
-- 메모: 선행 task 완료 후 시작 예정.
+- 메인 Task 상태: 🟢 Done
+- 메모: 구현, 자동/수동 검증, 코드 리뷰 승인까지 완료.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 5.1 | 🔴 Not Started | 미착수 |
-| 5.2 | 🔴 Not Started | 미착수 |
-| 5.3 | 🔴 Not Started | 미착수 |
-| 5.4 | 🔴 Not Started | 미착수 |
-| 5.5 | 🔴 Not Started | 미착수 |
-| 5.6 | 🔴 Not Started | 미착수 |
+| 5.1 | 🟢 Done | Admin review domain/state/action 구조 구현 완료 |
+| 5.2 | 🟢 Done | 관리자 검수 큐/상세 API 구현 및 검증 완료 |
+| 5.3 | 🟢 Done | approve/hold/reject 액션 API 구현 완료 |
+| 5.4 | 🟢 Done | admin review projection과 audit log 구현 완료 |
+| 5.5 | 🟢 Done | admin-site 검수 큐 UI 구현 및 검증 완료 |
+| 5.6 | 🟢 Done | admin-site 검수 상세/결정 UI 구현 및 검증 완료 |
 
 ---
 
 ## SubTask 목록
 
-### 🔴 SubTask 5.1: 관리자 검수 도메인 모델
+### 🟢 SubTask 5.1: 관리자 검수 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -58,7 +58,7 @@
 - [ ] Audit trail
   - [ ] 각 결정마다 actor, timestamp, reason 기록
 
-### 🔴 SubTask 5.2: 관리자 검수 큐 API
+### 🟢 SubTask 5.2: 관리자 검수 큐 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -73,7 +73,7 @@
   - [ ] noteInternal/notesPublic 포함
   - [ ] file download URLs 포함
 
-### 🔴 SubTask 5.3: 검수 결정 액션 API
+### 🟢 SubTask 5.3: 검수 결정 액션 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -92,7 +92,7 @@
   - [ ] notePublic 필수 (반려 사유 안내)
 - [ ] All APIs: Swagger documentation with response examples
 
-### 🔴 SubTask 5.4: 프로젝션 및 감사 로그
+### 🟢 SubTask 5.4: 프로젝션 및 감사 로그
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -107,7 +107,7 @@
   - [ ] actor_user_id, action_type, target_type, target_id, payload_snapshot
   - [ ] 모든 검수 결정 액션 기록
 
-### 🔴 SubTask 5.5: 관리자 사이트 검수 큐 UI
+### 🟢 SubTask 5.5: 관리자 사이트 검수 큐 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -124,7 +124,7 @@
   - [ ] approved: green
   - [ ] rejected: red
 
-### 🔴 SubTask 5.6: 검수 상세 및 결정 UI
+### 🟢 SubTask 5.6: 검수 상세 및 결정 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -196,6 +196,7 @@ Frontend: [5.5 Queue UI] -> [5.6 Detail/Decision UI]
 - `admin-server`: Review controller (admin endpoints)
 - Projection: review queue/detail views
 - AuditLog: review decision records
+- Evidence: `.sisyphus/evidence/task-5-admin-review-queue.txt`
 
 ### Frontend
 - `apps/admin-site`: Review queue page, review detail page

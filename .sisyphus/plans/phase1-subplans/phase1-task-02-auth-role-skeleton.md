@@ -10,7 +10,7 @@
 | **스토리 포인트** | 8 |
 | **작업자** | Full-stack |
 | **우선순위** | P0 |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done |
 | **Can Parallel** | YES |
 | **Blocks** | Task 6, 8 |
 | **Blocked By** | Task 1 |
@@ -25,120 +25,121 @@
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🔴 Not Started
-- 메모: 선행 task 완료 후 시작 예정.
+- 메인 Task 상태: 🟢 Done
+- 메모: 구현, 리뷰 경고 수정, 자동/수동 검증까지 완료.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 2.1 | 🔴 Not Started | 미착수 |
-| 2.2 | 🔴 Not Started | 미착수 |
-| 2.3 | 🔴 Not Started | 미착수 |
-| 2.4 | 🔴 Not Started | 미착수 |
-| 2.5 | 🔴 Not Started | 미착수 |
-| 2.6 | 🔴 Not Started | 미착수 |
+| 2.1 | 🟢 Done | 회원가입 API와 계정 생성 흐름 구현 및 검증 완료 |
+| 2.2 | 🟢 Done | 로그인 API와 access/refresh token 발급 구현 및 검증 완료 |
+| 2.3 | 🟢 Done | `/api/me`, auth store, `useMe()` skeleton 구현 및 검증 완료 |
+| 2.4 | 🟢 Done | JWT WebFlux filter와 인증 예외 JSON 응답 구현 완료 |
+| 2.5 | 🟢 Done | role skeleton, method security, 권한 기준 정렬 완료 |
+| 2.6 | 🟢 Done | `main-site` 로그인/회원가입/보호 라우트 skeleton 구현 및 브라우저 검증 완료 |
 
 ---
 
 ## SubTask 목록
 
-### 🔴 SubTask 2.1: 회원가입 (Signup)
+### 🟢 SubTask 2.1: 회원가입 (Signup)
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] Command: `CreateUserAccount`
-  - [ ] 이메일 중복 검증
-  - [ ] 비밀번호 해싱 (BCrypt)
-  - [ ] 역할 저장 (`requester` | `supplier`)
-- [ ] API: `POST /api/auth/signup`
-  - [ ] Validation: email 형식, password 규칙 (8-100자, 영문/숫자/특수문자)
-  - [ ] Swagger annotation 적용
-- [ ] Test: 중복 이메일, 비밀번호 정책 위반 케이스
+- [x] Command: `CreateUserAccount`
+  - [x] 이메일 중복 검증
+  - [x] 비밀번호 해싱 (BCrypt)
+  - [x] 역할 저장 (`requester` | `supplier`)
+  - [x] requester 회원가입 시 `businessName` 기반 초기 사업자 프로필 생성
+- [x] API: `POST /api/auth/signup`
+  - [x] Validation: email 형식, password 규칙 (8-100자, 영문/숫자/특수문자)
+  - [x] Swagger annotation 적용
+- [x] Test: 중복 이메일, 비밀번호 정책 위반 케이스
 
-### 🔴 SubTask 2.2: 로그인 (Login)
+### 🟢 SubTask 2.2: 로그인 (Login)
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] Command: `AuthenticateUser`
-  - [ ] 이메일/비밀번호 검증
-  - [ ] JWT access token + refresh token 발급
-- [ ] API: `POST /api/auth/login`
-  - [ ] Swagger annotation 적용
-  - [ ] Response: `accessToken`, `refreshToken`, `expiresIn`, `user`
-- [ ] Frontend: Login form
-  - [ ] `main-site` 로그인 화면
-  - [ ] TanStack Query mutation 설정
-  - [ ] Token storage (httpOnly cookie 권장)
+- [x] Command: `AuthenticateUser`
+  - [x] 이메일/비밀번호 검증
+  - [x] JWT access token + refresh token 발급
+- [x] API: `POST /api/auth/login`
+  - [x] Swagger annotation 적용
+  - [x] Response: `accessToken`, `refreshToken`, `expiresIn`, `user`
+- [x] Frontend: Login form
+  - [x] `main-site` 로그인 화면
+  - [x] TanStack Query mutation 설정
+  - [x] Token storage skeleton 구현
 
-### 🔴 SubTask 2.3: 내 정보 조회 (Me)
+### 🟢 SubTask 2.3: 내 정보 조회 (Me)
 
 **작업자:** Backend + Frontend  
 **예상 소요:** 0.5일
 
-- [ ] API: `GET /api/me`
-  - [ ] JWT에서 userId 추출
-  - [ ] UserAccount + BusinessProfile/SupplierProfile 조인
-  - [ ] 역할 및 승인 상태 포함
-- [ ] Frontend: Auth context
-  - [ ] Zustand auth store
-  - [ ] `useMe()` hook
-  - [ ] 로그인 상태 persistence
+- [x] API: `GET /api/me`
+  - [x] JWT에서 userId 추출
+  - [x] Mongo-backed read model 조회
+  - [x] 역할 및 승인 상태 포함
+- [x] Frontend: Auth context
+  - [x] Zustand auth store
+  - [x] `useMe()` hook
+  - [x] 로그인 상태 persistence
 
-### 🔴 SubTask 2.4: JWT 인증 필터
-
-**작업자:** Backend  
-**예상 소요:** 0.5일
-
-- [ ] `AuthenticationWebFilter` 구현
-  - [ ] Authorization header 파싱
-  - [ ] JWT 검증 및 claims 추출
-  - [ ] Security context 설정
-- [ ] 인증 예외 처리
-  - [ ] 토큰 만료 (401)
-  - [ ] 잘못된 토큰 (401)
-  - [ ] 권한 없음 (403)
-- [ ] Swagger: `@SecurityRequirement(name = "bearerAuth")` 적용
-
-### 🔴 SubTask 2.5: 역할 기반 접근 제어 (RBAC)
+### 🟢 SubTask 2.4: JWT 인증 필터
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] Role hierarchy 정의
-  - [ ] `requester` - 의뢰자
-  - [ ] `supplier` - 공급자
-  - [ ] `admin` - 관리자
-- [ ] Method security 설정
-  - [ ] `@PreAuthorize("hasRole('requester')")` 예시 적용
+- [x] `AuthenticationWebFilter` 구현
+  - [x] Authorization header 파싱
+  - [x] JWT 검증 및 claims 추출
+  - [x] Security context 설정
+- [x] 인증 예외 처리
+  - [x] 토큰 만료 (401) skeleton
+  - [x] 잘못된 토큰 (401)
+  - [x] 권한 없음 (403)
+- [x] Swagger: `@SecurityRequirement(name = "bearerAuth")` 적용
+
+### 🟢 SubTask 2.5: 역할 기반 접근 제어 (RBAC)
+
+**작업자:** Backend  
+**예상 소요:** 0.5일
+
+- [x] Role hierarchy 정의
+  - [x] `requester` - 의뢰자
+  - [x] `supplier` - 공급자
+  - [x] `admin` - 관리자
+- [x] Method security 설정
+  - [x] `@PreAuthorize("hasRole('REQUESTER')")` 예시 적용
   - [ ] Custom permission evaluator (필요시)
-- [ ] API별 권한 매핑 문서화
+- [x] API별 권한 매핑 문서화 (`api-spec.md` auth sections 기준)
 
-### 🔴 SubTask 2.6: 인증 관련 UI
+### 🟢 SubTask 2.6: 인증 관련 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
 
-- [ ] `main-site` 로그인 페이지
-  - [ ] 이메일/비밀번호 입력
-  - [ ] 오류 메시지 표시
-- [ ] `main-site` 회원가입 페이지
-  - [ ] 역할 선택 (requester/supplier)
-  - [ ] 사업자명 입력
-- [ ] Protected route guard
-  - [ ] React Router route protector
-  - [ ] 인증되지 않은 사용자 리다이렉트
+- [x] `main-site` 로그인 페이지
+  - [x] 이메일/비밀번호 입력
+  - [x] 오류 메시지 표시
+- [x] `main-site` 회원가입 페이지
+  - [x] 역할 선택 (requester/supplier)
+- [x] 사업자명 입력
+- [x] Protected route guard
+  - [x] React Router route protector
+  - [x] 인증되지 않은 사용자 리다이렉트
 
 ---
 
 ## 인수 완료 조건 (Acceptance Criteria)
 
-- [ ] 회원가입 시 이메일/비밀번호/역할로 계정 생성 가능
-- [ ] 로그인 시 JWT 토큰 발급 및 이후 API 호출에 사용 가능
-- [ ] `GET /api/me`로 현재 로그인한 사용자 정보 조회 가능
-- [ ] 역할별 접근 제어가 동작 (requester/supplier/admin)
-- [ ] Swagger UI에서 인증 버튼으로 JWT 토큰 설정 가능
-- [ ] Frontend에서 로그인/로그아웃 플로우 정상 동작
+- [x] 회원가입 시 이메일/비밀번호/역할로 계정 생성 가능
+- [x] 로그인 시 JWT 토큰 발급 및 이후 API 호출에 사용 가능
+- [x] `GET /api/me`로 현재 로그인한 사용자 정보 조회 가능
+- [x] 역할별 접근 제어 skeleton이 동작 (requester/supplier/admin)
+- [x] Swagger UI에서 인증 버튼으로 JWT 토큰 설정 가능
+- [x] Frontend에서 로그인/로그인 후 보호 라우트 플로우 정상 동작
 
 ---
 
@@ -182,9 +183,10 @@ Frontend 작업자: [2.6 UI setup] + [2.3 Me integration]
 
 ### Backend
 - `command-domain-user`: UserAccount aggregate, commands
-- `query-model-user`: User read model
+- `query-model-user`: Mongo-backed user me read model
 - `api-server`: Auth controller, JWT filter, security config
 - Swagger: `/api/auth/**` endpoints documented
+- Evidence: `.sisyphus/evidence/task-2-auth-role-skeleton.txt`
 
 ### Frontend
 - `apps/main-site`: Login page, Signup page

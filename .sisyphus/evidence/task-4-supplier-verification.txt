@@ -1,0 +1,53 @@
+Task 04 Supplier Profile and Verification Submission - Evidence
+===============================================================
+Date: 2026-03-19
+Status: complete, second code-review blockers resolved
+
+Verification Summary
+--------------------
+1. Backend supplier profile flow
+   - `POST /api/supplier/profile` implemented
+   - `GET /api/supplier/profile` implemented
+   - `PATCH /api/supplier/profile` implemented
+   - supplier profile starts in `draft` with `exposureState=hidden`
+
+2. Backend verification submission flow
+   - `POST /api/supplier/verification-submissions` implemented with multipart handling
+   - local file storage adapter added
+   - `GET /api/supplier/verification-submissions/latest` implemented
+   - local file validation enforces jpeg/png/pdf and 10MB limit
+
+3. Automated verification
+   - Backend: `./gradlew :command-domain-supplier:test :query-model-supplier:compileKotlin :projection:compileKotlin :api-server:test` -> PASS
+   - Frontend: `yarn build` -> PASS
+   - Frontend: `yarn test` -> PASS
+
+4. Manual backend verification (local profile + Colima)
+   - supplier signup/login completed successfully
+   - `POST /api/supplier/profile` -> HTTP 201, body `code=100`
+   - `GET /api/supplier/profile` -> HTTP 200, body `code=100`
+   - `PATCH /api/supplier/profile` -> HTTP 200, body `code=100`
+   - `POST /api/supplier/verification-submissions` -> HTTP 201, body `code=100`
+   - `GET /api/supplier/verification-submissions/latest` -> HTTP 200, body `code=100`
+
+5. Manual frontend verification
+   - supplier signup in browser succeeded
+   - supplier login succeeded and dashboard rendered
+   - `/supplier/profile` route renders supplier profile form and verification upload UI
+   - supplier-only route guard added
+
+6. Supplier visibility verification
+   - `supplier_search_view` / `supplier_detail_view` query models added
+   - approved + visible supplier appears in `GET /api/suppliers`
+   - draft supplier does not appear in `GET /api/suppliers`
+
+7. Second code-review follow-up verification
+   - `POST /api/attachments` -> HTTP 201, body `code=100`
+   - `GET /api/suppliers?page=1&size=20&category=SNACK` -> HTTP 200, filtered response with `meta`
+   - `categories` minimum length validation added
+   - supplier projection trigger is now explicit on profile create/update and verification submission
+
+Result
+------
+- Task 04 acceptance criteria are satisfied.
+- Second review blockers are resolved.
