@@ -1,0 +1,139 @@
+package dev.riss.fsm.admin.review
+
+import dev.riss.fsm.command.supplier.AuditLogEntity
+import dev.riss.fsm.command.supplier.AuditLogRepository
+import dev.riss.fsm.command.supplier.SupplierProfileRepository
+import dev.riss.fsm.command.supplier.VerificationSubmissionRepository
+import dev.riss.fsm.projection.supplier.SupplierVisibilityProjectionService
+import dev.riss.fsm.query.admin.review.AdminReviewQuery
+import dev.riss.fsm.query.admin.review.AdminReviewQueryService
+import dev.riss.fsm.shared.auth.UserRole
+import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
+import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
+import reactor.core.publisher.Mono
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.UUID
+
+@Service
+class AdminReviewApplicationService(
+    private val verificationSubmissionRepository: VerificationSubmissionRepository,
+    private val supplierProfileRepository: SupplierProfileRepository,
+    private val adminReviewProjectionService: AdminReviewProjectionService,
+    private val adminReviewQueryService: AdminReviewQueryService,
+    private val supplierVisibilityProjectionService: SupplierVisibilityProjectionService,
+    private val auditLogRepository: AuditLogRepository,
+) {
+    private val objectMapper = jacksonObjectMapper()
+
+    fun queue(principal: AuthenticatedUserPrincipal, state: String?, page: Int, size: Int) = ensureAdmin(principal).then(
+        adminReviewQueryService.queue(AdminReviewQuery(state = state, page = page, size = size))
+    )
+
+    fun detail(principal: AuthenticatedUserPrincipal, reviewId: String) = ensureAdmin(principal).then(
+        adminReviewQueryService.detail(reviewId)
+            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found")))
+    )
+
+    fun approve(principal: AuthenticatedUserPrincipal, reviewId: String, request: ReviewDecisionRequest): Mono<ReviewDecisionResponse> {
+        ensureAdmin(principal)
+        return applyDecision(principal, reviewId, request, decision = "approve")
+    }
+
+    fun hold(principal: AuthenticatedUserPrincipal, reviewId: String, request: ReviewDecisionRequest): Mono<ReviewDecisionResponse> {
+        ensureAdmin(principal)
+        if (request.notePublic.isNullOrBlank()) {
+            return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "notePublic is required for hold"))
+        }
+        return applyDecision(principal, reviewId, request, decision = "hold")
+    }
+
+    fun reject(principal: AuthenticatedUserPrincipal, reviewId: String, request: ReviewDecisionRequest): Mono<ReviewDecisionResponse> {
+        ensureAdmin(principal)
+        if (request.notePublic.isNullOrBlank()) {
+            return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "notePublic is required for reject"))
+        }
+        return applyDecision(principal, reviewId, request, decision = "reject")
+    }
+
+    private fun applyDecision(
+        principal: AuthenticatedUserPrincipal,
+        reviewId: String,
+        request: ReviewDecisionRequest,
+        decision: String,
+    ): Mono<ReviewDecisionResponse> {
+        return verificationSubmissionRepository.findById(reviewId)
+            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found")))
+            .flatMap { submission ->
+                supplierProfileRepository.findById(submission.supplierProfileId)
+                    .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Supplier profile not found")))
+                    .flatMap { profile ->
+                        val reviewedAt = LocalDateTime.now()
+                        val updatedSubmission = submission.copy(
+                            state = when (decision) {
+                                "approve" -> "approved"
+                                "hold" -> "hold"
+                                "reject" -> "rejected"
+                                else -> submission.state
+                            },
+                            reviewedAt = reviewedAt,
+                            reviewedBy = principal.userId,
+                            reviewNoteInternal = request.noteInternal,
+                            reviewNotePublic = request.notePublic,
+                        )
+                        val updatedProfile = when (decision) {
+                            "approve" -> profile.copy(verificationState = "approved", exposureState = "visible", updatedAt = reviewedAt)
+                            "hold" -> profile.copy(verificationState = "hold", exposureState = "hidden", updatedAt = reviewedAt)
+                            "reject" -> profile.copy(verificationState = "rejected", exposureState = "hidden", updatedAt = reviewedAt)
+                            else -> profile
+                        }
+                        verificationSubmissionRepository.save(updatedSubmission)
+                            .flatMap { supplierProfileRepository.save(updatedProfile).thenReturn(updatedSubmission to updatedProfile) }
+                    }
+            }
+            .flatMap { (submission, profile) ->
+                val certsMono = Mono.just(emptyList<dev.riss.fsm.command.supplier.CertificationRecordEntity>())
+                supplierVisibilityProjectionService.project(profile, emptyList())
+                    .then(adminReviewProjectionService.project(submission, profile))
+                    .then(
+                        auditLogRepository.save(
+                            AuditLogEntity(
+                                auditLogId = "audit_${UUID.randomUUID()}",
+                                actorUserId = principal.userId,
+                                actionType = "review_${decision}",
+                                targetType = "verification_submission",
+                                targetId = submission.submissionId,
+                                payloadSnapshot = objectMapper.writeValueAsString(
+                                    mapOf(
+                                        "reviewId" to submission.submissionId,
+                                        "supplierProfileId" to profile.profileId,
+                                        "decision" to decision,
+                                        "noteInternal" to request.noteInternal,
+                                        "notePublic" to request.notePublic,
+                                        "reasonCode" to request.reasonCode,
+                                    )
+                                ),
+                                createdAt = LocalDateTime.now(),
+                            ).apply { newEntity = true }
+                        )
+                    )
+                    .thenReturn(
+                        ReviewDecisionResponse(
+                            reviewId = submission.submissionId,
+                            state = submission.state,
+                            supplierVerificationState = profile.verificationState,
+                            exposureState = profile.exposureState,
+                            reviewedAt = submission.reviewedAt!!.toInstant(ZoneOffset.UTC),
+                        )
+                    )
+            }
+    }
+
+    private fun ensureAdmin(principal: AuthenticatedUserPrincipal): Mono<Void> {
+        return if (principal.role == UserRole.ADMIN) Mono.empty()
+        else Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required"))
+    }
+}

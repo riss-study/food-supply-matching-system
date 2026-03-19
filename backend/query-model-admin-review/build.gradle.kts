@@ -11,6 +11,7 @@ java {
 
 dependencies {
     implementation(project(":shared-core"))
+    implementation(libs.spring.boot.starter.data.mongodb.reactive)
 
     testImplementation(libs.spring.boot.starter.test)
     testRuntimeOnly(libs.junit.platform.launcher)
