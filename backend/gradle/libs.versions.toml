@@ -5,6 +5,7 @@ spring-dependency-management = "1.1.7"
 springdoc = "2.8.6"
 jjwt = "0.12.6"
 swagger-ui-webjar = "5.20.1"
+r2dbc-h2 = "1.0.0.RELEASE"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -28,6 +29,7 @@ kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" }
 jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
 mariadb-r2dbc = { module = "org.mariadb:r2dbc-mariadb" }
+r2dbc-h2 = { module = "io.r2dbc:r2dbc-h2", version.ref = "r2dbc-h2" }
 springdoc-webflux-api = { module = "org.springdoc:springdoc-openapi-starter-webflux-api", version.ref = "springdoc" }
 swagger-ui-webjar = { module = "org.webjars:swagger-ui", version.ref = "swagger-ui-webjar" }
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }

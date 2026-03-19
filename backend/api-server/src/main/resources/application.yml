@@ -16,7 +16,7 @@ security:
   jwt:
     issuer: dev.riss.fsm
     secret: task01-local-secret-task01-local-secret
-    access-token-ttl-seconds: 7200
+    access-token-ttl-seconds: 3600
 server:
   port: 8080
 springdoc:

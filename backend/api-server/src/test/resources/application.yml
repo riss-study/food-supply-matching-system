@@ -1,0 +1,24 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoReactiveDataAutoConfiguration
+  r2dbc:
+    url: r2dbc:h2:mem:///task02;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+management:
+  health:
+    mongo:
+      enabled: false
+security:
+  jwt:
+    issuer: dev.riss.fsm.test
+    secret: task02-test-secret-task02-test-secret
+    access-token-ttl-seconds: 3600
+    refresh-token-ttl-seconds: 604800

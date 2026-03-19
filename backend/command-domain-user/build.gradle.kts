@@ -11,6 +11,8 @@ java {
 
 dependencies {
     implementation(project(":shared-core"))
+    implementation(libs.spring.boot.starter.data.r2dbc)
+    implementation(libs.spring.boot.starter.security)
 
     testImplementation(libs.spring.boot.starter.test)
     testRuntimeOnly(libs.junit.platform.launcher)

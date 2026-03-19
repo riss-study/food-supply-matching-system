@@ -48,6 +48,7 @@ dependencies {
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.starter.webflux.test)
     testImplementation(libs.spring.security.test)
+    testRuntimeOnly(libs.r2dbc.h2)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

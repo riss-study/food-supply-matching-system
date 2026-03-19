@@ -1,18 +1,49 @@
 db = db.getSiblingDB('fsm_read');
 
+db.supplier_search_view.deleteMany({});
+db.supplier_detail_view.deleteMany({});
+db.requester_request_summary_view.deleteMany({});
+
 db.supplier_search_view.updateOne(
-  { supplierId: 'supplier-seed-1' },
+  { profileId: 'supplier-seed-1' },
   {
     $set: {
-      supplierId: 'supplier-seed-1',
+      profileId: 'supplier-seed-1',
       companyName: 'Seed Supplier Foods',
       region: 'SEOUL',
       categories: ['SNACK'],
-      verificationState: 'approved',
-      capacitySummary: 'monthly: 10000 units',
+      monthlyCapacity: 10000,
       moq: 1000,
-      oem: true,
-      odm: false,
+      oemAvailable: true,
+      odmAvailable: false,
+      verificationState: 'approved',
+      exposureState: 'visible',
+      updatedAt: new Date(),
+    },
+  },
+  { upsert: true }
+);
+
+db.supplier_detail_view.updateOne(
+  { profileId: 'supplier-seed-1' },
+  {
+    $set: {
+      profileId: 'supplier-seed-1',
+      companyName: 'Seed Supplier Foods',
+      representativeName: 'Seed Representative',
+      region: 'SEOUL',
+      categories: ['SNACK'],
+      equipmentSummary: '자동 포장기 2대',
+      monthlyCapacity: 10000,
+      moq: 1000,
+      oemAvailable: true,
+      odmAvailable: false,
+      rawMaterialSupport: true,
+      packagingLabelingSupport: true,
+      introduction: 'Seed approved supplier',
+      verificationState: 'approved',
+      exposureState: 'visible',
+      certifications: ['HACCP'],
       updatedAt: new Date(),
     },
   },

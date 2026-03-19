@@ -13,6 +13,16 @@ import org.springframework.web.server.ResponseStatusException
 @RestControllerAdvice
 class GlobalApiExceptionHandler {
 
+    @ExceptionHandler(BusinessApprovalRequiredException::class)
+    fun handleBusinessApprovalRequired(exception: BusinessApprovalRequiredException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(
+                code = 4034,
+                message = exception.message ?: "Business approval required",
+            )
+        )
+    }
+
     @ExceptionHandler(WebExchangeBindException::class)
     fun handleValidation(exception: WebExchangeBindException): ResponseEntity<ApiErrorResponse> {
         val details = exception.bindingResult.allErrors.map { error ->
