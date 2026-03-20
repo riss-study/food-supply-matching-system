@@ -40,7 +40,16 @@ CREATE TABLE request_record (
   delivery_requirement VARCHAR(50) NULL,
   notes TEXT NULL,
   state VARCHAR(32) NOT NULL,
-  created_at TIMESTAMP NOT NULL
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE targeted_supplier_link (
+  id VARCHAR(64) PRIMARY KEY,
+  request_id VARCHAR(64) NOT NULL,
+  supplier_profile_id VARCHAR(64) NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  UNIQUE KEY uk_request_supplier (request_id, supplier_profile_id)
 );
 
 CREATE TABLE supplier_profile (
