@@ -2,12 +2,15 @@ package dev.riss.fsm.command.request
 
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
 class RequestCommandService(
     private val requestRepository: RequestRepository,
+    private val targetedSupplierLinkRepository: TargetedSupplierLinkRepository,
 ) {
     fun create(command: CreateRequestCommand): Mono<RequestEntity> {
         val entity = RequestEntity(
@@ -26,9 +29,114 @@ class RequestCommandService(
             notes = command.notes,
             state = "draft",
             createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now(),
         ).apply { newEntity = true }
 
         return requestRepository.save(entity)
+            .flatMap { savedRequest ->
+                if (command.mode == "targeted" && command.targetSupplierIds != null) {
+                    val links = command.targetSupplierIds.map { supplierId ->
+                        TargetedSupplierLinkEntity(
+                            linkId = "tsl_${UUID.randomUUID()}",
+                            requestId = savedRequest.requestId,
+                            supplierProfileId = supplierId,
+                            createdAt = LocalDateTime.now(),
+                        ).apply { newEntity = true }
+                    }
+                    targetedSupplierLinkRepository.saveAll(links).collectList()
+                        .thenReturn(savedRequest)
+                } else {
+                    Mono.just(savedRequest)
+                }
+            }
+    }
+
+    fun update(requestId: String, requesterUserId: String, command: UpdateRequestCommand): Mono<RequestEntity> {
+        return requestRepository.findById(requestId)
+            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .flatMap { request ->
+                if (request.requesterUserId != requesterUserId) {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+                }
+                if (request.state !in setOf("draft", "open")) {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Request can only be updated in draft or open state"))
+                }
+
+                val updatedEntity = request.copy(
+                    title = command.title ?: request.title,
+                    desiredVolume = command.desiredVolume ?: request.desiredVolume,
+                    targetPriceMin = command.targetPriceMin ?: request.targetPriceMin,
+                    targetPriceMax = command.targetPriceMax ?: request.targetPriceMax,
+                    certificationRequirement = command.certificationRequirement?.joinToString(",") ?: request.certificationRequirement,
+                    rawMaterialRule = command.rawMaterialRule ?: request.rawMaterialRule,
+                    packagingRequirement = command.packagingRequirement ?: request.packagingRequirement,
+                    deliveryRequirement = command.deliveryRequirement ?: request.deliveryRequirement,
+                    notes = command.notes ?: request.notes,
+                    updatedAt = LocalDateTime.now(),
+                )
+                requestRepository.save(updatedEntity)
+            }
+    }
+
+    fun publish(requestId: String, requesterUserId: String): Mono<RequestEntity> {
+        return requestRepository.findById(requestId)
+            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .flatMap { request ->
+                if (request.requesterUserId != requesterUserId) {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+                }
+                if (request.state != "draft") {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Only draft requests can be published"))
+                }
+
+                val publishedEntity = request.copy(
+                    state = "open",
+                    updatedAt = LocalDateTime.now(),
+                )
+                requestRepository.save(publishedEntity)
+            }
+    }
+
+    fun close(requestId: String, requesterUserId: String): Mono<RequestEntity> {
+        return requestRepository.findById(requestId)
+            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .flatMap { request ->
+                if (request.requesterUserId != requesterUserId) {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+                }
+                if (request.state != "open") {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Only open requests can be closed"))
+                }
+
+                val closedEntity = request.copy(
+                    state = "closed",
+                    updatedAt = LocalDateTime.now(),
+                )
+                requestRepository.save(closedEntity)
+            }
+    }
+
+    fun cancel(requestId: String, requesterUserId: String, reason: String?): Mono<RequestEntity> {
+        return requestRepository.findById(requestId)
+            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .flatMap { request ->
+                if (request.requesterUserId != requesterUserId) {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+                }
+                if (request.state !in setOf("draft", "open")) {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Only draft or open requests can be cancelled"))
+                }
+
+                val cancelledEntity = request.copy(
+                    state = "cancelled",
+                    updatedAt = LocalDateTime.now(),
+                )
+                requestRepository.save(cancelledEntity)
+            }
+    }
+
+    fun getTargetedSuppliers(requestId: String): reactor.core.publisher.Flux<TargetedSupplierLinkEntity> {
+        return targetedSupplierLinkRepository.findAllByRequestId(requestId)
     }
 }
 
@@ -45,4 +153,17 @@ data class CreateRequestCommand(
     val packagingRequirement: String?,
     val deliveryRequirement: String?,
     val notes: String?,
+    val targetSupplierIds: List<String>? = null,
+)
+
+data class UpdateRequestCommand(
+    val title: String? = null,
+    val desiredVolume: Int? = null,
+    val targetPriceMin: Int? = null,
+    val targetPriceMax: Int? = null,
+    val certificationRequirement: List<String>? = null,
+    val rawMaterialRule: String? = null,
+    val packagingRequirement: String? = null,
+    val deliveryRequirement: String? = null,
+    val notes: String? = null,
 )

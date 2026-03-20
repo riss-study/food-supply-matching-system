@@ -40,6 +40,8 @@ data class RequestEntity(
     val state: String,
     @Column("created_at")
     val createdAt: LocalDateTime,
+    @Column("updated_at")
+    val updatedAt: LocalDateTime,
 ) : Persistable<String> {
     @Transient
     var newEntity: Boolean = false
