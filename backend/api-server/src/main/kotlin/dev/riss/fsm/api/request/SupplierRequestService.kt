@@ -1,5 +1,6 @@
 package dev.riss.fsm.api.request
 
+import dev.riss.fsm.command.quote.QuoteRepository
 import dev.riss.fsm.command.request.RequestEntity
 import dev.riss.fsm.command.request.TargetedSupplierLinkRepository
 import dev.riss.fsm.command.supplier.SupplierProfileRepository
@@ -16,6 +17,7 @@ class SupplierRequestService(
     private val supplierRequestFeedRepository: SupplierRequestFeedRepository,
     private val targetedSupplierLinkRepository: TargetedSupplierLinkRepository,
     private val supplierProfileRepository: SupplierProfileRepository,
+    private val quoteRepository: QuoteRepository,
 ) {
 
     fun getFeed(
@@ -44,7 +46,7 @@ class SupplierRequestService(
                             }
                             .filter { doc -> category == null || doc.category == category }
                             .collectList()
-                            .map { list ->
+                            .flatMap { list ->
                                 val sorted = list.sortedByDescending { it.createdAt }
                                 val total = sorted.size
                                 val from = ((safePage - 1) * safeSize).coerceAtMost(total)
@@ -52,38 +54,47 @@ class SupplierRequestService(
                                 val items = sorted.subList(from, to)
                                 val totalPages = if (total == 0) 0 else ((total - 1) / safeSize) + 1
 
-                                val responseItems = items.map { doc ->
-                                    val min = doc.targetPriceMin
-                                    val max = doc.targetPriceMax
-                                    val targetPriceRange = if (min != null && max != null) {
-                                        PriceRangeDto(min = min, max = max)
-                                    } else {
-                                        null
+                                reactor.core.publisher.Flux.fromIterable(items)
+                                    .flatMap { doc ->
+                                        quoteRepository.existsByRequestIdAndSupplierProfileIdAndStateIn(
+                                            doc.requestId,
+                                            profile.profileId,
+                                            listOf("submitted", "selected", "declined")
+                                        ).map { hasQuoted ->
+                                            val min = doc.targetPriceMin
+                                            val max = doc.targetPriceMax
+                                            val targetPriceRange = if (min != null && max != null) {
+                                                PriceRangeDto(min = min, max = max)
+                                            } else {
+                                                null
+                                            }
+
+                                            SupplierRequestFeedItem(
+                                                requestId = doc.requestId,
+                                                requesterBusinessName = doc.requesterBusinessName,
+                                                title = doc.title,
+                                                category = doc.category,
+                                                desiredVolume = doc.desiredVolume,
+                                                targetPriceRange = targetPriceRange,
+                                                certificationRequirement = doc.certificationRequirement,
+                                                mode = doc.mode,
+                                                hasQuoted = hasQuoted,
+                                                createdAt = doc.createdAt,
+                                            )
+                                        }
                                     }
-
-                                    SupplierRequestFeedItem(
-                                        requestId = doc.requestId,
-                                        requesterBusinessName = doc.requesterBusinessName,
-                                        title = doc.title,
-                                        category = doc.category,
-                                        desiredVolume = doc.desiredVolume,
-                                        targetPriceRange = targetPriceRange,
-                                        certificationRequirement = doc.certificationRequirement,
-                                        mode = doc.mode,
-                                        hasQuoted = doc.hasQuoted,
-                                        createdAt = doc.createdAt,
-                                    )
-                                }
-
-                                SupplierRequestFeedPage(
-                                    items = responseItems,
-                                    page = safePage,
-                                    size = safeSize,
-                                    totalElements = total,
-                                    totalPages = totalPages,
-                                    hasNext = safePage < totalPages,
-                                    hasPrev = safePage > 1 && totalPages > 0,
-                                )
+                                    .collectList()
+                                    .map { responseItems ->
+                                        SupplierRequestFeedPage(
+                                            items = responseItems,
+                                            page = safePage,
+                                            size = safeSize,
+                                            totalElements = total,
+                                            totalPages = totalPages,
+                                            hasNext = safePage < totalPages,
+                                            hasPrev = safePage > 1 && totalPages > 0,
+                                        )
+                                    }
                             }
                     }
             }
@@ -98,7 +109,12 @@ class SupplierRequestService(
                 supplierRequestFeedRepository.findAllByModeAndRequestIdIn(request.mode, listOf(request.requestId))
                     .filter { it.isTargeted == (request.mode == "targeted") }
                     .next()
-                    .map { feedItem ->
+                    .flatMap { feedItem ->
+                        quoteRepository.existsByRequestIdAndSupplierProfileIdAndStateIn(
+                            request.requestId,
+                            profile.profileId,
+                            listOf("submitted", "selected", "declined")
+                        ).map { hasQuoted ->
                         val min = request.targetPriceMin
                         val max = request.targetPriceMax
                         val targetPriceRange = if (min != null && max != null) {
@@ -121,9 +137,10 @@ class SupplierRequestService(
                             notes = request.notes,
                             state = request.state,
                             requesterBusinessName = feedItem.requesterBusinessName,
-                            hasQuoted = feedItem.hasQuoted,
+                            hasQuoted = hasQuoted,
                             createdAt = request.createdAt.toInstant(ZoneOffset.UTC),
                         )
+                        }
                     }
             }
     }
