@@ -1,0 +1,51 @@
+Task 06 Supplier Discovery and Read Models - Evidence
+=====================================================
+Date: 2026-03-20
+Status: complete, code review approved
+
+Verification Summary
+--------------------
+1. Backend discovery APIs
+   - `GET /api/suppliers` implemented with filters and pagination meta
+   - `GET /api/suppliers/{supplierId}` implemented with typed detail response
+   - `GET /api/suppliers/categories` implemented
+   - `GET /api/suppliers/regions` implemented
+
+2. Read models / projection
+   - `supplier_search_view` query model implemented
+   - `supplier_detail_view` query model implemented
+   - approved + visible suppliers only are projected into search view
+   - draft supplier remains excluded from search results
+   - detail view includes certifications, logoUrl, and portfolio image metadata
+
+3. Automated verification
+   - Backend: `./gradlew :query-model-supplier:compileKotlin :projection:compileKotlin :api-server:test` -> PASS
+   - Frontend: `yarn build` -> PASS
+   - Frontend: `yarn test` -> PASS
+
+4. Manual backend verification (local profile + Colima)
+   - `GET /api/suppliers?page=1&size=20&category=SNACK` -> HTTP 200, `code=100`, `meta` present
+   - `GET /api/suppliers/categories` -> HTTP 200, `code=100`
+   - `GET /api/suppliers/regions` -> HTTP 200, `code=100`
+   - `GET /api/suppliers/supplier-seed-1` -> HTTP 200, `code=100`
+   - seeded approved supplier appears in search results
+   - draft supplier does not appear in search results
+
+5. Manual frontend verification
+    - `main-site` supplier search page renders filter inputs and pagination UI
+    - `main-site` supplier detail page renders company info, certifications, and portfolio section
+    - unauthenticated user sees public detail page and CTA fallback message
+    - stale auth token on public detail now clears gracefully on 401
+
+6. Code review result
+   - Task 06 re-review result: APPROVED FOR PROGRESSION TO TASK 07
+   - No blocking issues remain
+   - Remaining non-blockers:
+     - MongoDB index configuration for search scaling
+     - `sort` / `order` query parameters not yet exposed
+     - future `suspended` state verification when suspend flow is implemented
+
+Notes
+-----
+- Supplier detail supports public access while still using optional auth for CTA behavior.
+- Search/detail flow is implementation-complete and code review has been approved.

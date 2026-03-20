@@ -32,7 +32,7 @@
 | 3 | 🟢 Done | Requester Business Approval Gate | `./phase1-subplans/phase1-task-03-requester-approval-gate.md` |
 | 4 | 🟢 Done | Supplier Profile and Verification Submission | `./phase1-subplans/phase1-task-04-supplier-verification.md` |
 | 5 | 🟢 Done | Admin Review Queue and Decision Actions | `./phase1-subplans/phase1-task-05-admin-review-queue.md` |
-| 6 | 🔴 Not Started | Supplier Discovery and Read Models | `./phase1-subplans/phase1-task-06-supplier-discovery.md` |
+| 6 | 🟢 Done | Supplier Discovery and Read Models | `./phase1-subplans/phase1-task-06-supplier-discovery.md` |
 | 7 | 🔴 Not Started | Request Lifecycle and Targeting | `./phase1-subplans/phase1-task-07-request-lifecycle.md` |
 | 8 | 🔴 Not Started | Quote Lifecycle and Comparison | `./phase1-subplans/phase1-task-08-quote-lifecycle.md` |
 | 9 | 🔴 Not Started | Message Threads, Attachments, Read State | `./phase1-subplans/phase1-task-09-message-threads.md` |

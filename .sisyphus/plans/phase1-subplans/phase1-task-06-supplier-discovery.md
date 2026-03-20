@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done |
 | **Can Parallel** | YES |
 | **Blocks** | Task 7, 8 |
 | **Blocked By** | Task 1, 2 |
@@ -25,24 +25,24 @@
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🔴 Not Started
-- 메모: 선행 task 완료 후 시작 예정.
+- 메인 Task 상태: 🟢 Done
+- 메모: 구현, 자동/수동 검증, 코드 리뷰 승인까지 완료.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 6.1 | 🔴 Not Started | 미착수 |
-| 6.2 | 🔴 Not Started | 미착수 |
-| 6.3 | 🔴 Not Started | 미착수 |
-| 6.4 | 🔴 Not Started | 미착수 |
-| 6.5 | 🔴 Not Started | 미착수 |
-| 6.6 | 🔴 Not Started | 미착수 |
-| 6.7 | 🔴 Not Started | 미착수 |
+| 6.1 | 🟢 Done | supplier_search_view / supplier_detail_view 구현 완료 |
+| 6.2 | 🟢 Done | approved-only projection 및 read-model 동기화 구현 완료 |
+| 6.3 | 🟢 Done | 공급자 검색/상세 API와 pagination/filter 구현 완료 |
+| 6.4 | 🟢 Done | 카테고리/지역 목록 API 구현 완료 |
+| 6.5 | 🟢 Done | main-site 공급자 검색 UI 구현 및 검증 완료 |
+| 6.6 | 🟢 Done | main-site 공급자 상세 UI 구현 및 검증 완료 |
+| 6.7 | 🟢 Done | supplier discovery 최적화(기본 filter/meta, query shape) 반영 완료 |
 
 ---
 
 ## SubTask 목록
 
-### 🔴 SubTask 6.1: 공급자 검색 Read Model
+### 🟢 SubTask 6.1: 공급자 검색 Read Model
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -56,7 +56,7 @@
   - [ ] Certifications, portfolio images included
   - [ ] Visible to all users
 
-### 🔴 SubTask 6.2: 공급자 프로젝션
+### 🟢 SubTask 6.2: 공급자 프로젝션
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -72,7 +72,7 @@
   - [ ] `SupplierProfileUpdatedEvent`
   - [ ] `CertificationAddedEvent`
 
-### 🔴 SubTask 6.3: 공급자 검색 API
+### 🟢 SubTask 6.3: 공급자 검색 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -92,7 +92,7 @@
   - [ ] 인증 여부와 관계없이 공개 정보 반환
   - [ ] 404: 승인되지 않은 공급자 조회 시
 
-### 🔴 SubTask 6.4: 카테고리 및 지역 목록 API
+### 🟢 SubTask 6.4: 카테고리 및 지역 목록 API
 
 **작업자:** Backend  
 **예상 소요:** 0.25일
@@ -105,7 +105,7 @@
   - [ ] 각 지역별 공급자 수
 - [ ] Swagger: 간단한 목록 응답 문서화
 
-### 🔴 SubTask 6.5: 프론트엔드 공급자 검색 UI
+### 🟢 SubTask 6.5: 프론트엔드 공급자 검색 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -124,7 +124,7 @@
   - [ ] URL query string 동기화
   - [ ] 필터 초기화 버튼
 
-### 🔴 SubTask 6.6: 공급자 상세 페이지 UI
+### 🟢 SubTask 6.6: 공급자 상세 페이지 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -141,7 +141,7 @@
   - [ ] 인증된 요청자: "의뢰하기" 버튼 (targeted request로 연결)
   - [ ] 미인증 사용자: "로그인 후 이용하기" 안내
 
-### 🔴 SubTask 6.7: 검색 최적화
+### 🟢 SubTask 6.7: 검색 최적화
 
 **작업자:** Backend  
 **예상 소요:** 0.25일
@@ -206,6 +206,7 @@ Frontend: [6.5 Search UI] -> [6.6 Detail UI]
 - `projection`: Supplier projection handlers
 - `api-server`: Supplier search/list/detail controllers
 - MongoDB indexes for search optimization
+- Evidence: `.sisyphus/evidence/task-6-supplier-discovery.txt`
 
 ### Frontend
 - `apps/main-site`: Supplier search page, supplier detail page
