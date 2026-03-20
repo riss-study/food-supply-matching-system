@@ -3,6 +3,7 @@ package dev.riss.fsm.api.request
 import dev.riss.fsm.command.request.RequestRepository
 import dev.riss.fsm.command.request.TargetedSupplierLinkRepository
 import dev.riss.fsm.command.supplier.SupplierProfileRepository
+import dev.riss.fsm.query.request.RequesterRequestSummaryRepository
 import dev.riss.fsm.query.user.RequesterBusinessProfileQueryService
 import dev.riss.fsm.shared.api.PaginationMeta
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
@@ -22,6 +23,7 @@ class RequestQueryService(
     private val targetedSupplierLinkRepository: TargetedSupplierLinkRepository,
     private val requesterBusinessProfileQueryService: RequesterBusinessProfileQueryService,
     private val supplierProfileRepository: SupplierProfileRepository,
+    private val requesterRequestSummaryRepository: RequesterRequestSummaryRepository,
     private val requestAccessGuard: RequestAccessGuard,
 ) {
     fun listByRequester(
@@ -33,8 +35,8 @@ class RequestQueryService(
         val safePage = page.coerceAtLeast(1)
         val safeSize = size.coerceIn(1, 100)
 
-        return requestRepository.findAllByRequesterUserId(requesterUserId)
-            .filter { entity -> state == null || entity.state == state }
+        return requesterRequestSummaryRepository.findAllByRequesterUserId(requesterUserId)
+            .filter { doc -> state == null || doc.state == state }
             .collectList()
             .map { items ->
                 val sorted = items.sortedByDescending { it.createdAt }
@@ -42,15 +44,15 @@ class RequestQueryService(
                 val totalPages = if (total == 0) 0 else ((total - 1) / safeSize) + 1
                 val from = ((safePage - 1) * safeSize).coerceAtMost(total)
                 val to = (from + safeSize).coerceAtMost(total)
-                val pageItems = sorted.subList(from, to).map { entity ->
+                val pageItems = sorted.subList(from, to).map { doc ->
                     RequestListItemResponse(
-                        requestId = entity.requestId,
-                        title = entity.title,
-                        category = entity.category,
-                        state = entity.state,
-                        mode = entity.mode,
-                        quoteCount = 0,
-                        createdAt = entity.createdAt.toInstant(ZoneOffset.UTC),
+                        requestId = doc.requestId,
+                        title = doc.title,
+                        category = doc.category,
+                        state = doc.state,
+                        mode = doc.mode,
+                        quoteCount = doc.quoteCount,
+                        createdAt = doc.createdAt,
                         expiresAt = null,
                     )
                 }

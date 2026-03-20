@@ -70,7 +70,7 @@ class RequestController(
     @GetMapping("/{requestId}")
     @Operation(
         summary = "Get request detail",
-        description = "Get detailed information of a specific request. Only accessible by request owner."
+        description = "Get detailed information of a specific request. Accessible by request owner or suppliers with access (public open requests or targeted suppliers)."
     )
     fun get(
         @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
