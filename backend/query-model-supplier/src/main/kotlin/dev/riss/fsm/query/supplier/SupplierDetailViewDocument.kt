@@ -22,6 +22,19 @@ data class SupplierDetailViewDocument(
     val introduction: String?,
     val verificationState: String,
     val exposureState: String,
-    val certifications: List<String>,
+    val logoUrl: String?,
+    val certifications: List<SupplierCertificationViewItem>,
+    val portfolioImages: List<SupplierPortfolioImageViewItem>,
     val updatedAt: Instant,
+)
+
+data class SupplierCertificationViewItem(
+    val type: String,
+    val number: String?,
+    val valid: Boolean,
+)
+
+data class SupplierPortfolioImageViewItem(
+    val imageId: String,
+    val url: String,
 )

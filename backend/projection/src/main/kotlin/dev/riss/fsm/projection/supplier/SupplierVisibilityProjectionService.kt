@@ -1,8 +1,11 @@
 package dev.riss.fsm.projection.supplier
 
 import dev.riss.fsm.command.supplier.CertificationRecordEntity
+import dev.riss.fsm.command.supplier.AttachmentMetadataEntity
 import dev.riss.fsm.command.supplier.SupplierProfileEntity
 import dev.riss.fsm.query.supplier.SupplierDetailViewDocument
+import dev.riss.fsm.query.supplier.SupplierCertificationViewItem
+import dev.riss.fsm.query.supplier.SupplierPortfolioImageViewItem
 import dev.riss.fsm.query.supplier.SupplierDetailViewRepository
 import dev.riss.fsm.query.supplier.SupplierSearchViewDocument
 import dev.riss.fsm.query.supplier.SupplierSearchViewRepository
@@ -15,8 +18,20 @@ class SupplierVisibilityProjectionService(
     private val supplierSearchViewRepository: SupplierSearchViewRepository,
     private val supplierDetailViewRepository: SupplierDetailViewRepository,
 ) {
-    fun project(profile: SupplierProfileEntity, certifications: List<CertificationRecordEntity>): Mono<Void> {
+    fun project(
+        profile: SupplierProfileEntity,
+        certifications: List<CertificationRecordEntity>,
+        attachments: List<AttachmentMetadataEntity> = emptyList(),
+    ): Mono<Void> {
         val categories = profile.categories.split(',').filter { it.isNotBlank() }
+        val portfolioImages = attachments
+            .filter { it.attachmentKind == "portfolio" }
+            .map {
+                SupplierPortfolioImageViewItem(
+                    imageId = it.attachmentId,
+                    url = "/files/${it.attachmentId}",
+                )
+            }
         val detail = SupplierDetailViewDocument(
             profileId = profile.profileId,
             companyName = profile.companyName,
@@ -33,7 +48,15 @@ class SupplierVisibilityProjectionService(
             introduction = profile.introduction,
             verificationState = profile.verificationState,
             exposureState = profile.exposureState,
-            certifications = certifications.map { it.type },
+            logoUrl = portfolioImages.firstOrNull()?.url,
+            certifications = certifications.map {
+                SupplierCertificationViewItem(
+                    type = it.type,
+                    number = it.number,
+                    valid = it.status == "submitted" || it.status == "approved",
+                )
+            },
+            portfolioImages = portfolioImages,
             updatedAt = profile.updatedAt.toInstant(ZoneOffset.UTC),
         )
 
@@ -52,6 +75,7 @@ class SupplierVisibilityProjectionService(
                     odmAvailable = profile.odmAvailable,
                     verificationState = profile.verificationState,
                     exposureState = profile.exposureState,
+                    logoUrl = portfolioImages.firstOrNull()?.url,
                     updatedAt = profile.updatedAt.toInstant(ZoneOffset.UTC),
                 )
             ).then()

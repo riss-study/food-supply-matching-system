@@ -3,6 +3,8 @@ package dev.riss.fsm.api.supplier
 import dev.riss.fsm.command.supplier.CertificationRecordEntity
 import dev.riss.fsm.command.supplier.CertificationRecordRepository
 import dev.riss.fsm.command.supplier.CreateSupplierProfileCommand
+import dev.riss.fsm.command.supplier.AttachmentMetadataEntity
+import dev.riss.fsm.command.supplier.AttachmentMetadataRepository
 import dev.riss.fsm.command.supplier.SupplierProfileCommandService
 import dev.riss.fsm.command.supplier.SupplierProfileEntity
 import dev.riss.fsm.command.supplier.SupplierProfileRepository
@@ -34,6 +36,7 @@ class SupplierProfileApplicationService(
     private val supplierProfileRepository: SupplierProfileRepository,
     private val verificationSubmissionRepository: VerificationSubmissionRepository,
     private val certificationRecordRepository: CertificationRecordRepository,
+    private val attachmentMetadataRepository: AttachmentMetadataRepository,
     private val localFileStorageService: LocalFileStorageService,
     private val supplierVisibilityProjectionService: SupplierVisibilityProjectionService,
     private val adminReviewQueueViewRepository: AdminReviewQueueViewRepository,
@@ -59,9 +62,8 @@ class SupplierProfileApplicationService(
                 introduction = request.introduction,
             ),
         ).flatMap { profile ->
-            certificationRecordRepository.findAllBySupplierProfileId(profile.profileId)
-                .collectList()
-                .flatMap { certs -> supplierVisibilityProjectionService.project(profile, certs).thenReturn(profile) }
+            zipProfileAssets(profile.profileId)
+                .flatMap { (certs, attachments) -> supplierVisibilityProjectionService.project(profile, certs, attachments).thenReturn(profile) }
         }.flatMap { profile -> toResponse(profile) }
     }
 
@@ -91,9 +93,8 @@ class SupplierProfileApplicationService(
                 introduction = request.introduction,
             ),
         ).flatMap { profile ->
-            certificationRecordRepository.findAllBySupplierProfileId(profile.profileId)
-                .collectList()
-                .flatMap { certs -> supplierVisibilityProjectionService.project(profile, certs).thenReturn(profile) }
+            zipProfileAssets(profile.profileId)
+                .flatMap { (certs, attachments) -> supplierVisibilityProjectionService.project(profile, certs, attachments).thenReturn(profile) }
         }.flatMap { toResponse(it) }
     }
 
@@ -139,10 +140,9 @@ class SupplierProfileApplicationService(
                                         )
                                     }
                                     .flatMap { updatedProfile ->
-                                        certificationRecordRepository.findAllBySupplierProfileId(profile.profileId)
-                                            .collectList()
-                                            .flatMap { certs ->
-                                                supplierVisibilityProjectionService.project(updatedProfile, certs)
+                                        zipProfileAssets(profile.profileId)
+                                            .flatMap { (certs, attachments) ->
+                                                supplierVisibilityProjectionService.project(updatedProfile, certs, attachments)
                                                     .then(projectAdminReviewViews(submission, updatedProfile, certs))
                                                     .thenReturn(updatedProfile)
                                             }
@@ -198,18 +198,8 @@ class SupplierProfileApplicationService(
     }
 
     private fun toResponse(profile: SupplierProfileEntity): Mono<SupplierProfileResponse> {
-        return certificationRecordRepository.findAllBySupplierProfileId(profile.profileId)
-            .map {
-                CertificationRecordResponse(
-                    recordId = it.recordId,
-                    type = it.type,
-                    number = it.number,
-                    fileAttachmentId = it.fileAttachmentId,
-                    status = it.status,
-                )
-            }
-            .collectList()
-            .map { certs ->
+        return zipProfileAssets(profile.profileId)
+            .map { (certs, attachments) ->
                 SupplierProfileResponse(
                     profileId = profile.profileId,
                     companyName = profile.companyName,
@@ -226,7 +216,15 @@ class SupplierProfileApplicationService(
                     introduction = profile.introduction,
                     verificationState = profile.verificationState,
                     exposureState = profile.exposureState,
-                    certifications = certs,
+                    certifications = certs.map {
+                        CertificationRecordResponse(
+                            recordId = it.recordId,
+                            type = it.type,
+                            number = it.number,
+                            fileAttachmentId = it.fileAttachmentId,
+                            status = it.status,
+                        )
+                    },
                     createdAt = profile.createdAt.toInstant(ZoneOffset.UTC),
                     updatedAt = profile.updatedAt.toInstant(ZoneOffset.UTC),
                 )
@@ -248,6 +246,19 @@ class SupplierProfileApplicationService(
             .flatMap { (type, file) ->
                 localFileStorageService.store("supplier-verification", profileId, file)
                     .flatMap { metadata ->
+                        attachmentMetadataRepository.save(
+                            AttachmentMetadataEntity(
+                                attachmentId = metadata.attachmentId,
+                                ownerType = metadata.ownerType,
+                                ownerId = metadata.ownerId,
+                                attachmentKind = type,
+                                fileName = metadata.fileName,
+                                contentType = metadata.contentType,
+                                fileSize = metadata.fileSize,
+                                storageKey = metadata.storageKey,
+                                createdAt = LocalDateTime.now(),
+                            ).apply { newEntity = true }
+                        ).then(
                         if (type == "businessRegistrationDoc" || type == "certification") {
                             certificationRecordRepository.save(
                                 CertificationRecordEntity(
@@ -262,9 +273,15 @@ class SupplierProfileApplicationService(
                             ).thenReturn(metadata)
                         } else {
                             Mono.just(metadata)
-                        }
+                        })
                     }
             }
+    }
+
+    private fun zipProfileAssets(profileId: String): Mono<Pair<List<CertificationRecordEntity>, List<AttachmentMetadataEntity>>> {
+        val certsMono = certificationRecordRepository.findAllBySupplierProfileId(profileId).collectList()
+        val attachmentsMono = attachmentMetadataRepository.findAllByOwnerTypeAndOwnerId("supplier-verification", profileId).collectList()
+        return Mono.zip(certsMono, attachmentsMono).map { it.t1 to it.t2 }
     }
 
     private fun projectAdminReviewViews(

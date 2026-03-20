@@ -17,5 +17,6 @@ data class SupplierSearchViewDocument(
     val odmAvailable: Boolean,
     val verificationState: String,
     val exposureState: String,
+    val logoUrl: String?,
     val updatedAt: Instant,
 )
