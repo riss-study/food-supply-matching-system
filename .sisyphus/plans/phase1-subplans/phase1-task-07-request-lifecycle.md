@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done |
 | **Can Parallel** | YES |
 | **Blocks** | Task 8, 9 |
 | **Blocked By** | Task 1, 4, 5, 6 |
@@ -25,24 +25,24 @@
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🔴 Not Started
-- 메모: 선행 task 완료 후 시작 예정.
+- 메인 Task 상태: 🟢 Done
+- 메모: 백엔드/프론트 구현, 빌드, 테스트, 코드 리뷰까지 완료.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 7.1 | 🔴 Not Started | 미착수 |
-| 7.2 | 🔴 Not Started | 미착수 |
-| 7.3 | 🔴 Not Started | 미착수 |
-| 7.4 | 🔴 Not Started | 미착수 |
-| 7.5 | 🔴 Not Started | 미착수 |
-| 7.6 | 🔴 Not Started | 미착수 |
-| 7.7 | 🔴 Not Started | 미착수 |
+| 7.1 | 🟢 Done | Request aggregate, state machine, targeted link 구현 완료 |
+| 7.2 | 🟢 Done | requester request CRUD API와 상세/목록 응답 계약 구현 완료 |
+| 7.3 | 🟢 Done | publish/close/cancel/update 상태 변경 API 구현 완료 |
+| 7.4 | 🟢 Done | requester summary / supplier feed read model 및 projection 반영 완료 |
+| 7.5 | 🟢 Done | RequestAccessGuard 및 supplier feed 접근 제어 구현 완료 |
+| 7.6 | 🟢 Done | main-site requester create/list/detail/edit UI 구현 완료 |
+| 7.7 | 🟢 Done | main-site supplier request feed/detail UI 구현 완료 |
 
 ---
 
 ## SubTask 목록
 
-### 🔴 SubTask 7.1: 의뢰 도메인 모델
+### 🟢 SubTask 7.1: 의뢰 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -61,7 +61,7 @@
   - [ ] `CloseRequest` (open -> closed)
   - [ ] `CancelRequest` (draft/open -> cancelled)
 
-### 🔴 SubTask 7.2: 의뢰 CRUD API
+### 🟢 SubTask 7.2: 의뢰 CRUD API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -80,7 +80,7 @@
   - [ ] 권한: 소유자 또는 지정 공급자 (targeted 모드)
   - [ ] targetSuppliers[] 포함 (targeted 모드)
 
-### 🔴 SubTask 7.3: 의뢰 상태 변경 API
+### 🟢 SubTask 7.3: 의뢰 상태 변경 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -98,7 +98,7 @@
   - [ ] Request: reason (선택)
   - [ ] Effect: state -> `cancelled`
 
-### 🔴 SubTask 7.4: 의뢰 프로젝션 및 피드
+### 🟢 SubTask 7.4: 의뢰 프로젝션 및 피드
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -116,7 +116,7 @@
   - [ ] `RequestClosedEvent`: feed에서 제거
   - [ ] `QuoteSubmittedEvent`: quoteCount 증가
 
-### 🔴 SubTask 7.5: 공급자 의뢰 접근 권한
+### 🟢 SubTask 7.5: 공급자 의뢰 접근 권한
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -129,7 +129,7 @@
   - [ ] 내가 볼 수 있는 의뢰 목록 (피드)
   - [ ] public + targeted (내가 지정된) 필터링
 
-### 🔴 SubTask 7.6: 프론트엔드 의뢰 관리 UI
+### 🟢 SubTask 7.6: 프론트엔드 의뢰 관리 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -145,7 +145,7 @@
   - [ ] 상태별 수정 가능 필드 표시
   - [ ] 게시/종료/취소 액션 버튼
 
-### 🔴 SubTask 7.7: 공급자 의뢰 피드 UI
+### 🟢 SubTask 7.7: 공급자 의뢰 피드 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -217,6 +217,7 @@ Frontend: [7.6 Requester UI] + [7.7 Supplier Feed UI]
 - `query-model-supplier`: Supplier request feed view
 - `api-server`: Request controller, supplier request controller
 - Projection: request state change events
+- Evidence: `.sisyphus/evidence/task-7-request-lifecycle.txt`
 
 ### Frontend
 - `apps/main-site`: Request create/list/detail pages (requester), Request feed (supplier)

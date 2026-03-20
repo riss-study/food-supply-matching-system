@@ -96,7 +96,7 @@
 | 04 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-04-supplier-verification.md` |
 | 05 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-05-admin-review-queue.md` |
 | 06 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-06-supplier-discovery.md` |
-| 07 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-07-request-lifecycle.md` |
+| 07 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-07-request-lifecycle.md` |
 | 08 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-08-quote-lifecycle.md` |
 | 09 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-09-message-threads.md` |
 | 10 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-10-contact-share.md` |

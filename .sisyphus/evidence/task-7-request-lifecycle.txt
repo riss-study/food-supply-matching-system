@@ -1,0 +1,48 @@
+Task 07 Request Lifecycle and Targeting - Evidence
+==================================================
+Date: 2026-03-20
+Status: complete, code review approved
+
+Verification Summary
+--------------------
+1. Backend request lifecycle
+   - `POST /api/requests` creates draft requests for approved requesters
+   - `GET /api/requests` returns requester-owned request list with pagination meta
+   - `GET /api/requests/{requestId}` returns accessible request detail
+   - `PATCH /api/requests/{requestId}` updates draft/open requests
+   - `POST /api/requests/{requestId}/publish` transitions draft -> open
+   - `POST /api/requests/{requestId}/close` transitions open -> closed
+   - `POST /api/requests/{requestId}/cancel` transitions draft/open -> cancelled
+   - `GET /api/supplier/requests` returns supplier-visible feed for public/targeted requests
+
+2. Domain / projection / access control
+   - `targeted_supplier_link` relational table and entity/repository added
+   - request projection updates `requester_request_summary_view` and `supplier_request_feed_view`
+   - `RequestAccessGuard` enforces requester ownership and approved supplier access
+   - targeted requests are visible only to linked supplier profiles
+
+3. Frontend requester flow
+   - `main-site` request create page supports public/targeted mode and supplier picker
+   - requester request list shows state filter tabs and pagination controls
+   - requester detail page supports publish, close, cancel, and inline edit mode
+
+4. Frontend supplier flow
+   - supplier request feed page supports category filter and public/targeted tabs
+   - supplier detail page shows request detail and quote handoff CTA placeholder for Task 08
+
+5. Automated verification
+   - Backend: `./gradlew :api-server:test --tests "*Request*"` -> PASS
+   - Backend: `./gradlew build` -> PASS
+   - Frontend: `yarn build` -> PASS
+   - Frontend: `yarn test` -> PASS
+
+6. Code review result
+   - Task 07 review result: APPROVED FOR PROGRESSION TO TASK 08
+   - Minor optional access issue in request detail page fixed during review
+   - No blocking issues remain for Task 07 scope
+
+Notes
+-----
+- `quoteCount` remains `0` until Task 08 wires quote projection updates.
+- `hasQuoted` remains a Task 08-integrated field; current supplier detail/feed uses safe defaults.
+- Request expiration logic is still undefined, so `expiresAt` remains unset.
