@@ -12,7 +12,8 @@ import java.time.Instant
 class RequestControllerTest {
 
     private val service = mock(RequestApplicationService::class.java)
-    private val controller = RequestController(service)
+    private val queryService = mock(RequestQueryService::class.java)
+    private val controller = RequestController(service, queryService)
     private val principal = AuthenticatedUserPrincipal("usr_1", "req@example.com", dev.riss.fsm.shared.auth.UserRole.REQUESTER)
 
     @Test
@@ -28,6 +29,7 @@ class RequestControllerTest {
             packagingRequirement = "private_label",
             deliveryRequirement = "2026-06-01",
             notes = "유기농 원재료 사용 필수",
+            targetSupplierIds = null,
         )
         val response = CreateRequestResponse(
             requestId = "req_1",
