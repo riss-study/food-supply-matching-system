@@ -5,7 +5,7 @@ db.supplier_detail_view.deleteMany({});
 db.requester_request_summary_view.deleteMany({});
 
 db.supplier_search_view.updateOne(
-  { profileId: 'supplier-seed-1' },
+  { _id: 'supplier-seed-1' },
   {
     $set: {
       profileId: 'supplier-seed-1',
@@ -25,7 +25,7 @@ db.supplier_search_view.updateOne(
 );
 
 db.supplier_detail_view.updateOne(
-  { profileId: 'supplier-seed-1' },
+  { _id: 'supplier-seed-1' },
   {
     $set: {
       profileId: 'supplier-seed-1',
@@ -43,7 +43,15 @@ db.supplier_detail_view.updateOne(
       introduction: 'Seed approved supplier',
       verificationState: 'approved',
       exposureState: 'visible',
-      certifications: ['HACCP'],
+      logoUrl: null,
+      certifications: [
+        {
+          type: 'HACCP',
+          number: '12345',
+          valid: true,
+        },
+      ],
+      portfolioImages: [],
       updatedAt: new Date(),
     },
   },
@@ -51,7 +59,7 @@ db.supplier_detail_view.updateOne(
 );
 
 db.requester_request_summary_view.updateOne(
-  { requestId: 'request-seed-1' },
+  { _id: 'request-seed-1' },
   {
     $set: {
       requestId: 'request-seed-1',
