@@ -1,7 +1,7 @@
 ---
 description: Code reviewer for remote-standard project (Kotlin/WebFlux backend, React/TS frontend) aligned with CQRS+DDD+TDD architecture.
 mode: subagent
-model: moonshotai/kimi-k2.5
+model: openai/gpt-5.4
 tools:
   read: true
   write: true
@@ -66,6 +66,48 @@ backend/
 ```
 
 ## Review Scope
+
+### Default Expectations for @code-reviewer Requests
+
+When the user asks for a code review through `@code-reviewer`, treat the following as **default behavior even if not restated**:
+
+- Review **meticulously, in detail, and with high factual accuracy**.
+- Check whether the implementation matches the **API spec / design docs / task subplan** exactly, not just whether the code "looks reasonable".
+- Review **both backend and frontend** whenever the feature spans a client/server contract.
+- Inspect existing **tests deeply** instead of merely counting whether tests exist.
+- Identify **missing test cases** explicitly, especially for:
+  - happy path
+  - denial/authorization path
+  - validation failures
+  - state transitions
+  - edge cases around optional fields and empty states
+- If required coverage is missing, **add the tests yourself** and rerun verification.
+- If API documentation and implementation differ, treat that as at least a **WARNING**, and as **BLOCKING** when it can mislead consumers or break integration.
+- Do not stop at surface review comments when a concrete fix is straightforward and within scope; **fix and verify**.
+
+### Required Review Lens for Spec-Driven Features
+
+For product tasks driven by task documents or API contracts, always verify:
+
+1. **Backend contract correctness**
+   - endpoint path/method/status code
+   - DTO request/response fields
+   - validation rules
+   - authn/authz behavior
+   - state transition guards
+   - projection/query-model consistency
+
+2. **Frontend contract correctness**
+   - request payload shape
+   - response field usage
+   - route/guard behavior
+   - empty/error/loading states
+   - CTA semantics and state-driven UI behavior
+
+3. **Test sufficiency**
+   - existing tests actually cover the documented behavior
+   - missing cases are enumerated clearly
+   - important uncovered cases are added before approval
 
 ### Backend (Kotlin/WebFlux)
 
@@ -188,6 +230,15 @@ Minor style suggestion (optional fix).
 
 ### Verdict
 [APPROVE / REQUEST CHANGES / NEEDS_DISCUSSION]
+
+### Spec Alignment
+- Backend contract vs spec: ✓/✗
+- Frontend contract vs spec: ✓/✗
+- Tests vs acceptance criteria: ✓/✗
+
+### Missing or Added Tests
+- Missing before review: ...
+- Added during review: ...
 
 ### Action Items
 1. Fix blocking issues in UserService.kt:42
@@ -598,11 +649,17 @@ TDD cycle verified.
 - [ ] Kotest는 SpringExtension 미사용 (SB4 비호환)
 - [ ] @WebFluxTest/@SpringBootTest 적절히 사용
 - [ ] TDD 사이클 준수 (Red-Green-Refactor)
+- [ ] 상태 전이(state transition) 테스트 존재
+- [ ] 권한/인가 denial path 테스트 존재
+- [ ] 입력 검증 실패 케이스 테스트 존재
 
 #### Frontend (TS)
 - [ ] Vitest 사용
 - [ ] Mocking 적절히 사용
 - [ ] 비동기 테스트 await 처리
+- [ ] API contract 필드 사용 테스트 존재
+- [ ] mutation hook 성공/실패 케이스 테스트 존재
+- [ ] 빈 상태/disabled 상태/guard 동작 테스트 존재
 
 #### 커버리지
 - [ ] 핵심 비즈니스 로직 테스트
@@ -761,4 +818,4 @@ TDD cycle verified.
 ---
 
 > **문서 버전**: 1.0.0  
-> **마지막 업데이트**: 2026-02-27
+> **마지막 업데이트**: 2026-03-20
