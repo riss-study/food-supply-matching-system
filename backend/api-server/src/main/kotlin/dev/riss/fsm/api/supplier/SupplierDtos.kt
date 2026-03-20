@@ -121,4 +121,46 @@ data class SupplierSearchItemResponse(
     val odmAvailable: Boolean,
     val verificationState: String,
     val exposureState: String,
+    val logoUrl: String?,
+)
+
+data class SupplierCertificationSummaryResponse(
+    val type: String,
+    val number: String?,
+    val valid: Boolean,
+)
+
+data class SupplierPortfolioImageResponse(
+    val imageId: String,
+    val url: String,
+)
+
+data class SupplierDetailResponse(
+    val profileId: String,
+    val companyName: String,
+    val representativeName: String,
+    val region: String,
+    val categories: List<String>,
+    val equipmentSummary: String?,
+    val monthlyCapacity: Int,
+    val moq: Int,
+    val oemAvailable: Boolean,
+    val odmAvailable: Boolean,
+    val rawMaterialSupport: Boolean,
+    val packagingLabelingSupport: Boolean,
+    val introduction: String?,
+    val verificationState: String,
+    val logoUrl: String?,
+    val certifications: List<SupplierCertificationSummaryResponse>,
+    val portfolioImages: List<SupplierPortfolioImageResponse>,
+)
+
+data class SupplierCategorySummaryResponse(
+    val category: String,
+    val supplierCount: Int,
+)
+
+data class SupplierRegionSummaryResponse(
+    val region: String,
+    val supplierCount: Int,
 )

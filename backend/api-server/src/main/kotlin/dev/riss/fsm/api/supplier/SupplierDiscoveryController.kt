@@ -61,6 +61,7 @@ class SupplierDiscoveryController(
                         odmAvailable = it.odmAvailable,
                         verificationState = it.verificationState,
                         exposureState = it.exposureState,
+                        logoUrl = it.logoUrl,
                     )
                 },
                 meta = PaginationMeta(
@@ -68,6 +69,8 @@ class SupplierDiscoveryController(
                     size = result.size,
                     totalElements = result.totalElements.toLong(),
                     totalPages = result.totalPages,
+                    hasNext = result.hasNext,
+                    hasPrev = result.hasPrev,
                 ),
             )
         }
@@ -75,30 +78,66 @@ class SupplierDiscoveryController(
 
     @GetMapping("/{supplierId}")
     @Operation(summary = "Get supplier detail", description = "Returns supplier detail read model")
-    fun detail(@PathVariable supplierId: String): Mono<ApiSuccessResponse<Map<String, Any?>>> {
+    fun detail(@PathVariable supplierId: String): Mono<ApiSuccessResponse<SupplierDetailResponse>> {
         return supplierQueryService.detail(supplierId)
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Supplier not found")))
             .map {
                 ApiSuccessResponse(
                     message = "Success",
-                    data = mapOf(
-                        "profileId" to it.profileId,
-                        "companyName" to it.companyName,
-                        "representativeName" to it.representativeName,
-                        "region" to it.region,
-                        "categories" to it.categories,
-                        "equipmentSummary" to it.equipmentSummary,
-                        "monthlyCapacity" to it.monthlyCapacity,
-                        "moq" to it.moq,
-                        "oemAvailable" to it.oemAvailable,
-                        "odmAvailable" to it.odmAvailable,
-                        "rawMaterialSupport" to it.rawMaterialSupport,
-                        "packagingLabelingSupport" to it.packagingLabelingSupport,
-                        "introduction" to it.introduction,
-                        "verificationState" to it.verificationState,
-                        "exposureState" to it.exposureState,
-                        "certifications" to it.certifications,
+                    data = SupplierDetailResponse(
+                        profileId = it.profileId,
+                        companyName = it.companyName,
+                        representativeName = it.representativeName,
+                        region = it.region,
+                        categories = it.categories,
+                        equipmentSummary = it.equipmentSummary,
+                        monthlyCapacity = it.monthlyCapacity,
+                        moq = it.moq,
+                        oemAvailable = it.oemAvailable,
+                        odmAvailable = it.odmAvailable,
+                        rawMaterialSupport = it.rawMaterialSupport,
+                        packagingLabelingSupport = it.packagingLabelingSupport,
+                        introduction = it.introduction,
+                        verificationState = it.verificationState,
+                        logoUrl = it.logoUrl,
+                        certifications = it.certifications.map { cert ->
+                            SupplierCertificationSummaryResponse(
+                                type = cert.type,
+                                number = cert.number,
+                                valid = cert.valid,
+                            )
+                        },
+                        portfolioImages = it.portfolioImages.map { image ->
+                            SupplierPortfolioImageResponse(
+                                imageId = image.imageId,
+                                url = image.url,
+                            )
+                        },
                     )
+                )
+            }
+    }
+
+    @GetMapping("/categories")
+    @Operation(summary = "List supplier categories", description = "Returns category list with supplier counts")
+    fun categories(): Mono<ApiSuccessResponse<List<SupplierCategorySummaryResponse>>> {
+        return supplierQueryService.categories()
+            .map { items ->
+                ApiSuccessResponse(
+                    message = "Success",
+                    data = items.map { SupplierCategorySummaryResponse(category = it.category, supplierCount = it.supplierCount) },
+                )
+            }
+    }
+
+    @GetMapping("/regions")
+    @Operation(summary = "List supplier regions", description = "Returns region list with supplier counts")
+    fun regions(): Mono<ApiSuccessResponse<List<SupplierRegionSummaryResponse>>> {
+        return supplierQueryService.regions()
+            .map { items ->
+                ApiSuccessResponse(
+                    message = "Success",
+                    data = items.map { SupplierRegionSummaryResponse(region = it.region, supplierCount = it.supplierCount) },
                 )
             }
     }
