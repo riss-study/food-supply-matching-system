@@ -415,3 +415,86 @@ export interface SupplierRequestDetail {
   createdAt: string
   hasQuoted: boolean
 }
+
+export type QuoteState = "submitted" | "selected" | "withdrawn" | "declined"
+
+export interface SubmitQuoteRequest {
+  unitPriceEstimate: number
+  moq: number
+  leadTime: number
+  sampleCost?: number
+  note?: string
+}
+
+export interface UpdateQuoteRequest {
+  unitPriceEstimate?: number
+  moq?: number
+  leadTime?: number
+  sampleCost?: number
+  note?: string
+}
+
+export interface SubmitQuoteResponse {
+  quoteId: string
+  state: QuoteState
+  threadId: string
+  createdAt: string
+}
+
+export interface UpdateQuoteResponse {
+  quoteId: string
+  state: QuoteState
+  version: number
+  updatedAt: string
+}
+
+export interface WithdrawQuoteResponse {
+  quoteId: string
+  state: QuoteState
+  withdrawnAt: string
+}
+
+export interface SelectQuoteResponse {
+  quoteId: string
+  state: QuoteState
+  requestState: RequestState
+  selectedAt: string
+}
+
+export interface DeclineQuoteRequest {
+  reason?: string
+}
+
+export interface DeclineQuoteResponse {
+  quoteId: string
+  state: QuoteState
+  declinedAt: string
+}
+
+export interface RequestQuoteSummary {
+  quoteId: string
+  supplierId: string
+  companyName: string
+  unitPriceEstimate: number
+  moq: number
+  leadTime: number
+  sampleCost?: number
+  state: QuoteState
+  threadId: string
+  submittedAt: string
+}
+
+export interface SupplierQuoteSummary {
+  quoteId: string
+  requestId: string
+  requestTitle: string
+  category: string
+  unitPriceEstimate: number
+  moq: number
+  leadTime: number
+  sampleCost?: number
+  state: QuoteState
+  version: number
+  threadId: string
+  submittedAt: string
+}

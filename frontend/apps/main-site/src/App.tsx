@@ -5,9 +5,11 @@ import { SignupPage } from "./features/auth/pages/SignupPage"
 import { useAuthStore } from "./features/auth/store/auth-store"
 import { BusinessProfilePage, RequesterApprovalRoute } from "./features/business-profile"
 import { SupplierSearchPage, SupplierDetailPage } from "./features/discovery"
+import { QuoteComparisonPage } from "./features/quotes"
 import { SupplierProfilePage, SupplierRoute } from "./features/supplier-profile"
 import { RequestListPage, RequestCreatePage, RequestDetailPage } from "./features/request-management"
 import { SupplierRequestFeedPage, SupplierRequestDetailPage } from "./features/supplier-requests"
+import { QuoteCreatePage, SupplierQuoteListPage } from "./features/supplier-quotes"
 
 function HomePage() {
   return (
@@ -45,6 +47,7 @@ export default function App() {
         <Link to="/requests">My Requests</Link>
         <Link to="/requests/new">New Request</Link>
         <Link to="/supplier/requests">Request Feed</Link>
+        <Link to="/supplier/quotes">My Quotes</Link>
       </nav>
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -107,6 +110,14 @@ export default function App() {
           }
         />
         <Route
+          path="/requests/:requestId/quotes"
+          element={
+            <ProtectedRoute>
+              <QuoteComparisonPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/supplier/requests"
           element={
             <SupplierRoute>
@@ -119,6 +130,22 @@ export default function App() {
           element={
             <SupplierRoute>
               <SupplierRequestDetailPage />
+            </SupplierRoute>
+          }
+        />
+        <Route
+          path="/quotes/create"
+          element={
+            <SupplierRoute>
+              <QuoteCreatePage />
+            </SupplierRoute>
+          }
+        />
+        <Route
+          path="/supplier/quotes"
+          element={
+            <SupplierRoute>
+              <SupplierQuoteListPage />
             </SupplierRoute>
           }
         />
