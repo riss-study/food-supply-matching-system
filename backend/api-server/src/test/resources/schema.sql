@@ -52,6 +52,32 @@ CREATE TABLE targeted_supplier_link (
   UNIQUE KEY uk_request_supplier (request_id, supplier_profile_id)
 );
 
+CREATE TABLE quote (
+  id VARCHAR(64) PRIMARY KEY,
+  request_id VARCHAR(64) NOT NULL,
+  supplier_profile_id VARCHAR(64) NOT NULL,
+  unit_price_estimate INT NOT NULL,
+  moq INT NOT NULL,
+  lead_time INT NOT NULL,
+  sample_cost INT NULL,
+  note TEXT NULL,
+  state VARCHAR(32) NOT NULL,
+  version INT NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  UNIQUE KEY uk_active_quote (request_id, supplier_profile_id, state)
+);
+
+CREATE TABLE message_thread (
+  id VARCHAR(64) PRIMARY KEY,
+  request_id VARCHAR(64) NOT NULL,
+  requester_user_id VARCHAR(64) NOT NULL,
+  supplier_profile_id VARCHAR(64) NOT NULL,
+  quote_id VARCHAR(64) NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  UNIQUE KEY uk_request_participant_thread (request_id, requester_user_id, supplier_profile_id)
+);
+
 CREATE TABLE supplier_profile (
   id VARCHAR(64) PRIMARY KEY,
   supplier_user_id VARCHAR(64) NOT NULL UNIQUE,

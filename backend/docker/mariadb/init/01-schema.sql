@@ -48,6 +48,36 @@ CREATE TABLE IF NOT EXISTS targeted_supplier_link (
   UNIQUE KEY uk_request_supplier (request_id, supplier_profile_id)
 );
 
+CREATE TABLE IF NOT EXISTS quote (
+  id VARCHAR(64) PRIMARY KEY,
+  request_id VARCHAR(64) NOT NULL,
+  supplier_profile_id VARCHAR(64) NOT NULL,
+  unit_price_estimate INT NOT NULL,
+  moq INT NOT NULL,
+  lead_time INT NOT NULL,
+  sample_cost INT NULL,
+  note TEXT NULL,
+  state VARCHAR(32) NOT NULL,
+  version INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_quote_request FOREIGN KEY (request_id) REFERENCES request_record(id),
+  CONSTRAINT fk_quote_supplier FOREIGN KEY (supplier_profile_id) REFERENCES supplier_profile(id),
+  UNIQUE KEY uk_active_quote (request_id, supplier_profile_id, state)
+);
+
+CREATE TABLE IF NOT EXISTS message_thread (
+  id VARCHAR(64) PRIMARY KEY,
+  request_id VARCHAR(64) NOT NULL,
+  requester_user_id VARCHAR(64) NOT NULL,
+  supplier_profile_id VARCHAR(64) NOT NULL,
+  quote_id VARCHAR(64) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_request_participant_thread (request_id, requester_user_id, supplier_profile_id),
+  CONSTRAINT fk_thread_request FOREIGN KEY (request_id) REFERENCES request_record(id),
+  CONSTRAINT fk_thread_quote FOREIGN KEY (quote_id) REFERENCES quote(id)
+);
+
 CREATE TABLE IF NOT EXISTS supplier_profile (
   id VARCHAR(64) PRIMARY KEY,
   supplier_user_id VARCHAR(64) NOT NULL UNIQUE,
