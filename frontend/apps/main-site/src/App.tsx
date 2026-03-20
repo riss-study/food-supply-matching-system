@@ -6,6 +6,8 @@ import { useAuthStore } from "./features/auth/store/auth-store"
 import { BusinessProfilePage, RequesterApprovalRoute } from "./features/business-profile"
 import { SupplierSearchPage, SupplierDetailPage } from "./features/discovery"
 import { SupplierProfilePage, SupplierRoute } from "./features/supplier-profile"
+import { RequestListPage, RequestCreatePage, RequestDetailPage } from "./features/request-management"
+import { SupplierRequestFeedPage, SupplierRequestDetailPage } from "./features/supplier-requests"
 
 function HomePage() {
   return (
@@ -29,19 +31,10 @@ function DashboardPage() {
   )
 }
 
-function NewRequestPage() {
-  return (
-    <section>
-      <h1>새 의뢰 등록</h1>
-      <p>의뢰 생성 폼이 여기에 표시됩니다. (Task 06에서 구현 예정)</p>
-    </section>
-  )
-}
-
 export default function App() {
   return (
     <main style={{ padding: "2rem", fontFamily: '"Noto Sans JP", sans-serif' }}>
-      <nav style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+      <nav style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap" }}>
         <Link to="/">Home</Link>
         <Link to="/login">Login</Link>
         <Link to="/signup">Signup</Link>
@@ -49,7 +42,9 @@ export default function App() {
         <Link to="/business-profile">Business Profile</Link>
         <Link to="/supplier/profile">Supplier Profile</Link>
         <Link to="/suppliers">Suppliers</Link>
+        <Link to="/requests">My Requests</Link>
         <Link to="/requests/new">New Request</Link>
+        <Link to="/supplier/requests">Request Feed</Link>
       </nav>
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -88,11 +83,43 @@ export default function App() {
           }
         />
         <Route
+          path="/requests"
+          element={
+            <ProtectedRoute>
+              <RequestListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/requests/new"
           element={
             <RequesterApprovalRoute>
-              <NewRequestPage />
+              <RequestCreatePage />
             </RequesterApprovalRoute>
+          }
+        />
+        <Route
+          path="/requests/:requestId"
+          element={
+            <ProtectedRoute>
+              <RequestDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/supplier/requests"
+          element={
+            <SupplierRoute>
+              <SupplierRequestFeedPage />
+            </SupplierRoute>
+          }
+        />
+        <Route
+          path="/supplier/requests/:requestId"
+          element={
+            <SupplierRoute>
+              <SupplierRequestDetailPage />
+            </SupplierRoute>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

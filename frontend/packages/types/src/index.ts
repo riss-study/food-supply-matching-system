@@ -278,3 +278,140 @@ export interface SupplierRegionSummaryResponse {
   region: string
   supplierCount: number
 }
+
+export type RequestState = "draft" | "open" | "closed" | "cancelled"
+export type RequestMode = "public" | "targeted"
+export type RawMaterialRule = "requester_provided" | "supplier_provided"
+export type PackagingRequirement = "private_label" | "bulk" | "none"
+
+export interface TargetPriceRange {
+  min?: number
+  max?: number
+}
+
+export interface TargetSupplier {
+  supplierProfileId: string
+  companyName: string
+}
+
+export interface RequestSummary {
+  requestId: string
+  title: string
+  category: string
+  state: RequestState
+  mode: RequestMode
+  quoteCount: number
+  createdAt: string
+  expiresAt?: string
+}
+
+export interface RequestDetail {
+  requestId: string
+  mode: RequestMode
+  title: string
+  category: string
+  desiredVolume: number
+  targetPriceRange?: TargetPriceRange
+  certificationRequirement: string[]
+  rawMaterialRule?: RawMaterialRule
+  packagingRequirement?: PackagingRequirement
+  deliveryRequirement?: string
+  notes?: string
+  state: RequestState
+  requester: {
+    businessName: string
+    contactName: string
+  }
+  createdAt: string
+  targetSuppliers: TargetSupplier[]
+}
+
+export interface CreateRequestRequest {
+  mode: RequestMode
+  title: string
+  category: string
+  desiredVolume: number
+  targetPriceRange?: TargetPriceRange
+  certificationRequirement?: string[]
+  rawMaterialRule?: RawMaterialRule
+  packagingRequirement?: PackagingRequirement
+  deliveryRequirement?: string
+  notes?: string
+  targetSupplierIds?: string[]
+}
+
+export interface CreateRequestResponse {
+  requestId: string
+  state: RequestState
+  createdAt: string
+}
+
+export interface UpdateRequestRequest {
+  title?: string
+  desiredVolume?: number
+  targetPriceRange?: TargetPriceRange
+  certificationRequirement?: string[]
+  rawMaterialRule?: RawMaterialRule
+  packagingRequirement?: PackagingRequirement
+  deliveryRequirement?: string
+  notes?: string
+}
+
+export interface UpdateRequestResponse {
+  requestId: string
+  state: RequestState
+  updatedAt: string
+}
+
+export interface PublishRequestResponse {
+  requestId: string
+  state: RequestState
+  publishedAt: string
+}
+
+export interface CloseRequestResponse {
+  requestId: string
+  state: RequestState
+  closedAt: string
+}
+
+export interface CancelRequestRequest {
+  reason?: string
+}
+
+export interface CancelRequestResponse {
+  requestId: string
+  state: RequestState
+  cancelledAt: string
+}
+
+export interface SupplierRequestFeedItem {
+  requestId: string
+  title: string
+  category: string
+  desiredVolume: number
+  targetPriceRange?: TargetPriceRange
+  mode: RequestMode
+  requesterBusinessName: string
+  certificationRequirement?: string[]
+  createdAt: string
+  hasQuoted: boolean
+}
+
+export interface SupplierRequestDetail {
+  requestId: string
+  mode: RequestMode
+  title: string
+  category: string
+  desiredVolume: number
+  targetPriceRange?: TargetPriceRange
+  certificationRequirement?: string[]
+  rawMaterialRule?: RawMaterialRule
+  packagingRequirement?: PackagingRequirement
+  deliveryRequirement?: string
+  notes?: string
+  state: RequestState
+  requesterBusinessName: string
+  createdAt: string
+  hasQuoted: boolean
+}
