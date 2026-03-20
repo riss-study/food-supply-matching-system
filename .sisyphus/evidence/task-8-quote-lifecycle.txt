@@ -1,0 +1,47 @@
+Task 08 Quote Lifecycle and Comparison - Evidence
+=================================================
+Date: 2026-03-20
+Status: complete, code review approved
+
+Verification Summary
+--------------------
+1. Backend quote lifecycle
+   - `POST /api/requests/{requestId}/quotes` submits a quote for an open request and returns `quoteId`, `threadId`, and `createdAt`
+   - `GET /api/requests/{requestId}/quotes` returns requester-owned quote comparison rows with pagination and sort/filter support
+   - `PATCH /api/quotes/{quoteId}` updates a submitted quote and increments `version`
+   - `POST /api/quotes/{quoteId}/withdraw` transitions submitted -> withdrawn
+   - `POST /api/quotes/{quoteId}/select` transitions submitted -> selected, closes the request, and declines other submitted quotes
+   - `POST /api/quotes/{quoteId}/decline` transitions submitted -> declined
+   - `GET /api/supplier/quotes` returns the current supplier's submitted quote list
+
+2. Domain / projection / thread linkage
+   - relational write tables added: `quote`, `message_thread`
+   - `QuoteCommandService` enforces duplicate guard, submitted-only mutation rules, and request-owner selection semantics
+   - `ThreadCommandService` creates or reuses a request/supplier thread on first quote submit
+   - `QuoteProjectionService` maintains `quote_comparison_view` and recalculates requester quote counts
+   - request close projection is synchronized when a quote is selected
+
+3. Frontend supplier flow
+   - `main-site` quote submission page supports unit price, MOQ, lead time, sample cost, and note
+   - supplier quote list page supports submitted vs finished grouping plus update/withdraw actions
+   - supplier request detail routes to quote creation and reflects `hasQuoted` from live quote existence checks
+
+4. Frontend requester flow
+   - requester request detail links to quote comparison page
+   - quote comparison page supports state filter, sortable columns, detail panel, select, and decline actions
+
+5. Automated verification
+   - Backend: `./gradlew :command-domain-quote:test :command-domain-thread:test` -> PASS
+   - Backend: `./gradlew build` -> PASS
+   - Frontend: `yarn workspace @fsm/main-site test --run` -> PASS
+   - Frontend: `yarn test && yarn build` -> PASS
+   - Frontend: `yarn workspace @fsm/main-site build` -> PASS
+
+6. Code review result
+   - Task 08 review result: APPROVED FOR PROGRESSION TO TASK 09
+   - No blocking mismatches were found against Task 08 subplan, API spec, or data model after final fixes
+
+Notes
+-----
+- `Task 08` creates the write-side thread record needed at quote submission time; thread read/detail UX remains Task 09 scope.
+- Quote comparison currently uses the implemented API sort fields (`submittedAt`, `unitPriceEstimate`, `moq`, `leadTime`) for requester-side ordering.

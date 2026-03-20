@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done |
 | **Can Parallel** | YES |
 | **Blocks** | Task 9, 11 |
 | **Blocked By** | Task 1, 6, 7 |
@@ -25,24 +25,24 @@
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🔴 Not Started
-- 메모: 선행 task 완료 후 시작 예정.
+- 메인 Task 상태: 🟢 Done
+- 메모: 백엔드/프론트 구현, 테스트, 전체 빌드, 코드 리뷰까지 완료.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 8.1 | 🔴 Not Started | 미착수 |
-| 8.2 | 🔴 Not Started | 미착수 |
-| 8.3 | 🔴 Not Started | 미착수 |
-| 8.4 | 🔴 Not Started | 미착수 |
-| 8.5 | 🔴 Not Started | 미착수 |
-| 8.6 | 🔴 Not Started | 미착수 |
-| 8.7 | 🔴 Not Started | 미착수 |
+| 8.1 | 🟢 Done | Quote aggregate, 상태 전이, versioning, duplicate guard 구현 완료 |
+| 8.2 | 🟢 Done | submit/update quote API와 thread 생성 응답 구현 완료 |
+| 8.3 | 🟢 Done | withdraw/select/decline API와 request close cascade 구현 완료 |
+| 8.4 | 🟢 Done | request quote comparison list와 supplier quote list API 구현 완료 |
+| 8.5 | 🟢 Done | quote submit 시 thread 생성 및 quoteCount projection 연동 완료 |
+| 8.6 | 🟢 Done | supplier quote submit/manage UI 구현 완료 |
+| 8.7 | 🟢 Done | requester quote comparison/select/decline UI 구현 완료 |
 
 ---
 
 ## SubTask 목록
 
-### 🔴 SubTask 8.1: 견적 도메인 모델
+### 🟢 SubTask 8.1: 견적 도메인 모델
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -62,7 +62,7 @@
   - [ ] closed/cancelled 의뢰에는 제출 불가
   - [ ] approved supplier만 제출 가능
 
-### 🔴 SubTask 8.2: 견적 제출 및 수정 API
+### 🟢 SubTask 8.2: 견적 제출 및 수정 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -79,7 +79,7 @@
   - [ ] Version increment
   - [ ] Swagger: partial update 예시
 
-### 🔴 SubTask 8.3: 견적 상태 변경 API
+### 🟢 SubTask 8.3: 견적 상태 변경 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -96,7 +96,7 @@
   - [ ] Request: reason (선택)
   - [ ] Effect: state -> `declined`
 
-### 🔴 SubTask 8.4: 견적 목록 및 비교 API
+### 🟢 SubTask 8.4: 견적 목록 및 비교 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -112,7 +112,7 @@
   - [ ] 비교용 read model
   - [ ] 단가, MOQ, 납기 기준 정렬 지원
 
-### 🔴 SubTask 8.5: 견적 자동 생성 및 연동
+### 🟢 SubTask 8.5: 견적 자동 생성 및 연동
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
@@ -125,7 +125,7 @@
   - [ ] `QuoteSelectedEvent` -> Request closed, 다른 quotes declined
   - [ ] `QuoteWithdrawnEvent` -> quoteCount 감소
 
-### 🔴 SubTask 8.6: 프론트엔드 견적 제출 UI
+### 🟢 SubTask 8.6: 프론트엔드 견적 제출 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -139,7 +139,7 @@
   - [ ] 상태별 표시 (submitted/selected/withdrawn/declined)
   - [ ] 수정/철회 버튼 (submitted 상태에서만)
 
-### 🔴 SubTask 8.7: 견적 비교 및 선택 UI
+### 🟢 SubTask 8.7: 견적 비교 및 선택 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
@@ -213,6 +213,7 @@ Frontend: [8.6 Submit UI] + [8.7 Compare/Select UI]
 - `query-model-request`: Request quote count projection
 - `api-server`: Quote controller
 - Projection: quote state change events, thread creation
+- Evidence: `.sisyphus/evidence/task-8-quote-lifecycle.txt`
 
 ### Frontend
 - `apps/main-site`: Quote submit page (supplier), Quote comparison page (requester)
