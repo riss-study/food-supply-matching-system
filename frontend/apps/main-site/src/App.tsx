@@ -4,6 +4,7 @@ import { LoginPage } from "./features/auth/pages/LoginPage"
 import { SignupPage } from "./features/auth/pages/SignupPage"
 import { useAuthStore } from "./features/auth/store/auth-store"
 import { BusinessProfilePage, RequesterApprovalRoute } from "./features/business-profile"
+import { SupplierSearchPage, SupplierDetailPage } from "./features/discovery"
 import { SupplierProfilePage, SupplierRoute } from "./features/supplier-profile"
 
 function HomePage() {
@@ -47,6 +48,7 @@ export default function App() {
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/business-profile">Business Profile</Link>
         <Link to="/supplier/profile">Supplier Profile</Link>
+        <Link to="/suppliers">Suppliers</Link>
         <Link to="/requests/new">New Request</Link>
       </nav>
       <Routes>
@@ -60,6 +62,14 @@ export default function App() {
               <DashboardPage />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/suppliers"
+          element={<SupplierSearchPage />}
+        />
+        <Route
+          path="/suppliers/:supplierId"
+          element={<SupplierDetailPage />}
         />
         <Route
           path="/supplier/profile"
