@@ -12,6 +12,10 @@ interface CertificationRecordRepository : ReactiveCrudRepository<CertificationRe
     fun findAllBySupplierProfileId(supplierProfileId: String): reactor.core.publisher.Flux<CertificationRecordEntity>
 }
 
+interface AttachmentMetadataRepository : ReactiveCrudRepository<AttachmentMetadataEntity, String> {
+    fun findAllByOwnerTypeAndOwnerId(ownerType: String, ownerId: String): reactor.core.publisher.Flux<AttachmentMetadataEntity>
+}
+
 interface VerificationSubmissionRepository : ReactiveCrudRepository<VerificationSubmissionEntity, String> {
     fun findFirstBySupplierProfileIdOrderBySubmittedAtDesc(supplierProfileId: String): Mono<VerificationSubmissionEntity>
 }

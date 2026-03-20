@@ -70,6 +70,18 @@ CREATE TABLE IF NOT EXISTS certification_record (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS attachment_metadata (
+  id VARCHAR(64) PRIMARY KEY,
+  owner_type VARCHAR(64) NOT NULL,
+  owner_id VARCHAR(64) NOT NULL,
+  attachment_kind VARCHAR(64) NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  content_type VARCHAR(128) NOT NULL,
+  file_size BIGINT NOT NULL,
+  storage_key VARCHAR(500) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS verification_submission (
   id VARCHAR(64) PRIMARY KEY,
   supplier_profile_id VARCHAR(64) NOT NULL,
