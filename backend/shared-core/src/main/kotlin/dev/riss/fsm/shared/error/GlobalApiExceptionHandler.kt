@@ -23,6 +23,36 @@ class GlobalApiExceptionHandler {
         )
     }
 
+    @ExceptionHandler(QuoteSubmissionForbiddenException::class)
+    fun handleQuoteSubmissionForbidden(exception: QuoteSubmissionForbiddenException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(
+                code = 4037,
+                message = exception.message ?: "Quote submission is forbidden",
+            )
+        )
+    }
+
+    @ExceptionHandler(QuoteUpdateForbiddenException::class)
+    fun handleQuoteUpdateForbidden(exception: QuoteUpdateForbiddenException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(
+                code = 4038,
+                message = exception.message ?: "Quote update is forbidden",
+            )
+        )
+    }
+
+    @ExceptionHandler(DuplicateActiveQuoteException::class)
+    fun handleDuplicateActiveQuote(exception: DuplicateActiveQuoteException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(
+                code = 4095,
+                message = exception.message ?: "Active quote already exists",
+            )
+        )
+    }
+
     @ExceptionHandler(WebExchangeBindException::class)
     fun handleValidation(exception: WebExchangeBindException): ResponseEntity<ApiErrorResponse> {
         val details = exception.bindingResult.allErrors.map { error ->
