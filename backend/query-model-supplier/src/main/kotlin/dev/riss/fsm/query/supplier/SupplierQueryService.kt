@@ -25,6 +25,16 @@ data class SupplierSearchPage(
     val hasPrev: Boolean,
 )
 
+data class SupplierCategorySummary(
+    val category: String,
+    val supplierCount: Int,
+)
+
+data class SupplierRegionSummary(
+    val region: String,
+    val supplierCount: Int,
+)
+
 @Service
 class SupplierQueryService(
     private val supplierSearchViewRepository: SupplierSearchViewRepository,
@@ -67,4 +77,29 @@ class SupplierQueryService(
     }
 
     fun detail(profileId: String): Mono<SupplierDetailViewDocument> = supplierDetailViewRepository.findById(profileId)
+
+    fun categories(): Mono<List<SupplierCategorySummary>> {
+        return supplierSearchViewRepository.findAll()
+            .collectList()
+            .map { items ->
+                items.flatMap { it.categories }
+                    .groupingBy { it }
+                    .eachCount()
+                    .entries
+                    .sortedBy { it.key }
+                    .map { SupplierCategorySummary(category = it.key, supplierCount = it.value) }
+            }
+    }
+
+    fun regions(): Mono<List<SupplierRegionSummary>> {
+        return supplierSearchViewRepository.findAll()
+            .collectList()
+            .map { items ->
+                items.groupingBy { it.region }
+                    .eachCount()
+                    .entries
+                    .sortedBy { it.key }
+                    .map { SupplierRegionSummary(region = it.key, supplierCount = it.value) }
+            }
+    }
 }

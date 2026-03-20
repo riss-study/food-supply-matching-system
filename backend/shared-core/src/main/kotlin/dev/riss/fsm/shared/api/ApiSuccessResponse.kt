@@ -12,4 +12,6 @@ data class PaginationMeta(
     val size: Int? = null,
     val totalElements: Long? = null,
     val totalPages: Int? = null,
+    val hasNext: Boolean? = null,
+    val hasPrev: Boolean? = null,
 )
