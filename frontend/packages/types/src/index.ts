@@ -223,3 +223,58 @@ export interface ReviewDecisionResponse {
   exposureState: string
   reviewedAt: string
 }
+
+export interface SupplierSearchItemResponse {
+  profileId: string
+  companyName: string
+  region: string
+  categories: string[]
+  monthlyCapacity: number
+  moq: number
+  oemAvailable: boolean
+  odmAvailable: boolean
+  verificationState: string
+  exposureState: ExposureState
+  logoUrl?: string | null
+}
+
+export interface SupplierCertificationSummaryResponse {
+  type: string
+  number?: string | null
+  valid: boolean
+}
+
+export interface SupplierPortfolioImageResponse {
+  imageId: string
+  url: string
+}
+
+export interface SupplierDetailResponse {
+  profileId: string
+  companyName: string
+  representativeName: string
+  region: string
+  categories: string[]
+  equipmentSummary?: string | null
+  monthlyCapacity: number
+  moq: number
+  oemAvailable: boolean
+  odmAvailable: boolean
+  rawMaterialSupport: boolean
+  packagingLabelingSupport: boolean
+  introduction?: string | null
+  verificationState: string
+  logoUrl?: string | null
+  certifications: SupplierCertificationSummaryResponse[]
+  portfolioImages: SupplierPortfolioImageResponse[]
+}
+
+export interface SupplierCategorySummaryResponse {
+  category: string
+  supplierCount: number
+}
+
+export interface SupplierRegionSummaryResponse {
+  region: string
+  supplierCount: number
+}
