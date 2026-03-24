@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 🟢 Done |
+| **상태** | 🟡 Partial |
 | **Can Parallel** | YES |
 | **Blocks** | Task 5, 7, 10 |
 | **Blocked By** | Task 1, 2 |
@@ -25,18 +25,18 @@
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🟢 Done
-- 메모: supplier profile/verification flow, frontend UI, approved-only visibility 규칙까지 구현 및 검증 완료.
+- 메인 Task 상태: 🟡 Partial
+- 메모: 2026-03-20 재감사 기준으로 backend flow와 핵심 acceptance는 재검증됐지만, 일부 UI 세부 checklist는 근거 부족 또는 미구현으로 남겨둠.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 4.1 | 🟢 Done | SupplierProfile / CertificationRecord / VerificationSubmission 모델 추가 |
-| 4.2 | 🟢 Done | 공급자 프로필 CRUD API 구현 및 검증 완료 |
-| 4.3 | 🟢 Done | local file storage adapter 및 multipart 업로드 구현 완료 |
-| 4.4 | 🟢 Done | verification submission/latest API 구현 및 검증 완료 |
+| 4.1 | 🟢 Done | SupplierProfile / CertificationRecord / VerificationSubmission 모델과 수정 guard 재검증 완료 |
+| 4.2 | 🟢 Done | 공급자 프로필 CRUD API와 draft/hidden 초기 상태 재검증 완료 |
+| 4.3 | 🟢 Done | multipart 업로드/검증과 FileStorageService 기반 storage abstraction 재검증 완료 |
+| 4.4 | 🟢 Done | verification submission/latest API와 파일 저장 규칙 재검증 완료 |
 | 4.5 | 🟢 Done | approved => visible / draft => hidden search projection 검증 완료 |
-| 4.6 | 🟢 Done | 공급자 프로필/검수 제출 UI 구현 및 자동 검증 완료 |
-| 4.7 | 🟢 Done | 공급자 전용 route guard 및 상태 UI 구현 완료 |
+| 4.6 | 🟡 Partial | 프로필/검수 제출 UI는 있으나 드래그앤드롭/진행률/확인 모달은 재검증 불가 |
+| 4.7 | 🟡 Partial | 상태 카드와 일부 CTA는 확인됐지만 프로필 완성도 게이지 등은 근거 없음 |
 
 ---
 
@@ -47,61 +47,61 @@
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] `SupplierProfile` aggregate
-  - [ ] Fields: supplierUserId, companyName, representativeName, region, categories[], equipmentSummary, monthlyCapacity, moq, oemAvailable, odmAvailable, rawMaterialSupport, packagingLabelingSupport, introduction, exposureState
-  - [ ] State: `draft` -> `submitted` -> `under_review` -> (`approved` | `hold` | `rejected` | `suspended`)
-- [ ] `CertificationRecord` entity
-  - [ ] Fields: supplierProfileId, type, number, fileAttachmentId, status
-- [ ] Command handlers
-  - [ ] `CreateSupplierProfile`
-  - [ ] `UpdateSupplierProfile` (draft/hold/rejected 상태에서만)
+- [x] `SupplierProfile` aggregate
+  - [x] Fields: supplierUserId, companyName, representativeName, region, categories[], equipmentSummary, monthlyCapacity, moq, oemAvailable, odmAvailable, rawMaterialSupport, packagingLabelingSupport, introduction, exposureState
+  - [x] State: `draft` -> `submitted` -> `under_review` -> (`approved` | `hold` | `rejected` | `suspended`)
+- [x] `CertificationRecord` entity
+  - [x] Fields: supplierProfileId, type, number, fileAttachmentId, status
+- [x] Command handlers
+  - [x] `CreateSupplierProfile`
+  - [x] `UpdateSupplierProfile` (draft/hold/rejected 상태에서만)
 
 ### 🟢 SubTask 4.2: 공급자 프로필 CRUD API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] API: `POST /api/supplier/profile`
-  - [ ] Auth: role=supplier
-  - [ ] Validation: companyName (2-100자), categories (최소 1개), monthlyCapacity/moq (양수)
-  - [ ] Initial state: `draft`, exposure: `hidden`
-  - [ ] Swagger: request/response schema
-- [ ] API: `GET /api/supplier/profile`
-  - [ ] 내 공급자 프로필 조회 (certifications 포함)
-- [ ] API: `PATCH /api/supplier/profile`
-  - [ ] Partial update
-  - [ ] approved 상태에서는 수정 불가 (403)
+- [x] API: `POST /api/supplier/profile`
+  - [x] Auth: role=supplier
+  - [x] Validation: companyName (2-100자), categories (최소 1개), monthlyCapacity/moq (양수)
+  - [x] Initial state: `draft`, exposure: `hidden`
+  - [x] Swagger: request/response schema
+- [x] API: `GET /api/supplier/profile`
+  - [x] 내 공급자 프로필 조회 (certifications 포함)
+- [x] API: `PATCH /api/supplier/profile`
+  - [x] Partial update
+  - [x] approved 상태에서는 수정 불가 (403)
 
 ### 🟢 SubTask 4.3: 파일 첨부 시스템
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] `Attachment` 도메인 모델
-  - [ ] Fields: ownerType, ownerId, fileName, contentType, fileSize, storageKey
-- [ ] 파일 업로드 서비스
-  - [ ] Storage adapter interface (local/S3 추상화)
-  - [ ] 파일 유효성 검사 (형식: jpeg, png, pdf / 크기: 10MB)
-- [ ] API: `POST /api/attachments` (multipart)
-  - [ ] 파일 저장 및 metadata 반환
-  - [ ] Swagger: multipart/form-data 명시
+- [x] `Attachment` 도메인 모델
+  - [x] Fields: ownerType, ownerId, fileName, contentType, fileSize, storageKey
+- [x] 파일 업로드 서비스
+  - [x] Storage adapter interface (local/S3 추상화)
+  - [x] 파일 유효성 검사 (형식: jpeg, png, pdf / 크기: 10MB)
+- [x] API: `POST /api/attachments` (multipart)
+  - [x] 파일 저장 및 metadata 반환
+  - [x] Swagger: multipart/form-data 명시
 
 ### 🟢 SubTask 4.4: 검수 제출 (Verification Submission)
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] `VerificationSubmission` aggregate
-  - [ ] Fields: supplierProfileId, state, submittedAt, reviewedAt, reviewedBy, reviewNoteInternal, reviewNotePublic
-  - [ ] State transitions per data-model.md
-- [ ] API: `POST /api/supplier/verification-submissions`
-  - [ ] multipart/form-data
-  - [ ] Fields: businessRegistrationDoc (필수), certifications[] (선택), portfolioImages[] (선택)
-  - [ ] Validation: 파일 형식/크기
-  - [ ] State: `submitted`로 변경
-- [ ] API: `GET /api/supplier/verification-submissions/latest`
-  - [ ] 최신 제출 상태 조회
-  - [ ] reviewNotePublic 포함 (사용자 표시용)
+- [x] `VerificationSubmission` aggregate
+  - [x] Fields: supplierProfileId, state, submittedAt, reviewedAt, reviewedBy, reviewNoteInternal, reviewNotePublic
+  - [x] State transitions per data-model.md
+- [x] API: `POST /api/supplier/verification-submissions`
+  - [x] multipart/form-data
+  - [x] Fields: businessRegistrationDoc (필수), certifications[] (선택), portfolioImages[] (선택)
+  - [x] Validation: 파일 형식/크기
+  - [x] State: `submitted`로 변경
+- [x] API: `GET /api/supplier/verification-submissions/latest`
+  - [x] 최신 제출 상태 조회
+  - [x] reviewNotePublic 포함 (사용자 표시용)
 
 ### 🟢 SubTask 4.5: 공급자 상태 노출 규칙
 
@@ -121,17 +121,17 @@
 **작업자:** Frontend  
 **예상 소요:** 0.5일
 
-- [ ] 공급자 프로필 생성/수정 페이지
-  - [ ] 카테고리 다중 선택 컴포넌트
-  - [ ] OEM/ODM 체크박스
-  - [ ] 지역 선택 (드롭다운)
-- [ ] 파일 업로드 컴포넌트
+- [x] 공급자 프로필 생성/수정 페이지
+  - [ ] 카테고리 다중 선택 컴포넌트 - 현재 comma-separated 입력
+  - [x] OEM/ODM 체크박스
+  - [ ] 지역 선택 (드롭다운) - 현재 text input
+- [x] 파일 업로드 컴포넌트
   - [ ] 드래그 앤 드롭 지원
   - [ ] 업로드 진행률 표시
   - [ ] 파일 미리보기 (이미지)
-- [ ] 검수 제출 화면
-  - [ ] 사업자등록증 필수 업로드
-  - [ ] 인증서 추가 업로드
+- [x] 검수 제출 화면
+  - [x] 사업자등록증 필수 업로드
+  - [x] 인증서 추가 업로드
   - [ ] 제출 전 확인 모달
 
 ### 🟢 SubTask 4.7: 공급자 대시보드 상태 UI
@@ -139,12 +139,12 @@
 **작업자:** Frontend  
 **예상 소요:** 0.5일
 
-- [ ] 검수 상태 표시
-  - [ ] Status badge: draft, submitted, under_review, hold, approved, rejected
-  - [ ] reviewNotePublic 표시 (hold/rejected 시)
-- [ ] 상태별 CTA 버튼
-  - [ ] draft: "검수 제출하기"
-  - [ ] hold/rejected: "다시 제출하기"
+- [x] 검수 상태 표시
+  - [x] Status badge: draft, submitted, under_review, hold, approved, rejected
+  - [x] reviewNotePublic 표시 (hold/rejected 시)
+- [x] 상태별 CTA 버튼
+  - [x] draft: "검수 제출하기"
+  - [ ] hold/rejected: "다시 제출하기" - 재제출 동작은 있으나 CTA 문구 그대로 일치하지는 않음
   - [ ] approved: "프로필 보기"
 - [ ] 프로필 완성도 게이지
 
@@ -152,13 +152,13 @@
 
 ## 인수 완료 조건 (Acceptance Criteria)
 
-- [ ] 공급자가 프로필을 생성하면 `draft` 상태로 저장
-- [ ] `draft/hold/rejected` 상태에서만 프로필 수정 가능
-- [ ] 검수 제출 시 `submitted` 상태로 변경되고 파일 저장됨
+- [x] 공급자가 프로필을 생성하면 `draft` 상태로 저장
+- [x] `draft/hold/rejected` 상태에서만 프로필 수정 가능
+- [x] 검수 제출 시 `submitted` 상태로 변경되고 파일 저장됨
 - [x] `approved` 상태가 아니면 검색에 노출되지 않음
-- [ ] 검수 상태에 따라 supplier dashboard에 다른 UI 노출
-- [ ] 파일 업로드는 10MB 제한, jpeg/png/pdf만 허용
-- [ ] Swagger에서 multipart upload 문서화됨
+- [x] 검수 상태에 따라 supplier dashboard에 다른 UI 노출
+- [x] 파일 업로드는 10MB 제한, jpeg/png/pdf만 허용
+- [x] Swagger에서 multipart upload 문서화됨
 
 ---
 

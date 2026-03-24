@@ -2,11 +2,17 @@ package dev.riss.fsm.query.admin.review
 
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import java.time.LocalDate
+import java.util.Comparator
 
 data class AdminReviewQuery(
     val state: String? = null,
+    val fromDate: LocalDate? = null,
+    val toDate: LocalDate? = null,
     val page: Int = 1,
     val size: Int = 20,
+    val sort: String? = null,
+    val order: String? = null,
 )
 
 data class AdminReviewQueuePage(
@@ -30,10 +36,13 @@ class AdminReviewQueryService(
         return queueRepository.findAll()
             .collectList()
             .map { list ->
-                list.asSequence()
+                val filtered = list.asSequence()
                     .filter { item -> query.state.isNullOrBlank() || item.state == query.state }
-                    .sortedByDescending { it.submittedAt }
+                    .filter { item -> query.fromDate == null || !item.submittedAt.atZone(java.time.ZoneOffset.UTC).toLocalDate().isBefore(query.fromDate) }
+                    .filter { item -> query.toDate == null || !item.submittedAt.atZone(java.time.ZoneOffset.UTC).toLocalDate().isAfter(query.toDate) }
                     .toList()
+
+                sortQueueItems(filtered, query.sort, query.order)
             }
             .map { filtered ->
                 val total = filtered.size
@@ -54,4 +63,20 @@ class AdminReviewQueryService(
     }
 
     fun detail(reviewId: String): Mono<AdminReviewDetailDocument> = detailRepository.findById(reviewId)
+
+    private fun sortQueueItems(
+        items: List<AdminReviewQueueItemDocument>,
+        sort: String?,
+        order: String?,
+    ): List<AdminReviewQueueItemDocument> {
+        val comparator = when (sort) {
+            "pendingDays" -> compareBy<AdminReviewQueueItemDocument> { it.pendingDays }
+            "state" -> compareBy { it.state }
+            "companyName" -> compareBy { it.companyName }
+            else -> compareBy { it.submittedAt }
+        }
+
+        val sorted = items.sortedWith(comparator)
+        return if (order == "asc") sorted else sorted.reversed()
+    }
 }

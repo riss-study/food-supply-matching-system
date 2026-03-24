@@ -1,9 +1,27 @@
 import type { AdminReviewDetail, AdminReviewQueueItem, ApiEnvelope, PaginationMeta, ReviewDecisionRequest, ReviewDecisionResponse } from "@fsm/types"
 import { adminApiClient } from "../../auth/lib/api-client"
 
-export async function getReviewQueue(state?: string) {
+export interface GetReviewQueueParams {
+  state?: string
+  fromDate?: string
+  toDate?: string
+  page?: number
+  size?: number
+  sort?: string
+  order?: "asc" | "desc"
+}
+
+export async function getReviewQueue(params: GetReviewQueueParams = {}) {
   const response = await adminApiClient.get<ApiEnvelope<AdminReviewQueueItem[]>>("/api/admin/reviews", {
-    params: { state },
+    params: {
+      state: params.state,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+      page: params.page,
+      size: params.size,
+      sort: params.sort,
+      order: params.order,
+    },
   })
   return {
     items: response.data.data,

@@ -195,6 +195,22 @@ export interface AdminReviewQueueItem {
   verificationState: string
 }
 
+export interface AdminReviewHistoryItem {
+  actionType: string
+  actorUserId: string
+  createdAt: string
+  noteInternal: string | null
+  notePublic: string | null
+  reasonCode: string | null
+}
+
+export interface AdminReviewDetailFile {
+  fileId: string
+  fileName: string
+  status: string
+  downloadUrl: string | null
+}
+
 export interface AdminReviewDetail {
   reviewId: string
   supplierProfileId: string
@@ -207,7 +223,8 @@ export interface AdminReviewDetail {
   reviewedAt: string | null
   reviewNoteInternal: string | null
   reviewNotePublic: string | null
-  files: Array<{ fileId: string; fileName: string; status: string }>
+  files: AdminReviewDetailFile[]
+  reviewHistory: AdminReviewHistoryItem[]
 }
 
 export interface ReviewDecisionRequest {

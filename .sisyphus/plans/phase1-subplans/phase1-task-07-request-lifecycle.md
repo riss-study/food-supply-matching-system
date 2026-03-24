@@ -26,7 +26,7 @@
 ## 현재 진행 상태
 
 - 메인 Task 상태: 🟢 Done
-- 메모: 백엔드/프론트 구현, 빌드, 테스트, 코드 리뷰까지 완료.
+- 메모: 2026-03-20 재감사 기준으로 acceptance 전부 재검증 완료. 일부 원래 checklist의 event-consumer 표현은 현재 구현 방식과 정확히 일치하지 않아 메모로만 남김.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
@@ -47,70 +47,70 @@
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] `Request` aggregate
-  - [ ] Fields: requesterUserId, mode (public/targeted), title, category, desiredVolume, targetPriceRange, certificationRequirement[], rawMaterialRule, packagingRequirement, deliveryRequirement, notes, state
-  - [ ] State machine: `draft` -> `open` -> (`closed` | `cancelled`)
-  - [ ] `draft` -> `cancelled`
-- [ ] `TargetedSupplierLink` entity
-  - [ ] Fields: requestId, supplierProfileId
-  - [ ] 유니크 제약: (requestId, supplierProfileId)
-- [ ] Command handlers
-  - [ ] `CreateRequest`
-  - [ ] `UpdateRequest` (draft/open 상태)
-  - [ ] `PublishRequest` (draft -> open)
-  - [ ] `CloseRequest` (open -> closed)
-  - [ ] `CancelRequest` (draft/open -> cancelled)
+- [x] `Request` aggregate
+  - [x] Fields: requesterUserId, mode (public/targeted), title, category, desiredVolume, targetPriceRange, certificationRequirement[], rawMaterialRule, packagingRequirement, deliveryRequirement, notes, state
+  - [x] State machine: `draft` -> `open` -> (`closed` | `cancelled`)
+  - [x] `draft` -> `cancelled`
+- [x] `TargetedSupplierLink` entity
+  - [x] Fields: requestId, supplierProfileId
+  - [x] 유니크 제약: (requestId, supplierProfileId)
+- [x] Command handlers
+  - [x] `CreateRequest`
+  - [x] `UpdateRequest` (draft/open 상태)
+  - [x] `PublishRequest` (draft -> open)
+  - [x] `CloseRequest` (open -> closed)
+  - [x] `CancelRequest` (draft/open -> cancelled)
 
 ### 🟢 SubTask 7.2: 의뢰 CRUD API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] API: `POST /api/requests`
-  - [ ] Auth: role=requester, approvalState=approved
-  - [ ] Validation: title (5-200자), desiredVolume (양수), mode (public/targeted)
-  - [ ] targeted 모드시 supplierIds[] 필수
-  - [ ] Response: requestId, state=draft
-  - [ ] Swagger: request/response 예시
-- [ ] API: `GET /api/requests`
-  - [ ] 내 의뢰 목록 조회
-  - [ ] Query: state 필터, pagination
-- [ ] API: `GET /api/requests/{requestId}`
-  - [ ] 의뢰 상세 조회
-  - [ ] 권한: 소유자 또는 지정 공급자 (targeted 모드)
-  - [ ] targetSuppliers[] 포함 (targeted 모드)
+- [x] API: `POST /api/requests`
+  - [x] Auth: role=requester, approvalState=approved
+  - [x] Validation: title (5-200자), desiredVolume (양수), mode (public/targeted)
+  - [x] targeted 모드시 supplierIds[] 필수
+  - [x] Response: requestId, state=draft
+  - [x] Swagger: request/response 예시
+- [x] API: `GET /api/requests`
+  - [x] 내 의뢰 목록 조회
+  - [x] Query: state 필터, pagination
+- [x] API: `GET /api/requests/{requestId}`
+  - [x] 의뢰 상세 조회
+  - [x] 권한: 소유자 또는 지정 공급자 (targeted 모드)
+  - [x] targetSuppliers[] 포함 (targeted 모드)
 
 ### 🟢 SubTask 7.3: 의뢰 상태 변경 API
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] API: `PATCH /api/requests/{requestId}`
-  - [ ] Partial update
-  - [ ] draft/open 상태에서만 수정 가능
-  - [ ] Validation: 허용된 필드만 수정 가능
-- [ ] API: `POST /api/requests/{requestId}/close`
-  - [ ] 의뢰 종료 (마감)
-  - [ ] Effect: state -> `closed`
-  - [ ] 자동으로 해당 의뢰의 quote 제출 불가
-- [ ] API: `POST /api/requests/{requestId}/cancel`
-  - [ ] 의뢰 취소
-  - [ ] Request: reason (선택)
-  - [ ] Effect: state -> `cancelled`
+- [x] API: `PATCH /api/requests/{requestId}`
+  - [x] Partial update
+  - [x] draft/open 상태에서만 수정 가능
+  - [x] Validation: 허용된 필드만 수정 가능
+- [x] API: `POST /api/requests/{requestId}/close`
+  - [x] 의뢰 종료 (마감)
+  - [x] Effect: state -> `closed`
+  - [x] 자동으로 해당 의뢰의 quote 제출 불가
+- [x] API: `POST /api/requests/{requestId}/cancel`
+  - [x] 의뢰 취소
+  - [x] Request: reason (선택)
+  - [x] Effect: state -> `cancelled`
 
 ### 🟢 SubTask 7.4: 의뢰 프로젝션 및 피드
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] Projection: `requester_request_summary_view`
-  - [ ] 요청자 대시보드용 요약 정보
-  - [ ] quoteCount 포함
-- [ ] Projection: `supplier_request_feed_view`
-  - [ ] 공급자 피드용 목록
-  - [ ] public 모드: 모든 open 의뢰
-  - [ ] targeted 모드: 지정된 의뢰만
-  - [ ] 이미 quote 제출한 의뢰 표시
+- [x] Projection: `requester_request_summary_view`
+  - [x] 요청자 대시보드용 요약 정보
+  - [x] quoteCount 포함
+- [x] Projection: `supplier_request_feed_view`
+  - [x] 공급자 피드용 목록
+  - [x] public 모드: 모든 open 의뢰
+  - [x] targeted 모드: 지정된 의뢰만
+  - [x] 이미 quote 제출한 의뢰 표시
 - [ ] Event consumers
   - [ ] `RequestPublishedEvent`: supplier feed에 추가
   - [ ] `RequestClosedEvent`: feed에서 제거
@@ -121,57 +121,57 @@
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] `RequestAccessGuard` 구현
-  - [ ] public 모드: approved supplier 누구나 접근 가능
-  - [ ] targeted 모드: 지정된 supplier만 접근 가능
-  - [ ] Error: 403 for unauthorized access
-- [ ] `GET /api/supplier/requests` (공급자용)
-  - [ ] 내가 볼 수 있는 의뢰 목록 (피드)
-  - [ ] public + targeted (내가 지정된) 필터링
+- [x] `RequestAccessGuard` 구현
+  - [x] public 모드: approved supplier 누구나 접근 가능
+  - [x] targeted 모드: 지정된 supplier만 접근 가능
+  - [x] Error: 403 for unauthorized access
+- [x] `GET /api/supplier/requests` (공급자용)
+  - [x] 내가 볼 수 있는 의뢰 목록 (피드)
+  - [x] public + targeted (내가 지정된) 필터링
 
 ### 🟢 SubTask 7.6: 프론트엔드 의뢰 관리 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
 
-- [ ] 의뢰 생성 페이지 (`main-site`)
-  - [ ] 모드 선택: public / targeted
-  - [ ] targeted 모드: 공급자 선택 컴포넌트
-  - [ ] 폼: 제목, 카테고리, 희망수량, 희망단가, 인증요구, 원재료규칙, 포장요구, 납기
-- [ ] 의뢰 목록 페이지
-  - [ ] 상태별 필터 탭 (draft/open/closed/cancelled)
-  - [ ] 각 의뢰 카드: 제목, 상태, 견적수, 생성일
-- [ ] 의뢰 상세/수정 페이지
-  - [ ] 상태별 수정 가능 필드 표시
-  - [ ] 게시/종료/취소 액션 버튼
+- [x] 의뢰 생성 페이지 (`main-site`)
+  - [x] 모드 선택: public / targeted
+  - [x] targeted 모드: 공급자 선택 컴포넌트
+  - [x] 폼: 제목, 카테고리, 희망수량, 희망단가, 인증요구, 원재료규칙, 포장요구, 납기
+- [x] 의뢰 목록 페이지
+  - [x] 상태별 필터 탭 (draft/open/closed/cancelled)
+  - [x] 각 의뢰 카드: 제목, 상태, 견적수, 생성일
+- [x] 의뢰 상세/수정 페이지
+  - [x] 상태별 수정 가능 필드 표시
+  - [x] 게시/종료/취소 액션 버튼
 
 ### 🟢 SubTask 7.7: 공급자 의뢰 피드 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
 
-- [ ] 의뢰 피드 페이지 (`main-site` - supplier view)
-  - [ ] 공개 의뢰 목록
-  - [ ] 지정 의뢰 목록 (나에게 온 의뢰)
-  - [ ] 카테고리 필터
-- [ ] 의뢰 상세 보기 (supplier)
-  - [ ] 의뢰 내용 표시
-  - [ ] "견적 제출하기" 버튼 (아직 제출 안 한 경우)
-  - [ ] 내 견적 보기 (이미 제출한 경우)
+- [x] 의뢰 피드 페이지 (`main-site` - supplier view)
+  - [x] 공개 의뢰 목록
+  - [x] 지정 의뢰 목록 (나에게 온 의뢰)
+  - [x] 카테고리 필터
+- [x] 의뢰 상세 보기 (supplier)
+  - [x] 의뢰 내용 표시
+  - [x] "견적 제출하기" 버튼 (아직 제출 안 한 경우)
+  - [x] 내 견적 보기 (이미 제출한 경우)
 
 ---
 
 ## 인수 완료 조건 (Acceptance Criteria)
 
-- [ ] 승인된 요청자만 의뢰 생성 가능 (4034)
-- [ ] 의뢰 생성 시 draft 상태로 저장
-- [ ] draft/open 상태에서만 수정 가능
-- [ ] public 모드는 approved supplier 누구나 조회 가능
-- [ ] targeted 모드는 지정된 supplier만 조회 가능
-- [ ] closed/cancelled 의뢰에는 quote 제출 불가
-- [ ] 요청자 대시보드에서 내 의뢰 목록 확인 가능
-- [ ] 공급자 피드에서 볼 수 있는 의뢰 목록 확인 가능
-- [ ] Swagger에서 모든 request endpoints 문서화됨
+- [x] 승인된 요청자만 의뢰 생성 가능 (4034)
+- [x] 의뢰 생성 시 draft 상태로 저장
+- [x] draft/open 상태에서만 수정 가능
+- [x] public 모드는 approved supplier 누구나 조회 가능
+- [x] targeted 모드는 지정된 supplier만 조회 가능
+- [x] closed/cancelled 의뢰에는 quote 제출 불가
+- [x] 요청자 대시보드에서 내 의뢰 목록 확인 가능
+- [x] 공급자 피드에서 볼 수 있는 의뢰 목록 확인 가능
+- [x] Swagger에서 모든 request endpoints 문서화됨
 
 ---
 

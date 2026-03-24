@@ -13,6 +13,8 @@ data class SupplierSearchQuery(
     val maxMoq: Int? = null,
     val page: Int = 1,
     val size: Int = 20,
+    val sort: String? = null,
+    val order: String? = null,
 )
 
 data class SupplierSearchPage(
@@ -55,9 +57,9 @@ class SupplierQueryService(
                     .filter { item -> query.odm == null || item.odmAvailable == query.odm }
                     .filter { item -> query.minCapacity == null || item.monthlyCapacity >= query.minCapacity }
                     .filter { item -> query.maxMoq == null || item.moq <= query.maxMoq }
-                    .sortedByDescending { it.updatedAt }
                     .toList()
             }
+            .map { items -> sortItems(items, query.sort, query.order) }
             .map { filtered ->
                 val total = filtered.size
                 val from = ((safePage - 1) * safeSize).coerceAtMost(total)
@@ -77,6 +79,16 @@ class SupplierQueryService(
     }
 
     fun detail(profileId: String): Mono<SupplierDetailViewDocument> = supplierDetailViewRepository.findById(profileId)
+
+    private fun sortItems(items: List<SupplierSearchViewDocument>, sort: String?, order: String?): List<SupplierSearchViewDocument> {
+        val sorted = when (sort) {
+            "monthlyCapacity" -> items.sortedBy { it.monthlyCapacity }
+            "moq" -> items.sortedBy { it.moq }
+            "companyName" -> items.sortedBy { it.companyName.lowercase() }
+            else -> items.sortedBy { it.updatedAt }
+        }
+        return if (order == "asc") sorted else sorted.reversed()
+    }
 
     fun categories(): Mono<List<SupplierCategorySummary>> {
         return supplierSearchViewRepository.findAll()

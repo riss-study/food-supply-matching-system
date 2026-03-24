@@ -5,6 +5,7 @@ import dev.riss.fsm.query.supplier.SupplierSearchQuery
 import dev.riss.fsm.shared.api.ApiSuccessResponse
 import dev.riss.fsm.shared.api.PaginationMeta
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,15 +25,26 @@ class SupplierDiscoveryController(
     @GetMapping
     @Operation(summary = "List approved suppliers", description = "Returns approved and visible supplier search view entries")
     fun list(
+        @Parameter(description = "Company name keyword")
         @RequestParam(required = false) keyword: String?,
+        @Parameter(description = "Category filter")
         @RequestParam(required = false) category: String?,
+        @Parameter(description = "Region filter")
         @RequestParam(required = false) region: String?,
+        @Parameter(description = "OEM available filter")
         @RequestParam(required = false) oem: Boolean?,
+        @Parameter(description = "ODM available filter")
         @RequestParam(required = false) odm: Boolean?,
+        @Parameter(description = "Minimum monthly capacity")
         @RequestParam(required = false) minCapacity: Int?,
+        @Parameter(description = "Maximum MOQ")
         @RequestParam(required = false) maxMoq: Int?,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
+        @Parameter(description = "Sort field: updatedAt, monthlyCapacity, moq, companyName")
+        @RequestParam(required = false) sort: String?,
+        @Parameter(description = "Sort order: asc or desc")
+        @RequestParam(required = false) order: String?,
     ): Mono<ApiSuccessResponse<List<SupplierSearchItemResponse>>> {
         return supplierQueryService.listApproved(
             SupplierSearchQuery(
@@ -45,6 +57,8 @@ class SupplierDiscoveryController(
                 maxMoq = maxMoq,
                 page = page,
                 size = size,
+                sort = sort,
+                order = order,
             )
         ).map { result ->
             ApiSuccessResponse(

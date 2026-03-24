@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import type { CreateRequestRequest, RequestMode } from "@fsm/types"
 import { useCreateRequest } from "../hooks/useCreateRequest"
 import { useSupplierList } from "../../discovery/hooks/useSupplierList"
@@ -26,9 +26,14 @@ const certifications = [
 
 export function RequestCreatePage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const createMutation = useCreateRequest()
 
-  const [mode, setMode] = useState<RequestMode>("public")
+  const targetSupplierIdFromUrl = searchParams.get("targetSupplierId")
+  const targetSupplierNameFromUrl = searchParams.get("targetSupplierName")
+  const hasPrefilledSupplier = Boolean(targetSupplierIdFromUrl && targetSupplierNameFromUrl)
+
+  const [mode, setMode] = useState<RequestMode>(hasPrefilledSupplier ? "targeted" : "public")
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState("")
   const [desiredVolume, setDesiredVolume] = useState("")
@@ -39,8 +44,11 @@ export function RequestCreatePage() {
   const [packagingRequirement, setPackagingRequirement] = useState<"private_label" | "bulk" | "none" | "">("")
   const [deliveryRequirement, setDeliveryRequirement] = useState("")
   const [notes, setNotes] = useState("")
-  const [targetSupplierIds, setTargetSupplierIds] = useState<string[]>([])
+  const [targetSupplierIds, setTargetSupplierIds] = useState<string[]>(
+    targetSupplierIdFromUrl ? [targetSupplierIdFromUrl] : []
+  )
   const [supplierSearchKeyword, setSupplierSearchKeyword] = useState("")
+  const [prefilledSupplierCleared, setPrefilledSupplierCleared] = useState(false)
 
   const { data: suppliersData } = useSupplierList({
     keyword: supplierSearchKeyword,
@@ -290,6 +298,50 @@ export function RequestCreatePage() {
                 ({targetSupplierIds.length}개 선택됨)
               </span>
             </label>
+
+            {hasPrefilledSupplier && targetSupplierIdFromUrl && targetSupplierIds.includes(targetSupplierIdFromUrl) && !prefilledSupplierCleared && (
+              <div
+                style={{
+                  padding: "0.75rem",
+                  backgroundColor: "#ecfdf5",
+                  border: "1px solid #a7f3d0",
+                  borderRadius: "0.5rem",
+                  marginBottom: "0.75rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "0.75rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ color: "#16a34a" }}>✓</span>
+                  <span style={{ fontWeight: 500, color: "#166534" }}>
+                    {targetSupplierNameFromUrl}
+                  </span>
+                  <span style={{ fontSize: "0.875rem", color: "#15803d" }}>
+                    (선택됨)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPrefilledSupplierCleared(true)
+                    toggleTargetSupplier(targetSupplierIdFromUrl)
+                  }}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    fontSize: "0.75rem",
+                    color: "#166534",
+                    backgroundColor: "transparent",
+                    border: "1px solid #166534",
+                    borderRadius: "0.25rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  제거
+                </button>
+              </div>
+            )}
 
             <input
               type="text"

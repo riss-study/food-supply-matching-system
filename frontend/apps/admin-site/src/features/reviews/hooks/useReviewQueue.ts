@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { getReviewQueue } from "../api/review-api"
+import { getReviewQueue, type GetReviewQueueParams } from "../api/review-api"
 
-export function useReviewQueue(state?: string) {
+export function useReviewQueue(params: GetReviewQueueParams = {}) {
   return useQuery({
-    queryKey: ["admin-review-queue", state],
-    queryFn: () => getReviewQueue(state),
+    queryKey: ["admin-review-queue", params],
+    queryFn: () => getReviewQueue(params),
   })
 }

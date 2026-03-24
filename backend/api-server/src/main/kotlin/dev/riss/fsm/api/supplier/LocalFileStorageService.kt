@@ -1,6 +1,7 @@
 package dev.riss.fsm.api.supplier
 
 import dev.riss.fsm.shared.file.AttachmentMetadata
+import dev.riss.fsm.shared.file.FileStorageService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
@@ -15,11 +16,11 @@ import java.util.UUID
 @Service
 class LocalFileStorageService(
     @Value("\${fsm.storage.local-root:backend/local-storage}") private val localRoot: String,
-) {
+) : FileStorageService {
     private val allowedContentTypes = setOf("image/jpeg", "image/png", "application/pdf")
     private val maxFileSize = 10L * 1024 * 1024
 
-    fun store(ownerType: String, ownerId: String, filePart: FilePart): Mono<AttachmentMetadata> {
+    override fun store(ownerType: String, ownerId: String, filePart: FilePart): Mono<AttachmentMetadata> {
         val contentType = filePart.headers().contentType?.toString() ?: "application/octet-stream"
         if (contentType !in allowedContentTypes) {
             return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported file type"))

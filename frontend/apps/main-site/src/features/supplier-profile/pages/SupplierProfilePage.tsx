@@ -5,6 +5,7 @@ import { useLatestVerificationSubmission } from "../hooks/useLatestVerificationS
 import { useSubmitVerification } from "../hooks/useSubmitVerification"
 import { useSupplierProfile } from "../hooks/useSupplierProfile"
 import { useUpdateSupplierProfile } from "../hooks/useUpdateSupplierProfile"
+import { useSupplierCategories, useSupplierRegions } from "../../discovery/hooks/useDiscoveryLookups"
 import { VerificationStatusCard } from "../components/VerificationStatusCard"
 
 function SupplierProfileForm({
@@ -16,10 +17,13 @@ function SupplierProfileForm({
   onSubmit: (request: CreateSupplierProfileRequest) => void
   isPending: boolean
 }) {
+  const { data: availableCategories = [], isLoading: categoriesLoading } = useSupplierCategories()
+  const { data: availableRegions = [], isLoading: regionsLoading } = useSupplierRegions()
+
   const [companyName, setCompanyName] = useState(initialData?.companyName ?? "")
   const [representativeName, setRepresentativeName] = useState(initialData?.representativeName ?? "")
   const [region, setRegion] = useState(initialData?.region ?? "")
-  const [categories, setCategories] = useState((initialData?.categories ?? ["snack"]).join(","))
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialData?.categories ?? ["snack"])
   const [equipmentSummary, setEquipmentSummary] = useState(initialData?.equipmentSummary ?? "")
   const [monthlyCapacity, setMonthlyCapacity] = useState(initialData?.monthlyCapacity?.toString() ?? "50000")
   const [moq, setMoq] = useState(initialData?.moq?.toString() ?? "1000")
@@ -29,13 +33,19 @@ function SupplierProfileForm({
   const [packagingLabelingSupport, setPackagingLabelingSupport] = useState(initialData?.packagingLabelingSupport ?? true)
   const [introduction, setIntroduction] = useState(initialData?.introduction ?? "")
 
+  const toggleCategory = (category: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+    )
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     onSubmit({
       companyName,
       representativeName,
       region,
-      categories: categories.split(",").map((item) => item.trim()).filter(Boolean),
+      categories: selectedCategories,
       equipmentSummary: equipmentSummary || undefined,
       monthlyCapacity: Number(monthlyCapacity),
       moq: Number(moq),
@@ -47,12 +57,63 @@ function SupplierProfileForm({
     })
   }
 
+  if (categoriesLoading || regionsLoading) {
+    return <p>옵션 로딩 중...</p>
+  }
+
   return (
     <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.75rem", maxWidth: "480px" }}>
       <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="회사명" required />
       <input value={representativeName} onChange={(e) => setRepresentativeName(e.target.value)} placeholder="대표자명" required />
-      <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder="지역" required />
-      <input value={categories} onChange={(e) => setCategories(e.target.value)} placeholder="카테고리 (comma-separated)" required />
+
+      <label>
+        지역
+        <select value={region} onChange={(e) => setRegion(e.target.value)} required style={{ display: "block", marginTop: "0.25rem", padding: "0.5rem", width: "100%" }}>
+          <option value="">지역 선택</option>
+          {availableRegions.map((r) => (
+            <option key={r.region} value={r.region}>
+              {r.region} ({r.supplierCount})
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <fieldset style={{ border: "1px solid #e5e7eb", borderRadius: "0.5rem", padding: "0.75rem", margin: 0 }}>
+        <legend style={{ fontSize: "0.875rem", color: "#6b7280", padding: "0 0.25rem" }}>카테고리 (복수 선택)</legend>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          {availableCategories.map((c) => (
+            <label
+              key={c.category}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.375rem",
+                padding: "0.375rem 0.75rem",
+                borderRadius: "9999px",
+                border: "1px solid",
+                borderColor: selectedCategories.includes(c.category) ? "#3b82f6" : "#e5e7eb",
+                backgroundColor: selectedCategories.includes(c.category) ? "#eff6ff" : "white",
+                cursor: "pointer",
+                fontSize: "0.875rem",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes(c.category)}
+                onChange={() => toggleCategory(c.category)}
+                style={{ margin: 0 }}
+              />
+              <span>{c.category}</span>
+              <span style={{ color: "#9ca3af", fontSize: "0.75rem" }}>({c.supplierCount})</span>
+            </label>
+          ))}
+        </div>
+        {selectedCategories.length === 0 && (
+          <p style={{ margin: "0.5rem 0 0", fontSize: "0.875rem", color: "#ef4444" }}>최소 하나의 카테고리를 선택해주세요.</p>
+        )}
+      </fieldset>
+
       <textarea value={equipmentSummary} onChange={(e) => setEquipmentSummary(e.target.value)} placeholder="설비 요약" />
       <input type="number" value={monthlyCapacity} onChange={(e) => setMonthlyCapacity(e.target.value)} placeholder="월 생산량" required />
       <input type="number" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="MOQ" required />
@@ -61,7 +122,7 @@ function SupplierProfileForm({
       <label><input type="checkbox" checked={rawMaterialSupport} onChange={(e) => setRawMaterialSupport(e.target.checked)} /> 원재료 지원</label>
       <label><input type="checkbox" checked={packagingLabelingSupport} onChange={(e) => setPackagingLabelingSupport(e.target.checked)} /> 포장/라벨 지원</label>
       <textarea value={introduction} onChange={(e) => setIntroduction(e.target.value)} placeholder="소개" />
-      <button type="submit" disabled={isPending}>{isPending ? "처리 중..." : "저장하기"}</button>
+      <button type="submit" disabled={isPending || selectedCategories.length === 0}>{isPending ? "처리 중..." : "저장하기"}</button>
     </form>
   )
 }
@@ -88,7 +149,11 @@ export function SupplierProfilePage() {
       <p>공급자 프로필을 등록하고 검수 서류를 제출해 승인 상태를 관리합니다.</p>
 
       <div style={{ margin: "1rem 0" }}>
-        <VerificationStatusCard submission={latestSubmission ?? null} />
+        <VerificationStatusCard
+          submission={latestSubmission ?? null}
+          profileId={profile?.profileId}
+          verificationState={profile?.verificationState}
+        />
       </div>
 
       {canEdit ? (

@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
@@ -29,14 +31,74 @@ class AdminReviewApplicationService(
 ) {
     private val objectMapper = jacksonObjectMapper()
 
-    fun queue(principal: AuthenticatedUserPrincipal, state: String?, page: Int, size: Int) = ensureAdmin(principal).then(
-        adminReviewQueryService.queue(AdminReviewQuery(state = state, page = page, size = size))
+    fun queue(
+        principal: AuthenticatedUserPrincipal,
+        state: String?,
+        fromDate: LocalDate?,
+        toDate: LocalDate?,
+        page: Int,
+        size: Int,
+        sort: String?,
+        order: String?,
+    ) = ensureAdmin(principal).then(
+        adminReviewQueryService.queue(
+            AdminReviewQuery(
+                state = state,
+                fromDate = fromDate,
+                toDate = toDate,
+                page = page,
+                size = size,
+                sort = sort,
+                order = order,
+            )
+        )
     )
 
-    fun detail(principal: AuthenticatedUserPrincipal, reviewId: String) = ensureAdmin(principal).then(
-        adminReviewQueryService.detail(reviewId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found")))
-    )
+    fun detail(principal: AuthenticatedUserPrincipal, reviewId: String): Mono<AdminReviewDetailResponse> {
+        return ensureAdmin(principal).then(
+            adminReviewQueryService.detail(reviewId)
+                .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found")))
+                .flatMap { detail ->
+                    auditLogRepository.findAllByTargetTypeAndTargetIdOrderByCreatedAtDesc("verification_submission", reviewId)
+                        .map { audit ->
+                            val payload = runCatching { objectMapper.readTree(audit.payloadSnapshot) }.getOrNull()
+                            AdminReviewHistoryItemResponse(
+                                actionType = audit.actionType,
+                                actorUserId = audit.actorUserId,
+                                createdAt = audit.createdAt.toInstant(ZoneOffset.UTC),
+                                noteInternal = payload?.get("noteInternal")?.takeUnless { it.isNull }?.asText(),
+                                notePublic = payload?.get("notePublic")?.takeUnless { it.isNull }?.asText(),
+                                reasonCode = payload?.get("reasonCode")?.takeUnless { it.isNull }?.asText(),
+                            )
+                        }
+                        .collectList()
+                        .map { history ->
+                            AdminReviewDetailResponse(
+                                reviewId = detail.reviewId,
+                                supplierProfileId = detail.supplierProfileId,
+                                companyName = detail.companyName,
+                                representativeName = detail.representativeName,
+                                region = detail.region,
+                                categories = detail.categories,
+                                state = detail.state,
+                                submittedAt = detail.submittedAt,
+                                reviewedAt = detail.reviewedAt,
+                                reviewNoteInternal = detail.reviewNoteInternal,
+                                reviewNotePublic = detail.reviewNotePublic,
+                                files = detail.files.map { file ->
+                                    AdminReviewDetailFileResponse(
+                                        fileId = file.fileId,
+                                        fileName = file.fileName,
+                                        status = file.status,
+                                        downloadUrl = null,
+                                    )
+                                },
+                                reviewHistory = history,
+                            )
+                        }
+                }
+        )
+    }
 
     fun approve(principal: AuthenticatedUserPrincipal, reviewId: String, request: ReviewDecisionRequest): Mono<ReviewDecisionResponse> {
         ensureAdmin(principal)

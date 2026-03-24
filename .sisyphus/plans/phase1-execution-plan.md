@@ -93,9 +93,9 @@
 | 01 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-01-foundation-runtime-swagger.md` |
 | 02 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-02-auth-role-skeleton.md` |
 | 03 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-03-requester-approval-gate.md` |
-| 04 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-04-supplier-verification.md` |
-| 05 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-05-admin-review-queue.md` |
-| 06 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-06-supplier-discovery.md` |
+| 04 | 🟡 Partial | `.sisyphus/plans/phase1-subplans/phase1-task-04-supplier-verification.md` |
+| 05 | 🟡 Partial | `.sisyphus/plans/phase1-subplans/phase1-task-05-admin-review-queue.md` |
+| 06 | 🟡 Partial | `.sisyphus/plans/phase1-subplans/phase1-task-06-supplier-discovery.md` |
 | 07 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-07-request-lifecycle.md` |
 | 08 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-08-quote-lifecycle.md` |
 | 09 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-09-message-threads.md` |

@@ -20,4 +20,6 @@ interface VerificationSubmissionRepository : ReactiveCrudRepository<Verification
     fun findFirstBySupplierProfileIdOrderBySubmittedAtDesc(supplierProfileId: String): Mono<VerificationSubmissionEntity>
 }
 
-interface AuditLogRepository : ReactiveCrudRepository<AuditLogEntity, String>
+interface AuditLogRepository : ReactiveCrudRepository<AuditLogEntity, String> {
+    fun findAllByTargetTypeAndTargetIdOrderByCreatedAtDesc(targetType: String, targetId: String): reactor.core.publisher.Flux<AuditLogEntity>
+}

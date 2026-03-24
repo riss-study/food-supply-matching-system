@@ -1,6 +1,7 @@
 package dev.riss.fsm.api.supplier
 
 import dev.riss.fsm.shared.api.ApiSuccessResponse
+import dev.riss.fsm.shared.file.FileStorageService
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -22,7 +23,7 @@ import reactor.core.publisher.Mono
 @Tag(name = "attachments")
 @SecurityRequirement(name = "bearerAuth")
 class AttachmentController(
-    private val localFileStorageService: LocalFileStorageService,
+    private val fileStorageService: FileStorageService,
 ) {
 
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -33,7 +34,7 @@ class AttachmentController(
         @RequestPart("ownerId") ownerId: String,
         @RequestPart("file") file: FilePart,
     ): Mono<ResponseEntity<ApiSuccessResponse<AttachmentUploadResponse>>> {
-        return localFileStorageService.store(ownerType, ownerId, file)
+        return fileStorageService.store(ownerType, ownerId, file)
             .map {
                 ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiSuccessResponse(

@@ -10,7 +10,7 @@
 | **스토리 포인트** | 13 |
 | **작업자** | Full-stack |
 | **우선순위** | P1 |
-| **상태** | 🟢 Done |
+| **상태** | 🟡 Partial |
 | **Can Parallel** | YES |
 | **Blocks** | Task 7, 8 |
 | **Blocked By** | Task 1, 2 |
@@ -25,18 +25,18 @@
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🟢 Done
-- 메모: 구현, 자동/수동 검증, 코드 리뷰 승인까지 완료.
+- 메인 Task 상태: 🟡 Partial
+- 메모: 2026-03-20 보강 작업으로 search sort/order, OEM/ODM/용량 필터, reset 버튼, 로고/targeted CTA가 추가됐지만 event consumer 명시와 optional text-index 항목은 여전히 남아 있음.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 6.1 | 🟢 Done | supplier_search_view / supplier_detail_view 구현 완료 |
-| 6.2 | 🟢 Done | approved-only projection 및 read-model 동기화 구현 완료 |
-| 6.3 | 🟢 Done | 공급자 검색/상세 API와 pagination/filter 구현 완료 |
+| 6.1 | 🟢 Done | read model과 핵심 Mongo index 선언 재검증 완료 |
+| 6.2 | 🟡 Partial | projection은 확인됐지만 event consumer 명시는 확인되지 않음 |
+| 6.3 | 🟢 Done | 검색/상세 API에 sort/order 포함해 재검증 완료 |
 | 6.4 | 🟢 Done | 카테고리/지역 목록 API 구현 완료 |
-| 6.5 | 🟢 Done | main-site 공급자 검색 UI 구현 및 검증 완료 |
-| 6.6 | 🟢 Done | main-site 공급자 상세 UI 구현 및 검증 완료 |
-| 6.7 | 🟢 Done | supplier discovery 최적화(기본 filter/meta, query shape) 반영 완료 |
+| 6.5 | 🟢 Done | OEM/ODM/생산량/MOQ 필터와 reset 버튼까지 구현 완료 |
+| 6.6 | 🟢 Done | main-site 공급자 상세 UI 핵심 플로우 재검증 완료 |
+| 6.7 | 🟡 Partial | companyName text index와 핵심 indexes는 추가됐지만 equipmentSummary text index는 남음 |
 
 ---
 
@@ -47,25 +47,25 @@
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] `supplier_search_view` (MongoDB collection)
-  - [ ] Fields: profileId, companyName, region, categories[], monthlyCapacity, moq, oemAvailable, odmAvailable, logoUrl, verificationState
-  - [ ] Only `approved` suppliers included
-  - [ ] Indexed fields: region, categories, oemAvailable, odmAvailable
-- [ ] `supplier_detail_view` (MongoDB collection)
-  - [ ] Full supplier profile data
-  - [ ] Certifications, portfolio images included
-  - [ ] Visible to all users
+- [x] `supplier_search_view` (MongoDB collection)
+  - [x] Fields: profileId, companyName, region, categories[], monthlyCapacity, moq, oemAvailable, odmAvailable, logoUrl, verificationState
+  - [x] Only `approved` suppliers included
+  - [x] Indexed fields: region, categories, oemAvailable, odmAvailable
+- [x] `supplier_detail_view` (MongoDB collection)
+  - [x] Full supplier profile data
+  - [x] Certifications, portfolio images included
+  - [x] Visible to all users
 
 ### 🟢 SubTask 6.2: 공급자 프로젝션
 
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] Projection handlers
-  - [ ] `OnSupplierApproved`: search_view와 detail_view에 추가
-  - [ ] `OnSupplierSuspended`: search_view와 detail_view에서 숨김
-  - [ ] `OnSupplierProfileUpdated`: detail_view 업데이트
-  - [ ] `OnCertificationAdded`: detail_view 업데이트
+- [x] Projection handlers
+  - [x] `OnSupplierApproved`: search_view와 detail_view에 추가
+  - [x] `OnSupplierSuspended`: search_view와 detail_view에서 숨김
+  - [x] `OnSupplierProfileUpdated`: detail_view 업데이트
+  - [x] `OnCertificationAdded`: detail_view 업데이트
 - [ ] Event consumers
   - [ ] `SupplierVerifiedEvent`
   - [ ] `SupplierSuspendedEvent`
@@ -77,93 +77,93 @@
 **작업자:** Backend  
 **예상 소요:** 0.5일
 
-- [ ] API: `GET /api/suppliers`
-  - [ ] Auth: 선택적 (인증 시 추가 정보 가능)
-  - [ ] Query params:
-    - [ ] keyword (회사명 키워드)
-    - [ ] category (카테고리 필터)
-    - [ ] region (지역 필터)
-    - [ ] oem, odm (boolean 필터)
-    - [ ] minCapacity, maxMoq (capacity 필터)
-    - [ ] page, size, sort, order (pagination)
-  - [ ] Swagger: 모든 파라미터와 응답 예시 문서화
-- [ ] API: `GET /api/suppliers/{supplierId}`
-  - [ ] 상세 조회: supplier_detail_view 기준
-  - [ ] 인증 여부와 관계없이 공개 정보 반환
-  - [ ] 404: 승인되지 않은 공급자 조회 시
+- [x] API: `GET /api/suppliers`
+  - [x] Auth: 선택적 (인증 시 추가 정보 가능)
+  - [x] Query params:
+    - [x] keyword (회사명 키워드)
+    - [x] category (카테고리 필터)
+    - [x] region (지역 필터)
+    - [x] oem, odm (boolean 필터)
+    - [x] minCapacity, maxMoq (capacity 필터)
+    - [x] page, size, sort, order (pagination)
+  - [x] Swagger: 모든 파라미터와 응답 예시 문서화
+- [x] API: `GET /api/suppliers/{supplierId}`
+  - [x] 상세 조회: supplier_detail_view 기준
+  - [x] 인증 여부와 관계없이 공개 정보 반환
+  - [x] 404: 승인되지 않은 공급자 조회 시
 
 ### 🟢 SubTask 6.4: 카테고리 및 지역 목록 API
 
 **작업자:** Backend  
 **예상 소요:** 0.25일
 
-- [ ] API: `GET /api/suppliers/categories`
-  - [ ] 사용 중인 카테고리 코드 목록
-  - [ ] 각 카테고리별 공급자 수
-- [ ] API: `GET /api/suppliers/regions`
-  - [ ] 사용 중인 지역 목록
-  - [ ] 각 지역별 공급자 수
-- [ ] Swagger: 간단한 목록 응답 문서화
+- [x] API: `GET /api/suppliers/categories`
+  - [x] 사용 중인 카테고리 코드 목록
+  - [x] 각 카테고리별 공급자 수
+- [x] API: `GET /api/suppliers/regions`
+  - [x] 사용 중인 지역 목록
+  - [x] 각 지역별 공급자 수
+- [x] Swagger: 간단한 목록 응답 문서화
 
 ### 🟢 SubTask 6.5: 프론트엔드 공급자 검색 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
 
-- [ ] 공급자 검색 페이지 (`main-site`)
-  - [ ] 키워드 검색 입력
-  - [ ] 필터 패널: 카테고리, 지역, OEM/ODM, 생산능력
-  - [ ] 검색 결과 목록: 카드 형태
-  - [ ] Pagination
-- [ ] 검색 결과 카드 컴포넌트
-  - [ ] 회사명, 지역, 카테고리 태그
-  - [ ] 생산능력, MOQ 표시
-  - [ ] OEM/ODM 가능 여부 배지
-  - [ ] 로고 이미지 (있는 경우)
-- [ ] 필터 상태 관리
-  - [ ] URL query string 동기화
-  - [ ] 필터 초기화 버튼
+- [x] 공급자 검색 페이지 (`main-site`)
+  - [x] 키워드 검색 입력
+  - [x] 필터 패널: 카테고리, 지역, OEM/ODM, 생산능력
+  - [x] 검색 결과 목록: 카드 형태
+  - [x] Pagination
+- [x] 검색 결과 카드 컴포넌트
+  - [x] 회사명, 지역, 카테고리 태그
+  - [x] 생산능력, MOQ 표시
+  - [x] OEM/ODM 가능 여부 배지
+  - [x] 로고 이미지 (있는 경우)
+- [x] 필터 상태 관리
+  - [x] URL query string 동기화
+  - [x] 필터 초기화 버튼
 
 ### 🟢 SubTask 6.6: 공급자 상세 페이지 UI
 
 **작업자:** Frontend  
 **예상 소요:** 0.5일
 
-- [ ] 공급자 상세 페이지 (`main-site`)
-  - [ ] 회사 기본 정보: 상호, 대표자, 지역
-  - [ ] 카테고리 및 가능 서비스
-  - [ ] 생산 능력 및 MOQ
-  - [ ] OEM/ODM 가능 여부
-  - [ ] 회사 소개
-  - [ ] 인증서 목록
-  - [ ] 포트폴리오 이미지 갤러리
-- [ ] CTA 버튼
-  - [ ] 인증된 요청자: "의뢰하기" 버튼 (targeted request로 연결)
-  - [ ] 미인증 사용자: "로그인 후 이용하기" 안내
+- [x] 공급자 상세 페이지 (`main-site`)
+  - [x] 회사 기본 정보: 상호, 대표자, 지역
+  - [x] 카테고리 및 가능 서비스
+  - [x] 생산 능력 및 MOQ
+  - [x] OEM/ODM 가능 여부
+  - [x] 회사 소개
+  - [x] 인증서 목록
+  - [x] 포트폴리오 이미지 갤러리
+- [x] CTA 버튼
+  - [x] 인증된 요청자: "의뢰하기" 버튼 (targeted request로 연결)
+  - [x] 미인증 사용자: "로그인 후 이용하기" 안내
 
 ### 🟢 SubTask 6.7: 검색 최적화
 
 **작업자:** Backend  
 **예상 소요:** 0.25일
 
-- [ ] MongoDB indexes
-  - [ ] Compound index: categories + region
-  - [ ] Single indexes: oemAvailable, odmAvailable, monthlyCapacity
+- [x] MongoDB indexes
+  - [x] Compound index: categories + region
+  - [x] Single indexes: oemAvailable, odmAvailable, monthlyCapacity
 - [ ] Text index for keyword search
-  - [ ] companyName text index
+  - [x] companyName text index
   - [ ] equipmentSummary text index (선택)
 
 ---
 
 ## 인수 완료 조건 (Acceptance Criteria)
 
-- [ ] `approved` 상태 공급자만 검색 결과에 노출됨
-- [ ] 키워드, 카테고리, 지역, OEM/ODM, 생산능력 필터링 가능
-- [ ] 검색 결과 pagination 동작
-- [ ] 공급자 상세 페이지에서 모든 공개 정보 표시
-- [ ] 승인되지 않은 공급자는 상세 조회 시 404 반환
-- [ ] Projection이 write side 변경 시 read model 동기화
-- [ ] Swagger에서 search API 문서화됨
+- [x] `approved` 상태 공급자만 검색 결과에 노출됨
+- [x] 키워드, 카테고리, 지역, OEM/ODM, 생산능력 필터링 가능
+- [x] 검색 결과 pagination 동작
+- [x] 공급자 상세 페이지에서 모든 공개 정보 표시
+- [x] 승인되지 않은 공급자는 상세 조회 시 404 반환
+- [x] Projection이 write side 변경 시 read model 동기화
+- [x] Swagger에서 search API 문서화됨
 
 ---
 

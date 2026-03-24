@@ -18,6 +18,7 @@ import dev.riss.fsm.query.admin.review.AdminReviewFileItem
 import dev.riss.fsm.query.admin.review.AdminReviewQueueItemDocument
 import dev.riss.fsm.query.admin.review.AdminReviewQueueViewRepository
 import dev.riss.fsm.shared.auth.UserRole
+import dev.riss.fsm.shared.file.FileStorageService
 import dev.riss.fsm.shared.file.AttachmentMetadata
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.http.HttpStatus
@@ -37,7 +38,7 @@ class SupplierProfileApplicationService(
     private val verificationSubmissionRepository: VerificationSubmissionRepository,
     private val certificationRecordRepository: CertificationRecordRepository,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
-    private val localFileStorageService: LocalFileStorageService,
+    private val fileStorageService: FileStorageService,
     private val supplierVisibilityProjectionService: SupplierVisibilityProjectionService,
     private val adminReviewQueueViewRepository: AdminReviewQueueViewRepository,
     private val adminReviewDetailViewRepository: AdminReviewDetailViewRepository,
@@ -244,7 +245,7 @@ class SupplierProfileApplicationService(
 
         return Flux.fromIterable(all)
             .flatMap { (type, file) ->
-                localFileStorageService.store("supplier-verification", profileId, file)
+                fileStorageService.store("supplier-verification", profileId, file)
                     .flatMap { metadata ->
                         attachmentMetadataRepository.save(
                             AttachmentMetadataEntity(

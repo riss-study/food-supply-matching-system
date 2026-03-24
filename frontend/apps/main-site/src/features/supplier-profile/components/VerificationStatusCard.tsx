@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import type { LatestVerificationSubmissionResponse, SupplierVerificationState } from "@fsm/types"
 
 const stateLabels: Record<SupplierVerificationState, string> = {
@@ -20,7 +21,15 @@ const stateColors: Record<SupplierVerificationState, string> = {
   suspended: "#991b1b",
 }
 
-export function VerificationStatusCard({ submission }: { submission: LatestVerificationSubmissionResponse | null }) {
+interface VerificationStatusCardProps {
+  submission: LatestVerificationSubmissionResponse | null
+  profileId?: string
+  verificationState?: SupplierVerificationState
+}
+
+export function VerificationStatusCard({ submission, profileId, verificationState }: VerificationStatusCardProps) {
+  const isApproved = verificationState === "approved"
+
   if (!submission) {
     return (
       <div style={{ padding: "1rem", border: "1px dashed #9ca3af", borderRadius: "0.5rem" }}>
@@ -45,6 +54,43 @@ export function VerificationStatusCard({ submission }: { submission: LatestVerif
           ))}
         </ul>
       ) : null}
+
+      {isApproved && profileId && (
+        <div style={{ marginTop: "1rem", padding: "1rem", backgroundColor: "#f0fdf4", borderRadius: "0.5rem", border: "1px solid #bbf7d0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: "200px" }}>
+              <p style={{ margin: "0 0 0.25rem 0", fontWeight: 500, color: "#166534" }}>
+                승인 완료! 공개 프로필이 활성화되었습니다.
+              </p>
+              <p style={{ margin: 0, fontSize: "0.875rem", color: "#15803d" }}>
+                요청자들이 내 프로필을 검색하고 의뢰를 받을 수 있습니다.
+              </p>
+            </div>
+            <Link
+              to={`/suppliers/${profileId}`}
+              style={{
+                padding: "0.625rem 1.25rem",
+                backgroundColor: "#16a34a",
+                color: "white",
+                textDecoration: "none",
+                borderRadius: "0.5rem",
+                fontWeight: 500,
+                fontSize: "0.875rem",
+                whiteSpace: "nowrap",
+                transition: "background-color 0.15s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#15803d"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#16a34a"
+              }}
+            >
+              내 공개 프로필 보기
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

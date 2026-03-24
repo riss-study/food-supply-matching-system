@@ -32,7 +32,24 @@ data class AdminReviewDetailResponse(
     val reviewedAt: Instant?,
     val reviewNoteInternal: String?,
     val reviewNotePublic: String?,
-    val files: List<AdminReviewFileItem>,
+    val files: List<AdminReviewDetailFileResponse>,
+    val reviewHistory: List<AdminReviewHistoryItemResponse>,
+)
+
+data class AdminReviewDetailFileResponse(
+    val fileId: String,
+    val fileName: String,
+    val status: String,
+    val downloadUrl: String?,
+)
+
+data class AdminReviewHistoryItemResponse(
+    val actionType: String,
+    val actorUserId: String,
+    val createdAt: Instant,
+    val noteInternal: String?,
+    val notePublic: String?,
+    val reasonCode: String?,
 )
 
 data class ReviewDecisionResponse(
