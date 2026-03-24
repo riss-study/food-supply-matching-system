@@ -12,9 +12,14 @@ export function SupplierQuoteListPage() {
   const [leadTime, setLeadTime] = useState("")
   const [sampleCost, setSampleCost] = useState("")
   const [note, setNote] = useState("")
+  const [editError, setEditError] = useState<string | null>(null)
   const { data, isLoading, error } = useSupplierQuotes({ page, size: 20 })
   const updateMutation = useUpdateQuote()
   const withdrawMutation = useWithdrawQuote()
+  const parsedUnitPriceEstimate = Number(unitPriceEstimate)
+  const parsedMoq = Number(moq)
+  const parsedLeadTime = Number(leadTime)
+  const parsedSampleCost = sampleCost ? Number(sampleCost) : undefined
 
   const groups = useMemo(() => {
     const items = data?.items ?? []
@@ -26,11 +31,49 @@ export function SupplierQuoteListPage() {
 
   const openEdit = (quote: SupplierQuoteSummary) => {
     setEditing(quote)
+    setEditError(null)
     setUnitPriceEstimate(String(quote.unitPriceEstimate))
     setMoq(String(quote.moq))
     setLeadTime(String(quote.leadTime))
     setSampleCost(quote.sampleCost ? String(quote.sampleCost) : "")
     setNote("")
+  }
+
+  const handleSave = () => {
+    if (!editing) {
+      return
+    }
+
+    const hasValidRequiredFields =
+      Number.isInteger(parsedUnitPriceEstimate) &&
+      parsedUnitPriceEstimate > 0 &&
+      Number.isInteger(parsedMoq) &&
+      parsedMoq > 0 &&
+      Number.isInteger(parsedLeadTime) &&
+      parsedLeadTime > 0
+    const hasValidSampleCost =
+      parsedSampleCost === undefined ||
+      (Number.isInteger(parsedSampleCost) && parsedSampleCost >= 0)
+
+    if (!hasValidRequiredFields || !hasValidSampleCost) {
+      setEditError("단가, MOQ, 납기는 1 이상이어야 하고 샘플 비용은 0 이상이어야 합니다.")
+      return
+    }
+
+    setEditError(null)
+    updateMutation.mutate(
+      {
+        quoteId: editing.quoteId,
+        request: {
+          unitPriceEstimate: parsedUnitPriceEstimate,
+          moq: parsedMoq,
+          leadTime: parsedLeadTime,
+          sampleCost: parsedSampleCost,
+          note: note || undefined,
+        },
+      },
+      { onSuccess: () => setEditing(null) },
+    )
   }
 
   const sections: Array<[string, SupplierQuoteSummary[]]> = [
@@ -78,19 +121,23 @@ export function SupplierQuoteListPage() {
         <div style={{ marginTop: "1.5rem", padding: "1rem", borderRadius: "0.75rem", border: "1px solid #bfdbfe", backgroundColor: "#eff6ff" }}>
           <h2 style={{ marginTop: 0 }}>견적 수정</h2>
           <div style={{ display: "grid", gap: "0.75rem", maxWidth: "640px" }}>
-            <input type="number" value={unitPriceEstimate} onChange={(e) => setUnitPriceEstimate(e.target.value)} placeholder="예상 단가" />
-            <input type="number" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="MOQ" />
-            <input type="number" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} placeholder="납기" />
-            <input type="number" value={sampleCost} onChange={(e) => setSampleCost(e.target.value)} placeholder="샘플 비용" />
+            <input type="number" min="1" value={unitPriceEstimate} onChange={(e) => setUnitPriceEstimate(e.target.value)} placeholder="예상 단가" />
+            <input type="number" min="1" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="MOQ" />
+            <input type="number" min="1" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} placeholder="납기" />
+            <input type="number" min="0" value={sampleCost} onChange={(e) => setSampleCost(e.target.value)} placeholder="샘플 비용" />
             <textarea rows={4} value={note} onChange={(e) => setNote(e.target.value)} placeholder="비고" />
+            {editError && <p style={{ color: "#dc2626", margin: 0 }}>{editError}</p>}
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <button
-                onClick={() => updateMutation.mutate({ quoteId: editing.quoteId, request: { unitPriceEstimate: Number(unitPriceEstimate), moq: Number(moq), leadTime: Number(leadTime), sampleCost: sampleCost ? Number(sampleCost) : undefined, note: note || undefined } }, { onSuccess: () => setEditing(null) })}
+                onClick={handleSave}
                 disabled={updateMutation.isPending}
               >
                 저장
               </button>
-              <button onClick={() => setEditing(null)}>취소</button>
+              <button onClick={() => {
+                setEditing(null)
+                setEditError(null)
+              }}>취소</button>
             </div>
           </div>
         </div>

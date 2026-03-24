@@ -92,7 +92,7 @@ class QuoteController(
     fun decline(
         @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
         @PathVariable quoteId: String,
-        @RequestBody request: DeclineQuoteRequest?,
+        @Valid @RequestBody request: DeclineQuoteRequest?,
     ): Mono<ApiSuccessResponse<DeclineQuoteResponse>> {
         return quoteApplicationService.decline(principal, quoteId, request)
             .map { response -> ApiSuccessResponse(message = "Quote declined", data = response) }

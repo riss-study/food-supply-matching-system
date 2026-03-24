@@ -17,6 +17,8 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.any
 import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -136,6 +138,25 @@ class QuoteCommandServiceTest {
     }
 
     @Test
+    fun `update rejects non owner supplier`() {
+        val quote = submittedQuote()
+        `when`(quoteRepository.findById(quote.quoteId)).thenReturn(Mono.just(quote))
+
+        StepVerifier.create(
+            quoteCommandService.update(
+                quote.quoteId,
+                "sprof_other",
+                UpdateQuoteCommand(unitPriceEstimate = 750)
+            )
+        )
+            .expectErrorSatisfies { error ->
+                assertTrue(error is ResponseStatusException)
+                assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+            }
+            .verify()
+    }
+
+    @Test
     fun `select closes request and marks others declined`() {
         val quote = submittedQuote()
         val other = submittedQuote().copy(quoteId = "quo_2", supplierProfileId = "sprof_2")
@@ -152,6 +173,21 @@ class QuoteCommandServiceTest {
                 assertEquals("closed", result.request.state)
             }
             .verifyComplete()
+    }
+
+    @Test
+    fun `select rejects non owner requester`() {
+        val quote = submittedQuote()
+        val request = openRequest()
+        `when`(quoteRepository.findById(quote.quoteId)).thenReturn(Mono.just(quote))
+        `when`(requestRepository.findById(request.requestId)).thenReturn(Mono.just(request))
+
+        StepVerifier.create(quoteCommandService.select(quote.quoteId, "usr_other"))
+            .expectErrorSatisfies { error ->
+                assertTrue(error is ResponseStatusException)
+                assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+            }
+            .verify()
     }
 
     @Test

@@ -1,6 +1,6 @@
 Task 08 Quote Lifecycle and Comparison - Evidence
 =================================================
-Date: 2026-03-20
+Date: 2026-03-24
 Status: complete, code review approved
 
 Verification Summary
@@ -27,15 +27,15 @@ Verification Summary
    - supplier request detail routes to quote creation and reflects `hasQuoted` from live quote existence checks
 
 4. Frontend requester flow
-   - requester request detail links to quote comparison page
-   - quote comparison page supports state filter, sortable columns, detail panel, select, and decline actions
+    - requester request detail links to quote comparison page
+    - quote comparison page supports state filter, sortable columns, dialog-based detail view, select confirmation, and decline actions
 
 5. Automated verification
-   - Backend: `./gradlew :command-domain-quote:test :command-domain-thread:test` -> PASS
-   - Backend: `./gradlew build` -> PASS
-   - Frontend: `yarn workspace @fsm/main-site test --run` -> PASS
-   - Frontend: `yarn test && yarn build` -> PASS
-   - Frontend: `yarn workspace @fsm/main-site build` -> PASS
+    - Backend: `./gradlew :command-domain-quote:test :command-domain-thread:test` -> PASS
+    - Backend: `./gradlew build` -> PASS (2026-03-20 evidence baseline)
+    - Frontend: `yarn workspace @fsm/main-site test QuoteComparisonPage.test.tsx QuoteCreatePage.test.tsx SupplierQuoteListPage.test.tsx` -> PASS
+    - Frontend: `yarn workspace @fsm/main-site type-check` -> PASS
+    - Frontend: `yarn workspace @fsm/main-site build` -> PASS
 
 6. Code review result
    - Task 08 review result: APPROVED FOR PROGRESSION TO TASK 09
@@ -43,5 +43,5 @@ Verification Summary
 
 Notes
 -----
-- `Task 08` creates the write-side thread record needed at quote submission time; thread read/detail UX remains Task 09 scope.
+- `Task 08` creates the write-side thread record needed at quote submission time; optional initial message creation and thread read/detail UX remain Task 09 scope.
 - Quote comparison currently uses the implemented API sort fields (`submittedAt`, `unitPriceEstimate`, `moq`, `leadTime`) for requester-side ordering.
