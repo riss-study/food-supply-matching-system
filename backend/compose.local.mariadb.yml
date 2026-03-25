@@ -1,7 +1,8 @@
+name: fsm-local-mariadb
+
 services:
   mariadb:
     image: mariadb:11.4
-    container_name: fsm-local-mariadb
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: fsm_command
@@ -18,20 +19,7 @@ services:
       - mariadb-data:/var/lib/mysql
       - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
 
-  mongodb:
-    image: mongo:4.4
-    container_name: fsm-local-mongodb
-    ports:
-      - "27018:27017"
-    healthcheck:
-      test: ["CMD", "mongo", "--quiet", "--eval", "db.adminCommand('ping')"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-    volumes:
-      - mongodb-data:/data/db
-      - ./docker/mongodb/init:/docker-entrypoint-initdb.d:ro
-
 volumes:
   mariadb-data:
-  mongodb-data:
+    name: backend_mariadb-data
+    external: true

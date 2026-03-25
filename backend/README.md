@@ -12,7 +12,10 @@ Task 01 foundation for the Phase 1 backend.
 ## Run with local profile
 
 ```bash
-docker compose -f compose.local.yml up -d
+docker volume create backend_mariadb-data >/dev/null
+docker volume create backend_mongodb-data >/dev/null
+docker compose -f compose.local.mariadb.yml up -d
+docker compose -f compose.local.mongodb.yml up -d
 export DOCKER_CONTEXT=colima # if you use Colima
 ./gradlew :api-server:bootRun --args='--spring.profiles.active=local'
 ./gradlew :admin-server:bootRun --args='--spring.profiles.active=local'
@@ -26,15 +29,21 @@ Local profile overrides:
 ## Local infrastructure
 
 ```bash
-docker compose -f compose.local.yml up -d
-docker compose -f compose.local.yml ps
-docker compose -f compose.local.yml down
+docker volume create backend_mariadb-data >/dev/null
+docker volume create backend_mongodb-data >/dev/null
+docker compose -f compose.local.mariadb.yml up -d
+docker compose -f compose.local.mongodb.yml up -d
+docker compose -f compose.local.mariadb.yml ps
+docker compose -f compose.local.mongodb.yml ps
+docker compose -f compose.local.mariadb.yml down
+docker compose -f compose.local.mongodb.yml down
 ```
 
-The local compose file provisions:
+The local compose files provision:
 
-- MariaDB `11.4` on `13306`
-- MongoDB `4.4` on `27018` (AVX 미지원 환경 호환용)
+- `compose.local.mariadb.yml`: MariaDB `11.4` on `13306`
+- `compose.local.mongodb.yml`: MongoDB `4.4` on `27018` (AVX 미지원 환경 호환용)
+- Existing local data is preserved by reusing the original Docker volumes `backend_mariadb-data` and `backend_mongodb-data`.
 
 ## Schema / Seed Commands
 
