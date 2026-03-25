@@ -53,6 +53,26 @@ class GlobalApiExceptionHandler {
         )
     }
 
+    @ExceptionHandler(ThreadNotFoundException::class)
+    fun handleThreadNotFound(exception: ThreadNotFoundException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            ApiErrorResponse(
+                code = 4041,
+                message = exception.message ?: "Thread not found",
+            )
+        )
+    }
+
+    @ExceptionHandler(ThreadAccessDeniedException::class)
+    fun handleThreadAccessDenied(exception: ThreadAccessDeniedException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(
+                code = 4039,
+                message = exception.message ?: "Access denied to this thread",
+            )
+        )
+    }
+
     @ExceptionHandler(WebExchangeBindException::class)
     fun handleValidation(exception: WebExchangeBindException): ResponseEntity<ApiErrorResponse> {
         val details = exception.bindingResult.allErrors.map { error ->

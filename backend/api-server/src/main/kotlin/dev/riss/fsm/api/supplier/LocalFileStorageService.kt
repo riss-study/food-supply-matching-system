@@ -17,11 +17,13 @@ import java.util.UUID
 class LocalFileStorageService(
     @Value("\${fsm.storage.local-root:backend/local-storage}") private val localRoot: String,
 ) : FileStorageService {
-    private val allowedContentTypes = setOf("image/jpeg", "image/png", "application/pdf")
+    private val defaultAllowedContentTypes = setOf("image/jpeg", "image/png", "application/pdf")
+    private val threadAllowedContentTypes = defaultAllowedContentTypes + "image/gif"
     private val maxFileSize = 10L * 1024 * 1024
 
     override fun store(ownerType: String, ownerId: String, filePart: FilePart): Mono<AttachmentMetadata> {
         val contentType = filePart.headers().contentType?.toString() ?: "application/octet-stream"
+        val allowedContentTypes = if (ownerType == "thread") threadAllowedContentTypes else defaultAllowedContentTypes
         if (contentType !in allowedContentTypes) {
             return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported file type"))
         }
@@ -56,5 +58,15 @@ class LocalFileStorageService(
                 )
             }
         )
+    }
+
+    override fun resolve(storageKey: String): Mono<Path> {
+        return Mono.fromCallable {
+            val path = Path.of(localRoot, storageKey)
+            if (!Files.exists(path)) {
+                throw ResponseStatusException(HttpStatus.NOT_FOUND, "Attachment file not found")
+            }
+            path
+        }
     }
 }

@@ -73,9 +73,27 @@ CREATE TABLE message_thread (
   request_id VARCHAR(64) NOT NULL,
   requester_user_id VARCHAR(64) NOT NULL,
   supplier_profile_id VARCHAR(64) NOT NULL,
-  quote_id VARCHAR(64) NOT NULL,
+  quote_id VARCHAR(64) NULL,
+  contact_share_state VARCHAR(32) NOT NULL DEFAULT 'not_requested',
   created_at TIMESTAMP NOT NULL,
   UNIQUE KEY uk_request_participant_thread (request_id, requester_user_id, supplier_profile_id)
+);
+
+CREATE TABLE thread_message (
+  id VARCHAR(64) PRIMARY KEY,
+  thread_id VARCHAR(64) NOT NULL,
+  sender_user_id VARCHAR(64) NOT NULL,
+  body TEXT NULL,
+  attachment_ids TEXT NULL,
+  created_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE thread_participant_read_state (
+  id VARCHAR(64) PRIMARY KEY,
+  thread_id VARCHAR(64) NOT NULL,
+  user_id VARCHAR(64) NOT NULL,
+  last_read_at TIMESTAMP NOT NULL,
+  UNIQUE KEY uk_thread_read_state (thread_id, user_id)
 );
 
 CREATE TABLE supplier_profile (

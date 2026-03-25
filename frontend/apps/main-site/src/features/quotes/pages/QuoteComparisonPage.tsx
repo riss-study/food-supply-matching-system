@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Link, useParams, useSearchParams } from "react-router-dom"
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import type { RequestQuoteSummary } from "@fsm/types"
 import { useRequestQuotes } from "../hooks/useRequestQuotes"
 import { useSelectQuote } from "../hooks/useSelectQuote"
@@ -27,6 +27,7 @@ function QuoteStateBadge({ state }: { state: RequestQuoteSummary["state"] }) {
 
 export function QuoteComparisonPage() {
   const { requestId = "" } = useParams<{ requestId: string }>()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedQuote, setSelectedQuote] = useState<RequestQuoteSummary | null>(null)
   const [declineTarget, setDeclineTarget] = useState<RequestQuoteSummary | null>(null)
@@ -175,6 +176,12 @@ export function QuoteComparisonPage() {
                 <td style={{ padding: "0.9rem" }}>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     <button onClick={() => setSelectedQuote(quote)} style={{ padding: "0.4rem 0.7rem", borderRadius: "0.5rem", border: "1px solid #cbd5e1", backgroundColor: "white", cursor: "pointer" }}>상세</button>
+                    <button
+                      onClick={() => navigate(`/threads/${quote.threadId}`)}
+                      style={{ padding: "0.4rem 0.7rem", borderRadius: "0.5rem", border: "1px solid #3b82f6", backgroundColor: "#eff6ff", color: "#1d4ed8", cursor: "pointer" }}
+                    >
+                      메시지
+                    </button>
                     {quote.state === "submitted" && (
                       <>
                         <button onClick={() => handleSelectClick(quote)} disabled={selectMutation.isPending} style={{ padding: "0.4rem 0.7rem", borderRadius: "0.5rem", border: "none", backgroundColor: "#166534", color: "white", cursor: "pointer" }}>선택</button>

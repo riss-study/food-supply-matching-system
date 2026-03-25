@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import type { RequestState } from "@fsm/types"
 import { useRequestDetail } from "../hooks/useRequestDetail"
 import { usePublishRequest } from "../hooks/usePublishRequest"
 import { useCloseRequest } from "../hooks/useCloseRequest"
 import { useCancelRequest } from "../hooks/useCancelRequest"
 import { useUpdateRequest } from "../hooks/useUpdateRequest"
+import { useCreateThread } from "../../threads"
 
 const stateLabels: Record<RequestState, string> = {
   draft: "작성 중",
@@ -41,11 +42,13 @@ function StateBadge({ state }: { state: RequestState }) {
 
 export function RequestDetailPage() {
   const { requestId } = useParams<{ requestId: string }>()
+  const navigate = useNavigate()
   const { data: request, isLoading, error } = useRequestDetail(requestId ?? "")
   const publishMutation = usePublishRequest()
   const closeMutation = useCloseRequest()
   const cancelMutation = useCancelRequest()
   const updateMutation = useUpdateRequest()
+  const createThreadMutation = useCreateThread(requestId ?? "")
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [cancelReason, setCancelReason] = useState("")
   const [actionError, setActionError] = useState<string | null>(null)
@@ -147,6 +150,18 @@ export function RequestDetailPage() {
       {
         onSuccess: () => setEditMode(false),
         onError: () => setActionError("수정 저장에 실패했습니다."),
+      },
+    )
+  }
+
+  const handleCreateThread = (supplierId: string) => {
+    if (!requestId) return
+    setActionError(null)
+    createThreadMutation.mutate(
+      { supplierId },
+      {
+        onSuccess: (response) => navigate(`/threads/${response.threadId}`),
+        onError: () => setActionError("대화방 생성에 실패했습니다."),
       },
     )
   }
@@ -516,20 +531,47 @@ export function RequestDetailPage() {
           }}
         >
           <h2 style={{ margin: "0 0 0.75rem", fontSize: "1.125rem", fontWeight: 600 }}>지정 공급자</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          <div style={{ display: "grid", gap: "0.75rem" }}>
             {request.targetSuppliers.map((supplier) => (
-              <span
+              <div
                 key={supplier.supplierProfileId}
                 style={{
-                  padding: "0.375rem 0.75rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "0.75rem",
+                  padding: "0.75rem 1rem",
                   backgroundColor: "#eff6ff",
-                  color: "#1e40af",
-                  borderRadius: "9999px",
-                  fontSize: "0.875rem",
+                  borderRadius: "0.75rem",
                 }}
               >
-                {supplier.companyName}
-              </span>
+                <span
+                  style={{
+                    color: "#1e40af",
+                    fontSize: "0.875rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  {supplier.companyName}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleCreateThread(supplier.supplierProfileId)}
+                  disabled={createThreadMutation.isPending}
+                  style={{
+                    padding: "0.45rem 0.8rem",
+                    borderRadius: "9999px",
+                    border: "1px solid #3b82f6",
+                    backgroundColor: "white",
+                    color: "#1d4ed8",
+                    cursor: "pointer",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  대화 시작
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -555,6 +597,35 @@ export function RequestDetailPage() {
           </p>
         </div>
       )}
+
+      <div
+        style={{
+          marginTop: "1.5rem",
+          padding: "1.25rem",
+          backgroundColor: "#eff6ff",
+          borderRadius: "0.5rem",
+          border: "1px solid #bfdbfe",
+        }}
+      >
+        <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem", fontWeight: 600, color: "#1e40af" }}>메시지</h3>
+        <p style={{ margin: "0 0 0.75rem", color: "#1e40af" }}>
+          이 의뢰와 관련된 대화를 확인하고 공급자와 소통합니다.
+        </p>
+        <button
+          onClick={() => navigate("/threads")}
+          style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "#3b82f6",
+            color: "white",
+            border: "none",
+            borderRadius: "0.375rem",
+            cursor: "pointer",
+            fontWeight: 500,
+          }}
+        >
+          메시지 목록 보기
+        </button>
+      </div>
     </section>
   )
 }

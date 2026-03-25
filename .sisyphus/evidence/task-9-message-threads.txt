@@ -1,0 +1,52 @@
+Date: 2026-03-24
+
+Task 09 Evidence - Message Threads, Attachments, Read State
+===========================================================
+
+Implemented scope
+-----------------
+1. Backend thread domain and schema
+   - `message_thread.quote_id` relaxed to optional provenance and `contact_share_state` added.
+   - Added `thread_message` and `thread_participant_read_state` tables in backend schemas.
+   - Added write-side entities/repositories/services in `backend/command-domain-thread`.
+
+2. Backend API and projection
+   - Added thread APIs under `backend/api-server/src/main/kotlin/dev/riss/fsm/api/thread/`:
+     - `POST /api/requests/{requestId}/threads`
+     - `GET /api/threads`
+     - `GET /api/threads/{threadId}`
+     - `POST /api/threads/{threadId}/messages`
+     - `POST /api/threads/{threadId}/read`
+     - `POST /api/threads/{threadId}/attachments`
+     - `GET /api/threads/{threadId}/attachments/{attachmentId}`
+   - Added thread summary/detail query model documents and repositories in `backend/query-model-thread`.
+   - Added `backend/projection/src/main/kotlin/dev/riss/fsm/projection/thread/ThreadProjectionService.kt`.
+
+3. Frontend main-site messaging UX
+   - Added `frontend/apps/main-site/src/features/threads/` for thread list/detail, upload, preview, hooks, and API client.
+   - Added routes in `frontend/apps/main-site/src/App.tsx` for `/threads` and `/threads/:threadId`.
+   - Added Task 09 entry points from:
+     - `frontend/apps/main-site/src/features/request-management/pages/RequestDetailPage.tsx`
+     - `frontend/apps/main-site/src/features/quotes/pages/QuoteComparisonPage.tsx`
+     - `frontend/apps/main-site/src/features/supplier-quotes/pages/SupplierQuoteListPage.tsx`
+
+4. Scope boundary preserved
+   - Contact-share state remains non-revealing in Task 09.
+   - No Task 10 contact info exposure implemented in backend or frontend.
+
+Verification
+------------
+Backend
+- `./gradlew :command-domain-thread:test --tests dev.riss.fsm.command.thread.ThreadCommandServiceTest` -> PASS
+- `./gradlew build` -> PASS
+
+Frontend
+- `yarn workspace @fsm/main-site test ThreadListPage.test.tsx ThreadDetailPage.test.tsx thread-api.test.ts threads-hooks.test.tsx` -> PASS
+- `yarn workspace @fsm/main-site test` -> PASS
+- `yarn workspace @fsm/main-site type-check` -> PASS
+- `yarn workspace @fsm/main-site build` -> PASS
+
+Notes
+-----
+- Read state is implemented with participant-level last-read state and unread count projection, instead of per-message read receipts.
+- Thread detail returns paged messages and attachment metadata, while contact disclosure remains deferred to Task 10.

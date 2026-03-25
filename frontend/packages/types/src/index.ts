@@ -515,3 +515,104 @@ export interface SupplierQuoteSummary {
   threadId: string
   submittedAt: string
 }
+
+export type ContactShareState =
+  | "not_requested"
+  | "requested"
+  | "one_side_approved"
+  | "mutually_approved"
+  | "revoked"
+
+export interface ThreadOtherParty {
+  displayName: string
+  role: string
+  profileId?: string | null
+}
+
+export interface ThreadLastMessage {
+  messageId: string
+  senderUserId: string
+  body?: string | null
+  hasAttachments: boolean
+  createdAt: string
+}
+
+export interface ThreadSummary {
+  threadId: string
+  requestId: string
+  requestTitle: string
+  otherParty: ThreadOtherParty
+  unreadCount: number
+  contactShareState: ContactShareState
+  lastMessage?: ThreadLastMessage | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ThreadAttachment {
+  attachmentId: string
+  fileName: string
+  contentType: string
+  fileSize: number
+  url: string
+  createdAt: string
+}
+
+export interface ThreadMessage {
+  messageId: string
+  senderUserId: string
+  senderType: string
+  body?: string | null
+  attachments: ThreadAttachment[]
+  createdAt: string
+}
+
+export interface ThreadDetail {
+  threadId: string
+  requestId: string
+  requestTitle: string
+  otherParty: ThreadOtherParty
+  contactShareState: ContactShareState
+  messages: ThreadMessage[]
+  meta?: PaginationMeta
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateThreadRequest {
+  supplierId: string
+}
+
+export interface CreateThreadResponse {
+  threadId: string
+  requestId: string
+  supplierProfileId: string
+  createdAt: string
+  created: boolean
+}
+
+export interface SendThreadMessageRequest {
+  body?: string | null
+  attachmentIds?: string[] | null
+}
+
+export interface SendThreadMessageResponse {
+  messageId: string
+  threadId: string
+  createdAt: string
+}
+
+export interface MarkThreadReadResponse {
+  threadId: string
+  unreadCount: number
+  readAt: string
+}
+
+export interface UploadThreadAttachmentResponse {
+  attachmentId: string
+  fileName: string
+  contentType: string
+  fileSize: number
+  url: string
+  createdAt: string
+}

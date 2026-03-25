@@ -7,28 +7,22 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
-@Table("message_thread")
-data class MessageThreadEntity(
+@Table("thread_participant_read_state")
+data class ThreadParticipantReadStateEntity(
     @Id
     @Column("id")
+    val readStateId: String,
+    @Column("thread_id")
     val threadId: String,
-    @Column("request_id")
-    val requestId: String,
-    @Column("requester_user_id")
-    val requesterUserId: String,
-    @Column("supplier_profile_id")
-    val supplierProfileId: String,
-    @Column("quote_id")
-    val quoteId: String?,
-    @Column("contact_share_state")
-    val contactShareState: String = "not_requested",
-    @Column("created_at")
-    val createdAt: LocalDateTime,
+    @Column("user_id")
+    val userId: String,
+    @Column("last_read_at")
+    val lastReadAt: LocalDateTime,
 ) : Persistable<String> {
     @Transient
     var newEntity: Boolean = false
 
-    override fun getId(): String = threadId
+    override fun getId(): String = readStateId
 
     override fun isNew(): Boolean = newEntity
 }

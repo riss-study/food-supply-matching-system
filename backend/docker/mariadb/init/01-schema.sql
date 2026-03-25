@@ -71,11 +71,31 @@ CREATE TABLE IF NOT EXISTS message_thread (
   request_id VARCHAR(64) NOT NULL,
   requester_user_id VARCHAR(64) NOT NULL,
   supplier_profile_id VARCHAR(64) NOT NULL,
-  quote_id VARCHAR(64) NOT NULL,
+  quote_id VARCHAR(64) NULL,
+  contact_share_state VARCHAR(32) NOT NULL DEFAULT 'not_requested',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uk_request_participant_thread (request_id, requester_user_id, supplier_profile_id),
   CONSTRAINT fk_thread_request FOREIGN KEY (request_id) REFERENCES request_record(id),
   CONSTRAINT fk_thread_quote FOREIGN KEY (quote_id) REFERENCES quote(id)
+);
+
+CREATE TABLE IF NOT EXISTS thread_message (
+  id VARCHAR(64) PRIMARY KEY,
+  thread_id VARCHAR(64) NOT NULL,
+  sender_user_id VARCHAR(64) NOT NULL,
+  body TEXT NULL,
+  attachment_ids TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_thread_message_thread FOREIGN KEY (thread_id) REFERENCES message_thread(id)
+);
+
+CREATE TABLE IF NOT EXISTS thread_participant_read_state (
+  id VARCHAR(64) PRIMARY KEY,
+  thread_id VARCHAR(64) NOT NULL,
+  user_id VARCHAR(64) NOT NULL,
+  last_read_at TIMESTAMP NOT NULL,
+  UNIQUE KEY uk_thread_read_state (thread_id, user_id),
+  CONSTRAINT fk_thread_read_state_thread FOREIGN KEY (thread_id) REFERENCES message_thread(id)
 );
 
 CREATE TABLE IF NOT EXISTS supplier_profile (

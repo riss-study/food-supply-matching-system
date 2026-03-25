@@ -3,6 +3,7 @@ package dev.riss.fsm.command.quote
 import dev.riss.fsm.command.request.RequestEntity
 import dev.riss.fsm.command.request.RequestRepository
 import dev.riss.fsm.command.thread.CreateThreadCommand
+import dev.riss.fsm.command.thread.MessageThreadEntity
 import dev.riss.fsm.command.thread.ThreadCommandService
 import dev.riss.fsm.shared.error.DuplicateActiveQuoteException
 import dev.riss.fsm.shared.error.QuoteSubmissionForbiddenException
@@ -62,7 +63,7 @@ class QuoteCommandService(
                                     supplierProfileId = savedQuote.supplierProfileId,
                                     quoteId = savedQuote.quoteId,
                                 )
-                            ).map { thread -> SubmittedQuoteResult(savedQuote, thread.threadId, request) }
+                            ).map { result -> SubmittedQuoteResult(savedQuote, result.thread.threadId, result.thread, request) }
                         }
                 }
             }
@@ -203,6 +204,7 @@ data class UpdateQuoteCommand(
 data class SubmittedQuoteResult(
     val quote: QuoteEntity,
     val threadId: String,
+    val thread: MessageThreadEntity,
     val request: RequestEntity,
 )
 

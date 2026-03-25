@@ -6,6 +6,7 @@ import dev.riss.fsm.command.quote.QuoteCommandService
 import dev.riss.fsm.command.quote.SubmitQuoteCommand
 import dev.riss.fsm.command.quote.UpdateQuoteCommand
 import dev.riss.fsm.projection.quote.QuoteProjectionService
+import dev.riss.fsm.projection.thread.ThreadProjectionService
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -17,6 +18,7 @@ class QuoteApplicationService(
     private val quoteCommandService: QuoteCommandService,
     private val quoteProjectionService: QuoteProjectionService,
     private val requestProjectionService: RequestProjectionService,
+    private val threadProjectionService: ThreadProjectionService,
 ) {
     fun submit(principal: AuthenticatedUserPrincipal, requestId: String, request: SubmitQuoteRequest): Mono<SubmitQuoteResponse> {
         return requestAccessGuard.checkCanSubmitQuote(principal, requestId)
@@ -35,7 +37,9 @@ class QuoteApplicationService(
                 )
             }
             .flatMap { result ->
-                quoteProjectionService.projectSubmitted(result.quote, result.threadId)
+                threadProjectionService.projectThreadCreated(
+                    result.thread.copy(quoteId = result.quote.quoteId)
+                ).then(quoteProjectionService.projectSubmitted(result.quote, result.threadId))
                     .thenReturn(result)
             }
             .map { result ->

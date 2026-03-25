@@ -10,6 +10,7 @@ import { SupplierProfilePage, SupplierRoute } from "./features/supplier-profile"
 import { RequestListPage, RequestCreatePage, RequestDetailPage } from "./features/request-management"
 import { SupplierRequestFeedPage, SupplierRequestDetailPage } from "./features/supplier-requests"
 import { QuoteCreatePage, SupplierQuoteListPage } from "./features/supplier-quotes"
+import { ThreadListPage, ThreadDetailPage } from "./features/threads"
 
 function HomePage() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
         <Link to="/requests/new">New Request</Link>
         <Link to="/supplier/requests">Request Feed</Link>
         <Link to="/supplier/quotes">My Quotes</Link>
+        <Link to="/threads">Messages</Link>
       </nav>
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -147,6 +149,22 @@ export default function App() {
             <SupplierRoute>
               <SupplierQuoteListPage />
             </SupplierRoute>
+          }
+        />
+        <Route
+          path="/threads"
+          element={
+            <ProtectedRoute>
+              <ThreadListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/threads/:threadId"
+          element={
+            <ProtectedRoute>
+              <ThreadDetailPage />
+            </ProtectedRoute>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

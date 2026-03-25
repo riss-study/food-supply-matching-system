@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useSupplierQuotes } from "../hooks/useSupplierQuotes"
 import { useUpdateQuote } from "../hooks/useUpdateQuote"
 import { useWithdrawQuote } from "../hooks/useWithdrawQuote"
 import type { SupplierQuoteSummary } from "@fsm/types"
 
 export function SupplierQuoteListPage() {
+  const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState<SupplierQuoteSummary | null>(null)
   const [unitPriceEstimate, setUnitPriceEstimate] = useState("")
@@ -103,6 +105,12 @@ export function SupplierQuoteListPage() {
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
                     <span>{quote.state}</span>
+                    <button
+                      onClick={() => navigate(`/threads/${quote.threadId}`)}
+                      style={{ padding: "0.4rem 0.7rem", borderRadius: "0.5rem", border: "1px solid #3b82f6", backgroundColor: "#eff6ff", color: "#1d4ed8", cursor: "pointer" }}
+                    >
+                      메시지
+                    </button>
                     {quote.state === "submitted" && (
                       <>
                         <button onClick={() => openEdit(quote)}>수정</button>

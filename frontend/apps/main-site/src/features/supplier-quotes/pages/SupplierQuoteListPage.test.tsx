@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen } from "@testing-library/react"
+import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { SupplierQuoteListPage } from "./SupplierQuoteListPage"
 
@@ -24,7 +25,9 @@ function renderPage() {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <SupplierQuoteListPage />
+      <MemoryRouter>
+        <SupplierQuoteListPage />
+      </MemoryRouter>
     </QueryClientProvider>,
   )
 }

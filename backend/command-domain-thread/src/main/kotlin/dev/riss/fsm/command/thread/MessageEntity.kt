@@ -7,28 +7,30 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
-@Table("message_thread")
-data class MessageThreadEntity(
+@Table("thread_message")
+data class MessageEntity(
     @Id
     @Column("id")
+    val messageId: String,
+    @Column("thread_id")
     val threadId: String,
-    @Column("request_id")
-    val requestId: String,
-    @Column("requester_user_id")
-    val requesterUserId: String,
-    @Column("supplier_profile_id")
-    val supplierProfileId: String,
-    @Column("quote_id")
-    val quoteId: String?,
-    @Column("contact_share_state")
-    val contactShareState: String = "not_requested",
+    @Column("sender_user_id")
+    val senderUserId: String,
+    @Column("body")
+    val body: String?,
+    @Column("attachment_ids")
+    val attachmentIds: String?,
     @Column("created_at")
     val createdAt: LocalDateTime,
 ) : Persistable<String> {
     @Transient
     var newEntity: Boolean = false
 
-    override fun getId(): String = threadId
+    override fun getId(): String = messageId
 
     override fun isNew(): Boolean = newEntity
+
+    fun getAttachmentIdList(): List<String> {
+        return attachmentIds?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
+    }
 }

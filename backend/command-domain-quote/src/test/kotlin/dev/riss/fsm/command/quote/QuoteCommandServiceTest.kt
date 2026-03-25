@@ -2,8 +2,10 @@ package dev.riss.fsm.command.quote
 
 import dev.riss.fsm.command.request.RequestEntity
 import dev.riss.fsm.command.request.RequestRepository
+import dev.riss.fsm.command.thread.MessageRepository
 import dev.riss.fsm.command.thread.MessageThreadRepository
 import dev.riss.fsm.command.thread.MessageThreadEntity
+import dev.riss.fsm.command.thread.ThreadParticipantReadStateRepository
 import dev.riss.fsm.command.thread.ThreadCommandService
 import dev.riss.fsm.shared.error.DuplicateActiveQuoteException
 import dev.riss.fsm.shared.error.QuoteSubmissionForbiddenException
@@ -29,12 +31,14 @@ class QuoteCommandServiceTest {
     @Mock private lateinit var quoteRepository: QuoteRepository
     @Mock private lateinit var requestRepository: RequestRepository
     @Mock private lateinit var messageThreadRepository: MessageThreadRepository
+    @Mock private lateinit var messageRepository: MessageRepository
+    @Mock private lateinit var readStateRepository: ThreadParticipantReadStateRepository
 
     private lateinit var quoteCommandService: QuoteCommandService
 
     @BeforeEach
     fun setUp() {
-        val threadCommandService = ThreadCommandService(messageThreadRepository)
+        val threadCommandService = ThreadCommandService(messageThreadRepository, messageRepository, readStateRepository)
         quoteCommandService = QuoteCommandService(quoteRepository, requestRepository, threadCommandService)
     }
 
@@ -44,7 +48,13 @@ class QuoteCommandServiceTest {
         `when`(requestRepository.findById(request.requestId)).thenReturn(Mono.just(request))
         `when`(quoteRepository.existsByRequestIdAndSupplierProfileIdAndStateIn(request.requestId, "sprof_1", listOf("submitted", "selected"))).thenReturn(Mono.just(false))
         `when`(quoteRepository.save(any())).thenAnswer { invocation -> Mono.just(invocation.getArgument<QuoteEntity>(0)) }
-        `when`(messageThreadRepository.findByRequestIdAndSupplierProfileId(request.requestId, "sprof_1")).thenReturn(Mono.empty())
+        `when`(
+            messageThreadRepository.findByRequestIdAndRequesterUserIdAndSupplierProfileId(
+                request.requestId,
+                request.requesterUserId,
+                "sprof_1",
+            )
+        ).thenReturn(Mono.empty())
         `when`(messageThreadRepository.save(any())).thenReturn(
             Mono.just(
                 MessageThreadEntity(
@@ -53,6 +63,7 @@ class QuoteCommandServiceTest {
                     requesterUserId = request.requesterUserId,
                     supplierProfileId = "sprof_1",
                     quoteId = "quo_x",
+                    contactShareState = "not_requested",
                     createdAt = LocalDateTime.now(),
                 )
             )
