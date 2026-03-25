@@ -4,9 +4,13 @@ import { useThreadDetail } from "../hooks/useThreadDetail"
 import { useSendMessage } from "../hooks/useSendMessage"
 import { useMarkThreadRead } from "../hooks/useMarkThreadRead"
 import { useUploadAttachment } from "../hooks/useUploadAttachment"
+import { useRequestContactShare } from "../hooks/useRequestContactShare"
+import { useApproveContactShare } from "../hooks/useApproveContactShare"
+import { useRevokeContactShare } from "../hooks/useRevokeContactShare"
 import { MessageBubble } from "../components/MessageBubble"
 import { FileUpload, UploadingFileList } from "../components/FileUpload"
-import type { ThreadAttachment } from "@fsm/types"
+import { useAuthStore } from "../../auth/store/auth-store"
+import type { ContactShareState, ThreadAttachment } from "@fsm/types"
 
 interface UploadingFile {
   file: File
@@ -17,16 +21,21 @@ interface UploadingFile {
 
 export function ThreadDetailPage() {
   const { threadId = "" } = useParams<{ threadId: string }>()
+  const currentUser = useAuthStore((state) => state.user)
   const { data: thread, isLoading, error } = useThreadDetail(threadId)
   const sendMessageMutation = useSendMessage(threadId)
   const markReadMutation = useMarkThreadRead()
   const uploadAttachmentMutation = useUploadAttachment(threadId)
+  const requestContactShareMutation = useRequestContactShare(threadId)
+  const approveContactShareMutation = useApproveContactShare(threadId)
+  const revokeContactShareMutation = useRevokeContactShare(threadId)
 
   const [messageText, setMessageText] = useState("")
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([])
   const [pendingAttachments, setPendingAttachments] = useState<ThreadAttachment[]>([])
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [sendError, setSendError] = useState<string | null>(null)
+  const [contactShareError, setContactShareError] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messageInputRef = useRef<HTMLTextAreaElement>(null)
@@ -165,6 +174,61 @@ export function ThreadDetailPage() {
   const orderedMessages = [...thread.messages].sort(
     (left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime(),
   )
+  const currentRole = currentUser?.role === "supplier" ? "supplier" : "requester"
+  const isRequester = currentRole === "requester"
+  const requestedByMe = thread.contactShareRequestedByRole === currentRole
+  const canRequestContactShare = thread.contactShareState === "not_requested" || thread.contactShareState === "revoked"
+  const canApproveContactShare =
+    (thread.contactShareState === "requested" || thread.contactShareState === "one_side_approved") &&
+    ((isRequester && !thread.requesterApproved) || (!isRequester && !thread.supplierApproved))
+  const canRevokeContactShare =
+    (thread.contactShareState === "requested" || thread.contactShareState === "one_side_approved") && requestedByMe
+  const isContactActionPending =
+    requestContactShareMutation.isPending || approveContactShareMutation.isPending || revokeContactShareMutation.isPending
+
+  const contactShareLabel = (state: ContactShareState) => {
+    switch (state) {
+      case "requested":
+        if (requestedByMe) return "연락처 공유 요청을 보냈습니다"
+        if (canApproveContactShare) return "상대방이 연락처 공유를 요청했습니다. 승인하면 연락처 공개 절차가 시작됩니다"
+        return "연락처 공유 요청이 진행 중입니다"
+      case "one_side_approved":
+        if (canApproveContactShare) return "상대방의 승인까지 완료되었습니다. 내 최종 승인이 필요합니다"
+        if ((isRequester && thread.requesterApproved) || (!isRequester && thread.supplierApproved)) {
+          return "내 승인이 완료되었습니다. 상대방의 최종 승인을 기다리는 중입니다"
+        }
+        return "상대방의 최종 승인을 기다리는 중입니다"
+      case "mutually_approved":
+        return "양측 승인이 완료되어 연락처가 공개되었습니다"
+      case "revoked":
+        return "이전 연락처 공유 요청이 철회되었습니다"
+      default:
+        return "연락처는 양측 승인 후에만 공개됩니다"
+    }
+  }
+
+  const handleRequestContactShare = () => {
+    if (!window.confirm("연락처 공유를 요청할까요? 상대방이 추가 승인해야 공개됩니다.")) return
+    setContactShareError(null)
+    requestContactShareMutation.mutate(undefined, {
+      onError: () => setContactShareError("연락처 공유 요청에 실패했습니다."),
+    })
+  }
+
+  const handleApproveContactShare = () => {
+    setContactShareError(null)
+    approveContactShareMutation.mutate(undefined, {
+      onError: () => setContactShareError("연락처 공유 승인에 실패했습니다."),
+    })
+  }
+
+  const handleRevokeContactShare = () => {
+    if (!window.confirm("연락처 공유 요청을 철회할까요?")) return
+    setContactShareError(null)
+    revokeContactShareMutation.mutate(undefined, {
+      onError: () => setContactShareError("연락처 공유 철회에 실패했습니다."),
+    })
+  }
 
   return (
     <section style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 200px)" }}>
@@ -203,6 +267,67 @@ export function ThreadDetailPage() {
           <span style={{ fontWeight: 600, color: "#1e293b" }}>{thread.otherParty.displayName}</span>
         </div>
         <div style={{ fontSize: "0.875rem", color: "#64748b" }}>의뢰: {thread.requestTitle}</div>
+      </div>
+
+      <div
+        style={{
+          padding: "1rem 1.25rem",
+          backgroundColor: thread.contactShareState === "mutually_approved" ? "#ecfdf5" : "#fff7ed",
+          borderRadius: "0.75rem",
+          border: `1px solid ${thread.contactShareState === "mutually_approved" ? "#86efac" : "#fed7aa"}`,
+          marginBottom: "1rem",
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 700, color: thread.contactShareState === "mutually_approved" ? "#166534" : "#9a3412" }}>
+              연락처 공유 상태
+            </div>
+            <div style={{ marginTop: "0.35rem", fontSize: "0.875rem", color: "#475569" }}>{contactShareLabel(thread.contactShareState)}</div>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            {canRequestContactShare && (
+              <button type="button" onClick={handleRequestContactShare} disabled={isContactActionPending}>
+                연락처 공유 요청
+              </button>
+            )}
+            {canApproveContactShare && (
+              <button type="button" onClick={handleApproveContactShare} disabled={isContactActionPending}>
+                연락처 공유 승인
+              </button>
+            )}
+            {canRevokeContactShare && (
+              <button type="button" onClick={handleRevokeContactShare} disabled={isContactActionPending}>
+                요청 철회
+              </button>
+            )}
+          </div>
+        </div>
+
+        {thread.sharedContact && (
+          <div style={{ display: "grid", gap: "0.75rem", marginTop: "1rem" }}>
+            <div style={{ fontSize: "0.8rem", color: "#166534", fontWeight: 600 }}>상호 승인 완료 - 이제 직접 연락할 수 있습니다. 이후에는 철회할 수 없습니다.</div>
+            <div style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+              <div style={{ backgroundColor: "white", borderRadius: "0.75rem", padding: "1rem", border: "1px solid #bbf7d0" }}>
+                <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>요청자 연락처</div>
+                <div>{thread.sharedContact.requester.name}</div>
+                <div>{thread.sharedContact.requester.phone || "전화번호 미입력"}</div>
+                <div>{thread.sharedContact.requester.email || "이메일 미입력"}</div>
+              </div>
+              <div style={{ backgroundColor: "white", borderRadius: "0.75rem", padding: "1rem", border: "1px solid #bbf7d0" }}>
+                <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>공급자 연락처</div>
+                <div>{thread.sharedContact.supplier.name}</div>
+                <div>{thread.sharedContact.supplier.phone || "전화번호 미입력"}</div>
+                <div>{thread.sharedContact.supplier.email || "이메일 미입력"}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {contactShareError && (
+          <div style={{ marginTop: "0.75rem", color: "#dc2626", fontSize: "0.875rem" }}>{contactShareError}</div>
+        )}
       </div>
 
       <div

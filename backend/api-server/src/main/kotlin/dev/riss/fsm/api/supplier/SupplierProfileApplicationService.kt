@@ -51,6 +51,8 @@ class SupplierProfileApplicationService(
             CreateSupplierProfileCommand(
                 companyName = request.companyName,
                 representativeName = request.representativeName,
+                contactPhone = request.contactPhone,
+                contactEmail = request.contactEmail,
                 region = request.region,
                 categories = request.categories,
                 equipmentSummary = request.equipmentSummary,
@@ -82,6 +84,8 @@ class SupplierProfileApplicationService(
             UpdateSupplierProfileCommand(
                 companyName = request.companyName,
                 representativeName = request.representativeName,
+                contactPhone = request.contactPhone,
+                contactEmail = request.contactEmail,
                 region = request.region,
                 categories = request.categories,
                 equipmentSummary = request.equipmentSummary,
@@ -205,6 +209,8 @@ class SupplierProfileApplicationService(
                     profileId = profile.profileId,
                     companyName = profile.companyName,
                     representativeName = profile.representativeName,
+                    contactPhone = profile.contactPhone,
+                    contactEmail = profile.contactEmail,
                     region = profile.region,
                     categories = profile.categories.split(',').filter { it.isNotBlank() },
                     equipmentSummary = profile.equipmentSummary,

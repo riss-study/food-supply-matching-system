@@ -12,16 +12,20 @@ function SupplierProfileForm({
   initialData,
   onSubmit,
   isPending,
+  contactOnly = false,
 }: {
   initialData?: Partial<CreateSupplierProfileRequest>
   onSubmit: (request: CreateSupplierProfileRequest) => void
   isPending: boolean
+  contactOnly?: boolean
 }) {
   const { data: availableCategories = [], isLoading: categoriesLoading } = useSupplierCategories()
   const { data: availableRegions = [], isLoading: regionsLoading } = useSupplierRegions()
 
   const [companyName, setCompanyName] = useState(initialData?.companyName ?? "")
   const [representativeName, setRepresentativeName] = useState(initialData?.representativeName ?? "")
+  const [contactPhone, setContactPhone] = useState(initialData?.contactPhone ?? "")
+  const [contactEmail, setContactEmail] = useState(initialData?.contactEmail ?? "")
   const [region, setRegion] = useState(initialData?.region ?? "")
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialData?.categories ?? ["snack"])
   const [equipmentSummary, setEquipmentSummary] = useState(initialData?.equipmentSummary ?? "")
@@ -41,9 +45,31 @@ function SupplierProfileForm({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (contactOnly) {
+      onSubmit({
+        companyName: initialData?.companyName ?? "",
+        representativeName: initialData?.representativeName ?? "",
+        contactPhone: contactPhone || undefined,
+        contactEmail: contactEmail || undefined,
+        region: initialData?.region ?? "",
+        categories: initialData?.categories ?? [],
+        monthlyCapacity: initialData?.monthlyCapacity ?? 0,
+        moq: initialData?.moq ?? 0,
+        oemAvailable: initialData?.oemAvailable ?? false,
+        odmAvailable: initialData?.odmAvailable ?? false,
+        rawMaterialSupport: initialData?.rawMaterialSupport ?? false,
+        packagingLabelingSupport: initialData?.packagingLabelingSupport ?? false,
+        equipmentSummary: initialData?.equipmentSummary,
+        introduction: initialData?.introduction,
+      })
+      return
+    }
+
     onSubmit({
       companyName,
       representativeName,
+      contactPhone: contactPhone || undefined,
+      contactEmail: contactEmail || undefined,
       region,
       categories: selectedCategories,
       equipmentSummary: equipmentSummary || undefined,
@@ -63,12 +89,14 @@ function SupplierProfileForm({
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.75rem", maxWidth: "480px" }}>
-      <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="회사명" required />
-      <input value={representativeName} onChange={(e) => setRepresentativeName(e.target.value)} placeholder="대표자명" required />
+      <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="회사명" required disabled={contactOnly} />
+      <input value={representativeName} onChange={(e) => setRepresentativeName(e.target.value)} placeholder="대표자명" required disabled={contactOnly} />
+      <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="연락처 전화번호" />
+      <input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="연락처 이메일" type="email" />
 
       <label>
         지역
-        <select value={region} onChange={(e) => setRegion(e.target.value)} required style={{ display: "block", marginTop: "0.25rem", padding: "0.5rem", width: "100%" }}>
+        <select value={region} onChange={(e) => setRegion(e.target.value)} required disabled={contactOnly} style={{ display: "block", marginTop: "0.25rem", padding: "0.5rem", width: "100%" }}>
           <option value="">지역 선택</option>
           {availableRegions.map((r) => (
             <option key={r.region} value={r.region}>
@@ -84,8 +112,8 @@ function SupplierProfileForm({
           {availableCategories.map((c) => (
             <label
               key={c.category}
-              style={{
-                display: "inline-flex",
+                style={{
+                  display: "inline-flex",
                 alignItems: "center",
                 gap: "0.375rem",
                 padding: "0.375rem 0.75rem",
@@ -98,12 +126,13 @@ function SupplierProfileForm({
                 transition: "all 0.15s ease",
               }}
             >
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(c.category)}
-                onChange={() => toggleCategory(c.category)}
-                style={{ margin: 0 }}
-              />
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.includes(c.category)}
+                  onChange={() => toggleCategory(c.category)}
+                  disabled={contactOnly}
+                  style={{ margin: 0 }}
+                />
               <span>{c.category}</span>
               <span style={{ color: "#9ca3af", fontSize: "0.75rem" }}>({c.supplierCount})</span>
             </label>
@@ -114,15 +143,15 @@ function SupplierProfileForm({
         )}
       </fieldset>
 
-      <textarea value={equipmentSummary} onChange={(e) => setEquipmentSummary(e.target.value)} placeholder="설비 요약" />
-      <input type="number" value={monthlyCapacity} onChange={(e) => setMonthlyCapacity(e.target.value)} placeholder="월 생산량" required />
-      <input type="number" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="MOQ" required />
-      <label><input type="checkbox" checked={oemAvailable} onChange={(e) => setOemAvailable(e.target.checked)} /> OEM 가능</label>
-      <label><input type="checkbox" checked={odmAvailable} onChange={(e) => setOdmAvailable(e.target.checked)} /> ODM 가능</label>
-      <label><input type="checkbox" checked={rawMaterialSupport} onChange={(e) => setRawMaterialSupport(e.target.checked)} /> 원재료 지원</label>
-      <label><input type="checkbox" checked={packagingLabelingSupport} onChange={(e) => setPackagingLabelingSupport(e.target.checked)} /> 포장/라벨 지원</label>
-      <textarea value={introduction} onChange={(e) => setIntroduction(e.target.value)} placeholder="소개" />
-      <button type="submit" disabled={isPending || selectedCategories.length === 0}>{isPending ? "처리 중..." : "저장하기"}</button>
+      <textarea value={equipmentSummary} onChange={(e) => setEquipmentSummary(e.target.value)} placeholder="설비 요약" disabled={contactOnly} />
+      <input type="number" value={monthlyCapacity} onChange={(e) => setMonthlyCapacity(e.target.value)} placeholder="월 생산량" required disabled={contactOnly} />
+      <input type="number" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="MOQ" required disabled={contactOnly} />
+      <label><input type="checkbox" checked={oemAvailable} onChange={(e) => setOemAvailable(e.target.checked)} disabled={contactOnly} /> OEM 가능</label>
+      <label><input type="checkbox" checked={odmAvailable} onChange={(e) => setOdmAvailable(e.target.checked)} disabled={contactOnly} /> ODM 가능</label>
+      <label><input type="checkbox" checked={rawMaterialSupport} onChange={(e) => setRawMaterialSupport(e.target.checked)} disabled={contactOnly} /> 원재료 지원</label>
+      <label><input type="checkbox" checked={packagingLabelingSupport} onChange={(e) => setPackagingLabelingSupport(e.target.checked)} disabled={contactOnly} /> 포장/라벨 지원</label>
+      <textarea value={introduction} onChange={(e) => setIntroduction(e.target.value)} placeholder="소개" disabled={contactOnly} />
+      <button type="submit" disabled={isPending || (!contactOnly && selectedCategories.length === 0)}>{isPending ? "처리 중..." : contactOnly ? "연락처 저장" : "저장하기"}</button>
     </form>
   )
 }
@@ -141,7 +170,8 @@ export function SupplierProfilePage() {
     return <section><h1>공급자 프로필</h1><p>로딩 중...</p></section>
   }
 
-  const canEdit = !profile || ["draft", "hold", "rejected"].includes(profile.verificationState)
+  const canEdit = !profile || ["draft", "hold", "rejected", "approved"].includes(profile.verificationState)
+  const contactOnlyEdit = profile?.verificationState === "approved"
 
   return (
     <section>
@@ -163,6 +193,8 @@ export function SupplierProfilePage() {
               ? {
                   companyName: profile.companyName,
                   representativeName: profile.representativeName,
+                  contactPhone: profile.contactPhone ?? undefined,
+                  contactEmail: profile.contactEmail ?? undefined,
                   region: profile.region,
                   categories: profile.categories,
                   equipmentSummary: profile.equipmentSummary ?? undefined,
@@ -177,9 +209,14 @@ export function SupplierProfilePage() {
               : undefined
           }
           isPending={createMutation.isPending || updateMutation.isPending}
+          contactOnly={contactOnlyEdit}
           onSubmit={(request) => {
             if (profile) {
-              updateMutation.mutate(request)
+              updateMutation.mutate(
+                contactOnlyEdit
+                  ? { contactPhone: request.contactPhone, contactEmail: request.contactEmail }
+                  : request,
+              )
             } else {
               createMutation.mutate(request)
             }

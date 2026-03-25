@@ -43,7 +43,14 @@ class ThreadProjectionService(
             .thenReturn(thread)
     }
 
-    private fun saveProjection(thread: MessageThreadEntity, latestMessage: MessageEntity?): Mono<Void> {
+    fun projectContactShareChanged(thread: MessageThreadEntity): Mono<MessageThreadEntity> {
+        return latestMessage(thread.threadId)
+            .flatMap { message -> saveProjection(thread, message, contactShareUpdatedAt(thread)) }
+            .switchIfEmpty(saveProjection(thread, null, contactShareUpdatedAt(thread)))
+            .thenReturn(thread)
+    }
+
+    private fun saveProjection(thread: MessageThreadEntity, latestMessage: MessageEntity?, forcedUpdatedAt: java.time.Instant? = null): Mono<Void> {
         val requestMono = requestRepository.findById(thread.requestId)
         val supplierMono = supplierProfileRepository.findById(thread.supplierProfileId)
         val requesterMono = requesterBusinessProfileQueryService.findByUserId(thread.requesterUserId)
@@ -61,7 +68,7 @@ class ThreadProjectionService(
                 val requesterUnread = tuple.t4
                 val supplierUnread = tuple.t5
                 val message = tuple.t6.orElse(null)
-                val updatedAt = (message?.createdAt ?: thread.createdAt).toInstant(ZoneOffset.UTC)
+                val updatedAt = forcedUpdatedAt ?: (message?.createdAt ?: thread.createdAt).toInstant(ZoneOffset.UTC)
                 val lastMessage = message?.let {
                     LastMessageInfo(
                         messageId = it.messageId,
@@ -124,5 +131,15 @@ class ThreadProjectionService(
 
     private fun unreadCount(threadId: String, userIdMono: Mono<String>): Mono<Long> {
         return userIdMono.flatMap { userId -> unreadCount(threadId, userId) }
+    }
+
+    private fun contactShareUpdatedAt(thread: MessageThreadEntity): java.time.Instant {
+        val updated = listOfNotNull(
+            thread.contactShareRequestedAt,
+            thread.contactShareRequesterApprovedAt,
+            thread.contactShareSupplierApprovedAt,
+            thread.contactShareRevokedAt,
+        ).maxOrNull() ?: thread.createdAt
+        return updated.toInstant(ZoneOffset.UTC)
     }
 }

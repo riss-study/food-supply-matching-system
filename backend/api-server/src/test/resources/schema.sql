@@ -75,6 +75,12 @@ CREATE TABLE message_thread (
   supplier_profile_id VARCHAR(64) NOT NULL,
   quote_id VARCHAR(64) NULL,
   contact_share_state VARCHAR(32) NOT NULL DEFAULT 'not_requested',
+  contact_share_requested_by_role VARCHAR(32) NULL,
+  contact_share_requested_at TIMESTAMP NULL,
+  contact_share_requester_approved_at TIMESTAMP NULL,
+  contact_share_supplier_approved_at TIMESTAMP NULL,
+  contact_share_revoked_by_role VARCHAR(32) NULL,
+  contact_share_revoked_at TIMESTAMP NULL,
   created_at TIMESTAMP NOT NULL,
   UNIQUE KEY uk_request_participant_thread (request_id, requester_user_id, supplier_profile_id)
 );
@@ -101,6 +107,8 @@ CREATE TABLE supplier_profile (
   supplier_user_id VARCHAR(64) NOT NULL UNIQUE,
   company_name VARCHAR(100) NOT NULL,
   representative_name VARCHAR(50) NOT NULL,
+  contact_phone VARCHAR(64) NULL,
+  contact_email VARCHAR(255) NULL,
   region VARCHAR(100) NOT NULL,
   categories TEXT NOT NULL,
   equipment_summary VARCHAR(500) NULL,

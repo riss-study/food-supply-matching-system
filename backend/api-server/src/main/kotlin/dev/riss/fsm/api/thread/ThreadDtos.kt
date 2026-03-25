@@ -60,10 +60,25 @@ data class ThreadDetailResponse(
     val requestTitle: String,
     val otherParty: ThreadOtherPartyResponse,
     val contactShareState: String,
+    val contactShareRequestedByRole: String?,
+    val requesterApproved: Boolean,
+    val supplierApproved: Boolean,
+    val sharedContact: ThreadSharedContactResponse?,
     val messages: List<ThreadMessageResponse>,
     val meta: PaginationMeta,
     val createdAt: Instant,
     val updatedAt: Instant,
+)
+
+data class ThreadParticipantContactResponse(
+    val name: String,
+    val phone: String?,
+    val email: String?,
+)
+
+data class ThreadSharedContactResponse(
+    val requester: ThreadParticipantContactResponse,
+    val supplier: ThreadParticipantContactResponse,
 )
 
 data class ThreadMessageResponse(
@@ -111,4 +126,17 @@ data class UploadThreadAttachmentResponse(
     val fileSize: Long,
     val url: String,
     val createdAt: Instant,
+)
+
+data class ContactShareActionResponse(
+    val threadId: String,
+    val contactShareState: String,
+    val requestedBy: String?,
+    val requestedAt: Instant?,
+    val approvedAt: Instant?,
+    val revokedAt: Instant?,
+    val contactShareRequestedByRole: String?,
+    val requesterApproved: Boolean,
+    val supplierApproved: Boolean,
+    val sharedContact: ThreadSharedContactResponse?,
 )

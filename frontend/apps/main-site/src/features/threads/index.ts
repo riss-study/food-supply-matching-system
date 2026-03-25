@@ -6,7 +6,13 @@ export { useSendMessage } from "./hooks/useSendMessage"
 export { useMarkThreadRead } from "./hooks/useMarkThreadRead"
 export { useCreateThread } from "./hooks/useCreateThread"
 export { useUploadAttachment } from "./hooks/useUploadAttachment"
+export { useRequestContactShare } from "./hooks/useRequestContactShare"
+export { useApproveContactShare } from "./hooks/useApproveContactShare"
+export { useRevokeContactShare } from "./hooks/useRevokeContactShare"
 export {
+  requestContactShare,
+  approveContactShare,
+  revokeContactShare,
   getThreadList,
   getThreadDetail,
   createThread,

@@ -73,6 +73,46 @@ class GlobalApiExceptionHandler {
         )
     }
 
+    @ExceptionHandler(ContactShareAlreadyRequestedException::class)
+    fun handleContactShareAlreadyRequested(exception: ContactShareAlreadyRequestedException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(
+                code = 4096,
+                message = exception.message ?: "Contact share request is already in progress",
+            )
+        )
+    }
+
+    @ExceptionHandler(ContactShareApprovalConflictException::class)
+    fun handleContactShareApprovalConflict(exception: ContactShareApprovalConflictException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(
+                code = 4097,
+                message = exception.message ?: "Contact share approval is not allowed in the current state",
+            )
+        )
+    }
+
+    @ExceptionHandler(ContactShareNotRequestedException::class)
+    fun handleContactShareNotRequested(exception: ContactShareNotRequestedException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(
+                code = 4098,
+                message = exception.message ?: "Contact share has not been requested",
+            )
+        )
+    }
+
+    @ExceptionHandler(ContactShareRevokeForbiddenException::class)
+    fun handleContactShareRevokeForbidden(exception: ContactShareRevokeForbiddenException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(
+                code = 4099,
+                message = exception.message ?: "Contact share cannot be revoked after mutual approval",
+            )
+        )
+    }
+
     @ExceptionHandler(WebExchangeBindException::class)
     fun handleValidation(exception: WebExchangeBindException): ResponseEntity<ApiErrorResponse> {
         val details = exception.bindingResult.allErrors.map { error ->

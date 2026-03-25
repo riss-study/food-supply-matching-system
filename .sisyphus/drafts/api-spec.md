@@ -1921,10 +1921,20 @@ Authorization: Bearer <JWT>
       "name": "예시 식품"
     },
     "contactShareState": "mutually_approved",
+    "contactShareRequestedByRole": "requester",
+    "requesterApproved": true,
+    "supplierApproved": true,
     "sharedContact": {
-      "name": "김공급",
-      "phone": "010-1234-5678",
-      "email": "supplier@example.com"
+      "requester": {
+        "name": "홍길동",
+        "phone": "010-1111-2222",
+        "email": "requester@example.com"
+      },
+      "supplier": {
+        "name": "김공급",
+        "phone": "010-1234-5678",
+        "email": "supplier@example.com"
+      }
     },
     "messages": [
       {
@@ -1959,10 +1969,18 @@ Authorization: Bearer <JWT>
 | otherParty.type | string | 상대방 역할 |
 | otherParty.name | string | 상대방 이름/상호 |
 | contactShareState | string | 연락처 공유 상태 |
+| contactShareRequestedByRole | string | 현재 cycle 요청자 역할 |
+| requesterApproved | boolean | 요청자 승인 여부 |
+| supplierApproved | boolean | 공급자 승인 여부 |
 | sharedContact | object | 공유된 연락처 (mutually_approved 상태에서만) |
-| sharedContact.name | string | 이름 |
-| sharedContact.phone | string | 전화번호 |
-| sharedContact.email | string | 이메일 |
+| sharedContact.requester | object | 요청자 연락처 |
+| sharedContact.requester.name | string | 이름 |
+| sharedContact.requester.phone | string | 전화번호 |
+| sharedContact.requester.email | string | 이메일 |
+| sharedContact.supplier | object | 공급자 연락처 |
+| sharedContact.supplier.name | string | 이름 |
+| sharedContact.supplier.phone | string | 전화번호 |
+| sharedContact.supplier.email | string | 이메일 |
 | messages | array | 메시지 목록 |
 | messages[].messageId | string | 메시지 ID |
 | messages[].senderType | string | `requester` or `supplier` |
@@ -2184,7 +2202,7 @@ Authorization: Bearer <JWT>
 
 **설명:** 연락처 공유 승인
 
-**인증:** 필요 (스레드 참여자, 요청자가 아닌 쪽)
+**인증:** 필요 (스레드 참여자, 현재 cycle에서 아직 승인하지 않은 쪽)
 
 **Path Parameters:**
 
@@ -2302,7 +2320,7 @@ Authorization: Bearer <JWT>
 
 | HTTP | code | 상황 |
 |------|------|------|
-| 403 | 4039 | mutually_approved 상태에서는 철회 불가 |
+| 409 | 4099 | mutually_approved 상태에서는 철회 불가 |
 
 ---
 
@@ -3016,7 +3034,7 @@ Authorization: Bearer <JWT>
 | 4036 | Invalid supplier target | 승인되지 않은 공급자 대상 |
 | 4037 | Quote permission denied | 견적 제출 권한 없음 |
 | 4038 | Cannot modify quote state | 견적 상태로 인한 수정 불가 |
-| 4039 | Cannot revoke after approval | mutually_approved 후 철회 시도 |
+| 4039 | Thread access denied | 스레드 비참여자 접근 |
 | 4041 | Resource not found | 리소스 없음 |
 | 4091 | Duplicate email | 이미 존재하는 이메일 |
 | 4092 | Profile exists | 이미 존재하는 프로필 |
@@ -3024,6 +3042,7 @@ Authorization: Bearer <JWT>
 | 4094 | Thread exists (returned existing) | 기존 스레드 반환 |
 | 4095 | Active quote exists | 같은 의뢰에 active 견적 존재 |
 | 4096 | Already requested/approved | 연락처 공유 이미 요청/승인됨 |
+| 4099 | Cannot revoke after approval | mutually_approved 후 철회 시도 |
 | 4221 | Invalid field modification | 허용되지 않은 필드 수정 |
 | 4222 | Profile required | 프로필 없이 제출 시도 |
 | 4223 | Non-patchable field | 수정 불가 필드 포함 |

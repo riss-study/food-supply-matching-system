@@ -1,5 +1,6 @@
 import type {
   ApiEnvelope,
+  ContactShareActionResponse,
   CreateThreadRequest,
   CreateThreadResponse,
   MarkThreadReadResponse,
@@ -107,6 +108,27 @@ export async function downloadAttachment(threadId: string, attachmentId: string)
     responseType: "blob",
   })
   return response.data
+}
+
+export async function requestContactShare(threadId: string): Promise<ContactShareActionResponse> {
+  const response = await authApiClient.post<ApiEnvelope<ContactShareActionResponse>>(
+    `/api/threads/${threadId}/contact-share/request`,
+  )
+  return response.data.data
+}
+
+export async function approveContactShare(threadId: string): Promise<ContactShareActionResponse> {
+  const response = await authApiClient.post<ApiEnvelope<ContactShareActionResponse>>(
+    `/api/threads/${threadId}/contact-share/approve`,
+  )
+  return response.data.data
+}
+
+export async function revokeContactShare(threadId: string): Promise<ContactShareActionResponse> {
+  const response = await authApiClient.post<ApiEnvelope<ContactShareActionResponse>>(
+    `/api/threads/${threadId}/contact-share/revoke`,
+  )
+  return response.data.data
 }
 
 export function getAttachmentUrl(threadId: string, attachmentId: string): string {

@@ -2,9 +2,11 @@ package dev.riss.fsm.command.supplier
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.any
 import reactor.core.publisher.Mono
 import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
@@ -26,6 +28,8 @@ class SupplierProfileCommandServiceTest {
             CreateSupplierProfileCommand(
                 companyName = "Example Supplier",
                 representativeName = "김공급",
+                contactPhone = "010-1111-2222",
+                contactEmail = "supplier@example.com",
                 region = "경기도 화성시",
                 categories = listOf("snack"),
                 equipmentSummary = null,
@@ -52,6 +56,8 @@ class SupplierProfileCommandServiceTest {
                     supplierUserId = "usr_supplier",
                     companyName = "Example Supplier",
                     representativeName = "김공급",
+                    contactPhone = null,
+                    contactEmail = null,
                     region = "경기도 화성시",
                     categories = "snack",
                     equipmentSummary = null,
@@ -73,5 +79,44 @@ class SupplierProfileCommandServiceTest {
         assertThrows(ResponseStatusException::class.java) {
             service.update("usr_supplier", UpdateSupplierProfileCommand(companyName = "Updated Supplier")).block()
         }
+    }
+
+    @Test
+    fun approvedProfileAllowsContactOnlyUpdate() {
+        val profile = SupplierProfileEntity(
+            profileId = "sprof_1",
+            supplierUserId = "usr_supplier",
+            companyName = "Example Supplier",
+            representativeName = "김공급",
+            contactPhone = null,
+            contactEmail = null,
+            region = "경기도 화성시",
+            categories = "snack",
+            equipmentSummary = null,
+            monthlyCapacity = 50000,
+            moq = 1000,
+            oemAvailable = true,
+            odmAvailable = false,
+            rawMaterialSupport = true,
+            packagingLabelingSupport = true,
+            introduction = null,
+            verificationState = "approved",
+            exposureState = "visible",
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now(),
+        )
+        `when`(repository.findBySupplierUserId("usr_supplier")).thenReturn(Mono.just(profile))
+        `when`(repository.save(any(SupplierProfileEntity::class.java))).thenAnswer { invocation ->
+            Mono.just(invocation.arguments[0] as SupplierProfileEntity)
+        }
+
+        val result = service.update(
+            "usr_supplier",
+            UpdateSupplierProfileCommand(contactPhone = "010-3333-4444")
+        ).block()!!
+
+        assertEquals("010-3333-4444", result.contactPhone)
+        assertNull(result.contactEmail)
+        assertEquals("Example Supplier", result.companyName)
     }
 }

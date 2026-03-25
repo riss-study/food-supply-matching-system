@@ -50,4 +50,73 @@ class ThreadControllerTest {
         assertEquals("Message sent", result.body?.message)
         assertEquals("msg_1", result.body?.data?.messageId)
     }
+
+    @Test
+    fun `request contact share returns success envelope`() {
+        val response = ContactShareActionResponse(
+            threadId = "thd_1",
+            contactShareState = "requested",
+            requestedBy = "requester",
+            requestedAt = Instant.parse("2026-03-20T00:00:00Z"),
+            approvedAt = null,
+            revokedAt = null,
+            contactShareRequestedByRole = "requester",
+            requesterApproved = false,
+            supplierApproved = false,
+            sharedContact = null,
+        )
+        `when`(service.requestContactShare(principal, "thd_1")).thenReturn(Mono.just(response))
+
+        val result = controller.requestContactShare(principal, "thd_1").block()!!
+
+        assertEquals("Contact share requested", result.message)
+        assertEquals("requested", result.data?.contactShareState)
+    }
+
+    @Test
+    fun `approve contact share returns success envelope`() {
+        val response = ContactShareActionResponse(
+            threadId = "thd_1",
+            contactShareState = "mutually_approved",
+            requestedBy = "requester",
+            requestedAt = Instant.parse("2026-03-20T00:00:00Z"),
+            approvedAt = Instant.parse("2026-03-20T01:00:00Z"),
+            revokedAt = null,
+            contactShareRequestedByRole = "requester",
+            requesterApproved = true,
+            supplierApproved = true,
+            sharedContact = ThreadSharedContactResponse(
+                requester = ThreadParticipantContactResponse("요청자", "010-1111-2222", "req@test.com"),
+                supplier = ThreadParticipantContactResponse("공급자", "010-3333-4444", "sup@test.com"),
+            ),
+        )
+        `when`(service.approveContactShare(principal, "thd_1")).thenReturn(Mono.just(response))
+
+        val result = controller.approveContactShare(principal, "thd_1").block()!!
+
+        assertEquals("Contact share mutually approved", result.message)
+        assertEquals("mutually_approved", result.data?.contactShareState)
+    }
+
+    @Test
+    fun `revoke contact share returns success envelope`() {
+        val response = ContactShareActionResponse(
+            threadId = "thd_1",
+            contactShareState = "revoked",
+            requestedBy = "requester",
+            requestedAt = Instant.parse("2026-03-20T00:00:00Z"),
+            approvedAt = null,
+            revokedAt = Instant.parse("2026-03-20T01:00:00Z"),
+            contactShareRequestedByRole = "requester",
+            requesterApproved = false,
+            supplierApproved = false,
+            sharedContact = null,
+        )
+        `when`(service.revokeContactShare(principal, "thd_1")).thenReturn(Mono.just(response))
+
+        val result = controller.revokeContactShare(principal, "thd_1").block()!!
+
+        assertEquals("Contact share request revoked", result.message)
+        assertEquals("revoked", result.data?.contactShareState)
+    }
 }

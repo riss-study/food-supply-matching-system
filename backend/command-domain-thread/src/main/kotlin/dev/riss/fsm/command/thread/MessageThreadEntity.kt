@@ -22,6 +22,18 @@ data class MessageThreadEntity(
     val quoteId: String?,
     @Column("contact_share_state")
     val contactShareState: String = "not_requested",
+    @Column("contact_share_requested_by_role")
+    val contactShareRequestedByRole: String? = null,
+    @Column("contact_share_requested_at")
+    val contactShareRequestedAt: LocalDateTime? = null,
+    @Column("contact_share_requester_approved_at")
+    val contactShareRequesterApprovedAt: LocalDateTime? = null,
+    @Column("contact_share_supplier_approved_at")
+    val contactShareSupplierApprovedAt: LocalDateTime? = null,
+    @Column("contact_share_revoked_by_role")
+    val contactShareRevokedByRole: String? = null,
+    @Column("contact_share_revoked_at")
+    val contactShareRevokedAt: LocalDateTime? = null,
     @Column("created_at")
     val createdAt: LocalDateTime,
 ) : Persistable<String> {

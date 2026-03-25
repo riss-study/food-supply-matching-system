@@ -90,6 +90,43 @@ class ThreadController(
             .map { response -> ApiSuccessResponse(message = "Thread marked as read", data = response) }
     }
 
+    @PostMapping("/threads/{threadId}/contact-share/request")
+    @Operation(summary = "Request contact share", description = "Request bilateral contact sharing for a thread")
+    fun requestContactShare(
+        @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
+        @PathVariable threadId: String,
+    ): Mono<ApiSuccessResponse<ContactShareActionResponse>> {
+        return threadApplicationService.requestContactShare(principal, threadId)
+            .map { response -> ApiSuccessResponse(message = "Contact share requested", data = response) }
+    }
+
+    @PostMapping("/threads/{threadId}/contact-share/approve")
+    @Operation(summary = "Approve contact share", description = "Approve bilateral contact sharing for a thread")
+    fun approveContactShare(
+        @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
+        @PathVariable threadId: String,
+    ): Mono<ApiSuccessResponse<ContactShareActionResponse>> {
+        return threadApplicationService.approveContactShare(principal, threadId)
+            .map { response ->
+                val message = if (response.contactShareState == "mutually_approved") {
+                    "Contact share mutually approved"
+                } else {
+                    "Contact share approved"
+                }
+                ApiSuccessResponse(message = message, data = response)
+            }
+    }
+
+    @PostMapping("/threads/{threadId}/contact-share/revoke")
+    @Operation(summary = "Revoke contact share", description = "Revoke a pending contact share request before mutual approval")
+    fun revokeContactShare(
+        @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
+        @PathVariable threadId: String,
+    ): Mono<ApiSuccessResponse<ContactShareActionResponse>> {
+        return threadApplicationService.revokeContactShare(principal, threadId)
+            .map { response -> ApiSuccessResponse(message = "Contact share request revoked", data = response) }
+    }
+
     @PostMapping("/threads/{threadId}/attachments", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @Operation(summary = "Upload thread attachment", description = "Upload an attachment scoped to a thread")
     fun uploadAttachment(

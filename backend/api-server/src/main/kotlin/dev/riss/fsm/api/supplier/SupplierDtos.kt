@@ -3,6 +3,7 @@ package dev.riss.fsm.api.supplier
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Size
 import jakarta.validation.constraints.Pattern
 import java.time.Instant
@@ -12,6 +13,10 @@ data class CreateSupplierProfileRequest(
     val companyName: String,
     @field:Size(min = 2, max = 50)
     val representativeName: String,
+    @field:Pattern(regexp = "^$|^[0-9+\\-() ]{7,20}$")
+    val contactPhone: String?,
+    @field:Email
+    val contactEmail: String?,
     @field:NotBlank
     val region: String,
     @field:Size(min = 1)
@@ -35,6 +40,10 @@ data class CreateSupplierProfileRequest(
 data class UpdateSupplierProfileRequest(
     val companyName: String? = null,
     val representativeName: String? = null,
+    @field:Pattern(regexp = "^$|^[0-9+\\-() ]{7,20}$")
+    val contactPhone: String? = null,
+    @field:Email
+    val contactEmail: String? = null,
     val region: String? = null,
     @field:Size(min = 1)
     val categories: List<String>? = null,
@@ -52,6 +61,8 @@ data class SupplierProfileResponse(
     val profileId: String,
     val companyName: String,
     val representativeName: String,
+    val contactPhone: String?,
+    val contactEmail: String?,
     val region: String,
     val categories: List<String>,
     val equipmentSummary: String?,

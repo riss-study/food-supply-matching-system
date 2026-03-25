@@ -116,6 +116,8 @@ export interface SupplierProfile {
   profileId: string
   companyName: string
   representativeName: string
+  contactPhone?: string | null
+  contactEmail?: string | null
   region: string
   categories: string[]
   equipmentSummary?: string | null
@@ -136,6 +138,8 @@ export interface SupplierProfile {
 export interface CreateSupplierProfileRequest {
   companyName: string
   representativeName: string
+  contactPhone?: string
+  contactEmail?: string
   region: string
   categories: string[]
   equipmentSummary?: string
@@ -151,6 +155,8 @@ export interface CreateSupplierProfileRequest {
 export interface UpdateSupplierProfileRequest {
   companyName?: string
   representativeName?: string
+  contactPhone?: string
+  contactEmail?: string
   region?: string
   categories?: string[]
   equipmentSummary?: string
@@ -573,10 +579,25 @@ export interface ThreadDetail {
   requestTitle: string
   otherParty: ThreadOtherParty
   contactShareState: ContactShareState
+  contactShareRequestedByRole?: "requester" | "supplier" | null
+  requesterApproved: boolean
+  supplierApproved: boolean
+  sharedContact?: ThreadSharedContact | null
   messages: ThreadMessage[]
   meta?: PaginationMeta
   createdAt: string
   updatedAt: string
+}
+
+export interface ThreadParticipantContact {
+  name: string
+  phone?: string | null
+  email?: string | null
+}
+
+export interface ThreadSharedContact {
+  requester: ThreadParticipantContact
+  supplier: ThreadParticipantContact
 }
 
 export interface CreateThreadRequest {
@@ -615,4 +636,17 @@ export interface UploadThreadAttachmentResponse {
   fileSize: number
   url: string
   createdAt: string
+}
+
+export interface ContactShareActionResponse {
+  threadId: string
+  contactShareState: ContactShareState
+  requestedBy?: "requester" | "supplier" | null
+  requestedAt?: string | null
+  approvedAt?: string | null
+  revokedAt?: string | null
+  contactShareRequestedByRole?: "requester" | "supplier" | null
+  requesterApproved: boolean
+  supplierApproved: boolean
+  sharedContact?: ThreadSharedContact | null
 }

@@ -49,7 +49,7 @@ class SupplierProfileController(
     @Operation(summary = "Update supplier profile", description = "Update supplier profile in draft/hold/rejected states")
     fun update(
         @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
-        @RequestBody request: UpdateSupplierProfileRequest,
+        @Valid @RequestBody request: UpdateSupplierProfileRequest,
     ): Mono<ApiSuccessResponse<SupplierProfileResponse>> {
         return service.update(principal, request).map { ApiSuccessResponse(message = "Profile updated", data = it) }
     }

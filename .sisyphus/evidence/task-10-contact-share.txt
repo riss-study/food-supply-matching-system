@@ -1,0 +1,47 @@
+Date: 2026-03-24
+
+Task 10 Evidence - Contact Share Consent
+========================================
+
+Implemented scope
+-----------------
+1. Backend consent state machine
+   - Extended `message_thread` with embedded contact-share metadata.
+   - Added request/approve/revoke command flows in `backend/command-domain-thread`.
+   - Added dedicated conflict exceptions and API error mappings for contact-share transitions.
+
+2. Backend API and gated reveal
+   - Added endpoints:
+     - `POST /api/threads/{threadId}/contact-share/request`
+     - `POST /api/threads/{threadId}/contact-share/approve`
+     - `POST /api/threads/{threadId}/contact-share/revoke`
+   - `GET /api/threads/{threadId}` now includes consent metadata and returns `sharedContact` only for `mutually_approved`.
+
+3. Supplier contact source
+   - Added private supplier contact fields to supplier profile domain/API.
+   - Approved suppliers can update contact-only fields without reopening the full verification-edit surface.
+
+4. Frontend consent UX
+   - Added request/approve/revoke API functions and mutation hooks in `frontend/apps/main-site/src/features/threads/`.
+   - Added consent status banner and mutually-approved shared-contact card to `ThreadDetailPage`.
+   - Added supplier contact input fields in `SupplierProfilePage` so shareable contact info can be maintained.
+
+Verification
+------------
+Backend
+- `./gradlew :command-domain-thread:test --tests dev.riss.fsm.command.thread.ThreadCommandServiceTest` -> PASS
+- `./gradlew :api-server:test --tests dev.riss.fsm.api.thread.ThreadControllerTest --tests dev.riss.fsm.api.supplier.SupplierProfileControllerTest --tests dev.riss.fsm.api.request.RequestAccessGuardTest` -> PASS
+- `./gradlew build` -> PASS
+
+Frontend
+- `yarn workspace @fsm/main-site test ThreadDetailPage.test.tsx thread-api.test.ts threads-hooks.test.tsx` -> PASS
+- `yarn workspace @fsm/main-site test` -> PASS
+- `yarn workspace @fsm/main-site type-check` -> PASS
+- `yarn workspace @fsm/main-site build` -> PASS
+
+Notes
+-----
+- Contact-share consent remains embedded on `MessageThread`; no separate aggregate/table was introduced for Task 10.
+- Shared contact is composed at read time and not persisted into the Mongo thread detail projection, reducing stale PII risk.
+- The Task 10 doc originally referenced `4039` for revoke-after-mutual, but `4039` is already reserved for thread access denial in the codebase, so Task 10 uses a dedicated `4099` conflict instead.
+- Shared supplier contact now comes only from explicit supplier profile contact fields; auth/login email is not used as fallback.

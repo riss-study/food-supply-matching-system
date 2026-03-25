@@ -18,6 +18,10 @@ data class SupplierProfileEntity(
     val companyName: String,
     @Column("representative_name")
     val representativeName: String,
+    @Column("contact_phone")
+    val contactPhone: String?,
+    @Column("contact_email")
+    val contactEmail: String?,
     @Column("region")
     val region: String,
     @Column("categories")

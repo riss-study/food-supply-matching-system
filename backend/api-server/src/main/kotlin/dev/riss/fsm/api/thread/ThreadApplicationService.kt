@@ -5,6 +5,7 @@ import dev.riss.fsm.command.request.TargetedSupplierLinkRepository
 import dev.riss.fsm.command.supplier.AttachmentMetadataEntity
 import dev.riss.fsm.command.supplier.AttachmentMetadataRepository
 import dev.riss.fsm.command.supplier.SupplierProfileRepository
+import dev.riss.fsm.command.thread.ContactShareCommand
 import dev.riss.fsm.command.thread.CreateThreadCommand
 import dev.riss.fsm.command.thread.MarkThreadAsReadCommand
 import dev.riss.fsm.command.thread.MessageEntity
@@ -18,8 +19,11 @@ import dev.riss.fsm.query.thread.LastMessageInfo
 import dev.riss.fsm.query.thread.ThreadDetailDocument
 import dev.riss.fsm.query.thread.ThreadQueryService
 import dev.riss.fsm.query.thread.ThreadSummaryDocument
+import dev.riss.fsm.query.user.RequesterBusinessProfileQueryService
 import dev.riss.fsm.shared.api.PaginationMeta
 import dev.riss.fsm.shared.auth.UserRole
+import dev.riss.fsm.shared.error.ThreadAccessDeniedException
+import dev.riss.fsm.shared.error.ThreadNotFoundException
 import dev.riss.fsm.shared.file.FileStorageService
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.core.io.FileSystemResource
@@ -50,6 +54,7 @@ class ThreadApplicationService(
     private val threadQueryService: ThreadQueryService,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
     private val fileStorageService: FileStorageService,
+    private val requesterBusinessProfileQueryService: RequesterBusinessProfileQueryService,
 ) {
     fun createThread(
         principal: AuthenticatedUserPrincipal,
@@ -161,20 +166,44 @@ class ThreadApplicationService(
                 Mono.zip(
                     threadQueryService.getThreadDetail(threadId),
                     loadMessagePage(thread, safePage, safeSize),
-                ).map { tuple ->
+                ).flatMap { tuple ->
                     val detail = tuple.t1
                     val messages = tuple.t2
-                    ThreadDetailResponse(
-                        threadId = detail.threadId,
-                        requestId = detail.requestId,
-                        requestTitle = detail.requestTitle,
-                        otherParty = toOtherParty(detail, principal.role),
-                        contactShareState = detail.contactShareState,
-                        messages = messages.items,
-                        meta = messages.meta,
-                        createdAt = detail.createdAt,
-                        updatedAt = detail.updatedAt,
-                    )
+                    sharedContact(thread)
+                        .map<ThreadDetailResponse> { sharedContact ->
+                            ThreadDetailResponse(
+                                threadId = detail.threadId,
+                                requestId = detail.requestId,
+                                requestTitle = detail.requestTitle,
+                                otherParty = toOtherParty(detail, principal.role),
+                                contactShareState = detail.contactShareState,
+                                contactShareRequestedByRole = thread.contactShareRequestedByRole,
+                                requesterApproved = thread.contactShareRequesterApprovedAt != null,
+                                supplierApproved = thread.contactShareSupplierApprovedAt != null,
+                                sharedContact = sharedContact,
+                                messages = messages.items,
+                                meta = messages.meta,
+                                createdAt = detail.createdAt,
+                                updatedAt = detail.updatedAt,
+                            )
+                        }
+                        .defaultIfEmpty(
+                            ThreadDetailResponse(
+                                threadId = detail.threadId,
+                                requestId = detail.requestId,
+                                requestTitle = detail.requestTitle,
+                                otherParty = toOtherParty(detail, principal.role),
+                                contactShareState = detail.contactShareState,
+                                contactShareRequestedByRole = thread.contactShareRequestedByRole,
+                                requesterApproved = thread.contactShareRequesterApprovedAt != null,
+                                supplierApproved = thread.contactShareSupplierApprovedAt != null,
+                                sharedContact = null,
+                                messages = messages.items,
+                                meta = messages.meta,
+                                createdAt = detail.createdAt,
+                                updatedAt = detail.updatedAt,
+                            )
+                        )
                 }
             }
     }
@@ -236,6 +265,24 @@ class ThreadApplicationService(
             }
     }
 
+    fun requestContactShare(principal: AuthenticatedUserPrincipal, threadId: String): Mono<ContactShareActionResponse> {
+        return mutateContactShare(principal, threadId) { context ->
+            threadCommandService.requestContactShare(ContactShareCommand(threadId, principal.userId, context.supplierProfileId))
+        }
+    }
+
+    fun approveContactShare(principal: AuthenticatedUserPrincipal, threadId: String): Mono<ContactShareActionResponse> {
+        return mutateContactShare(principal, threadId) { context ->
+            threadCommandService.approveContactShare(ContactShareCommand(threadId, principal.userId, context.supplierProfileId))
+        }
+    }
+
+    fun revokeContactShare(principal: AuthenticatedUserPrincipal, threadId: String): Mono<ContactShareActionResponse> {
+        return mutateContactShare(principal, threadId) { context ->
+            threadCommandService.revokeContactShare(ContactShareCommand(threadId, principal.userId, context.supplierProfileId))
+        }
+    }
+
     fun uploadAttachment(
         principal: AuthenticatedUserPrincipal,
         threadId: String,
@@ -295,11 +342,11 @@ class ThreadApplicationService(
         return loadParticipantContext(principal)
             .flatMap { context ->
                 messageThreadRepository.findById(threadId)
-                    .switchIfEmpty { Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Thread not found")) }
+                    .switchIfEmpty { Mono.error(ThreadNotFoundException()) }
                     .flatMap { thread ->
                         val canAccess = principal.role == UserRole.ADMIN || threadCommandService.ensureThreadAccess(thread, principal.userId, context.supplierProfileId)
                         if (!canAccess) {
-                            Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this thread"))
+                            Mono.error(ThreadAccessDeniedException())
                         } else {
                             Mono.just(thread)
                         }
@@ -329,6 +376,26 @@ class ThreadApplicationService(
                 } else {
                     Mono.empty()
                 }
+            }
+    }
+
+    private fun mutateContactShare(
+        principal: AuthenticatedUserPrincipal,
+        threadId: String,
+        operation: (ParticipantContext) -> Mono<MessageThreadEntity>,
+    ): Mono<ContactShareActionResponse> {
+        return loadParticipantContext(principal)
+            .flatMap { context ->
+                loadAccessibleThread(principal, threadId)
+                    .then(operation(context))
+                    .flatMap { updatedThread ->
+                        threadProjectionService.projectContactShareChanged(updatedThread)
+                    }
+            }
+            .flatMap { thread ->
+                sharedContact(thread)
+                    .map { sharedContact -> toContactShareActionResponse(thread, sharedContact) }
+                    .defaultIfEmpty(toContactShareActionResponse(thread, null))
             }
     }
 
@@ -432,6 +499,55 @@ class ThreadApplicationService(
             },
             createdAt = document.createdAt,
             updatedAt = document.updatedAt,
+        )
+    }
+
+    private fun sharedContact(thread: MessageThreadEntity): Mono<ThreadSharedContactResponse> {
+        if (thread.contactShareState != "mutually_approved") {
+            return Mono.empty()
+        }
+
+        return Mono.zip(
+            requesterBusinessProfileQueryService.findByUserId(thread.requesterUserId),
+            supplierProfileRepository.findById(thread.supplierProfileId),
+        ).map { tuple ->
+            val requester = tuple.t1
+            val supplier = tuple.t2
+            ThreadSharedContactResponse(
+                requester = ThreadParticipantContactResponse(
+                    name = requester.contactName,
+                    phone = requester.contactPhone,
+                    email = requester.contactEmail,
+                ),
+                supplier = ThreadParticipantContactResponse(
+                    name = supplier.representativeName,
+                    phone = supplier.contactPhone,
+                    email = supplier.contactEmail,
+                ),
+            )
+        }
+    }
+
+    private fun toContactShareActionResponse(
+        thread: MessageThreadEntity,
+        sharedContact: ThreadSharedContactResponse?,
+    ): ContactShareActionResponse {
+        val approvedAt = listOfNotNull(
+            thread.contactShareRequesterApprovedAt,
+            thread.contactShareSupplierApprovedAt,
+        ).maxOrNull()?.toInstant(ZoneOffset.UTC)
+
+        return ContactShareActionResponse(
+            threadId = thread.threadId,
+            contactShareState = thread.contactShareState,
+            requestedBy = thread.contactShareRequestedByRole,
+            requestedAt = thread.contactShareRequestedAt?.toInstant(ZoneOffset.UTC),
+            approvedAt = approvedAt,
+            revokedAt = thread.contactShareRevokedAt?.toInstant(ZoneOffset.UTC),
+            contactShareRequestedByRole = thread.contactShareRequestedByRole,
+            requesterApproved = thread.contactShareRequesterApprovedAt != null,
+            supplierApproved = thread.contactShareSupplierApprovedAt != null,
+            sharedContact = sharedContact,
         )
     }
 

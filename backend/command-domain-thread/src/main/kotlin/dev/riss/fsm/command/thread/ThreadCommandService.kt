@@ -2,6 +2,10 @@ package dev.riss.fsm.command.thread
 
 import dev.riss.fsm.shared.error.ThreadAccessDeniedException
 import dev.riss.fsm.shared.error.ThreadNotFoundException
+import dev.riss.fsm.shared.error.ContactShareAlreadyRequestedException
+import dev.riss.fsm.shared.error.ContactShareApprovalConflictException
+import dev.riss.fsm.shared.error.ContactShareNotRequestedException
+import dev.riss.fsm.shared.error.ContactShareRevokeForbiddenException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -93,16 +97,107 @@ class ThreadCommandService(
             .switchIfEmpty(messageRepository.countByThreadIdAndSenderUserIdNotAndCreatedAtAfter(threadId, userId, LocalDateTime.MIN))
     }
 
+    fun requestContactShare(command: ContactShareCommand): Mono<MessageThreadEntity> {
+        return messageThreadRepository.findById(command.threadId)
+            .switchIfEmpty(Mono.error(ThreadNotFoundException()))
+            .flatMap { thread ->
+                val actorRole = participantRole(thread, command.userId, command.supplierProfileId)
+                when (thread.contactShareState) {
+                    "not_requested", "revoked" -> {
+                        val now = LocalDateTime.now()
+                        messageThreadRepository.save(
+                            thread.copy(
+                                contactShareState = "requested",
+                                contactShareRequestedByRole = actorRole,
+                                contactShareRequestedAt = now,
+                                contactShareRequesterApprovedAt = null,
+                                contactShareSupplierApprovedAt = null,
+                                contactShareRevokedByRole = null,
+                                contactShareRevokedAt = null,
+                            )
+                        )
+                    }
+
+                    else -> Mono.error(ContactShareAlreadyRequestedException())
+                }
+            }
+    }
+
+    fun approveContactShare(command: ContactShareCommand): Mono<MessageThreadEntity> {
+        return messageThreadRepository.findById(command.threadId)
+            .switchIfEmpty(Mono.error(ThreadNotFoundException()))
+            .flatMap { thread ->
+                val actorRole = participantRole(thread, command.userId, command.supplierProfileId)
+                when (thread.contactShareState) {
+                    "requested", "one_side_approved" -> {
+                        if ((actorRole == "requester" && thread.contactShareRequesterApprovedAt != null) ||
+                            (actorRole == "supplier" && thread.contactShareSupplierApprovedAt != null)
+                        ) {
+                            return@flatMap Mono.error(ContactShareApprovalConflictException("This participant already approved contact sharing"))
+                        }
+
+                        val now = LocalDateTime.now()
+                        val requesterApprovedAt = if (actorRole == "requester") now else thread.contactShareRequesterApprovedAt
+                        val supplierApprovedAt = if (actorRole == "supplier") now else thread.contactShareSupplierApprovedAt
+
+                        messageThreadRepository.save(
+                            thread.copy(
+                                contactShareState = if (requesterApprovedAt != null && supplierApprovedAt != null) "mutually_approved" else "one_side_approved",
+                                contactShareRequesterApprovedAt = requesterApprovedAt,
+                                contactShareSupplierApprovedAt = supplierApprovedAt,
+                            )
+                        )
+                    }
+
+                    "mutually_approved" -> Mono.error(ContactShareApprovalConflictException("Contact sharing is already mutually approved"))
+                    else -> Mono.error(ContactShareNotRequestedException())
+                }
+            }
+    }
+
+    fun revokeContactShare(command: ContactShareCommand): Mono<MessageThreadEntity> {
+        return messageThreadRepository.findById(command.threadId)
+            .switchIfEmpty(Mono.error(ThreadNotFoundException()))
+            .flatMap { thread ->
+                val actorRole = participantRole(thread, command.userId, command.supplierProfileId)
+                when (thread.contactShareState) {
+                    "requested", "one_side_approved" -> {
+                        if (thread.contactShareRequestedByRole != actorRole) {
+                            return@flatMap Mono.error(ContactShareApprovalConflictException("Only the original requester can revoke contact sharing"))
+                        }
+
+                        val now = LocalDateTime.now()
+                        messageThreadRepository.save(
+                            thread.copy(
+                                contactShareState = "revoked",
+                                contactShareRevokedByRole = actorRole,
+                                contactShareRevokedAt = now,
+                                contactShareRequesterApprovedAt = null,
+                                contactShareSupplierApprovedAt = null,
+                            )
+                        )
+                    }
+
+                    "mutually_approved" -> Mono.error(ContactShareRevokeForbiddenException())
+                    else -> Mono.error(ContactShareNotRequestedException())
+                }
+            }
+    }
+
     private fun validateParticipant(thread: MessageThreadEntity, userId: String, supplierProfileId: String?) {
-        val isRequester = thread.requesterUserId == userId
-        val isSupplier = thread.supplierProfileId == supplierProfileId
-        if (!isRequester && !isSupplier) {
-            throw ThreadAccessDeniedException()
-        }
+        participantRole(thread, userId, supplierProfileId)
     }
 
     fun ensureThreadAccess(thread: MessageThreadEntity, userId: String, supplierProfileId: String?): Boolean {
         return thread.requesterUserId == userId || thread.supplierProfileId == supplierProfileId
+    }
+
+    private fun participantRole(thread: MessageThreadEntity, userId: String, supplierProfileId: String?): String {
+        return when {
+            thread.requesterUserId == userId -> "requester"
+            thread.supplierProfileId == supplierProfileId -> "supplier"
+            else -> throw ThreadAccessDeniedException()
+        }
     }
 }
 
@@ -136,4 +231,10 @@ data class ThreadReadResult(
     val threadId: String,
     val readAt: LocalDateTime,
     val unreadCount: Long,
+)
+
+data class ContactShareCommand(
+    val threadId: String,
+    val userId: String,
+    val supplierProfileId: String? = null,
 )

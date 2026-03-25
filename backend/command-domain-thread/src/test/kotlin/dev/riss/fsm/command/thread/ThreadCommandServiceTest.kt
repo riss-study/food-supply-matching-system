@@ -143,6 +143,122 @@ class ThreadCommandServiceTest {
             .verifyComplete()
     }
 
+    @Test
+    fun `request contact share sets requested state and requester role`() {
+        val thread = thread()
+        `when`(messageThreadRepository.findById(thread.threadId)).thenReturn(Mono.just(thread))
+        `when`(messageThreadRepository.save(any())).thenAnswer { invocation -> Mono.just(invocation.getArgument<MessageThreadEntity>(0)) }
+
+        StepVerifier.create(
+            threadCommandService.requestContactShare(
+                ContactShareCommand(threadId = thread.threadId, userId = "usr_req")
+            )
+        )
+            .assertNext { result ->
+                assertEquals("requested", result.contactShareState)
+                assertEquals("requester", result.contactShareRequestedByRole)
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `approve contact share reaches mutual state after both participants approve`() {
+        val requested = thread().copy(
+            contactShareState = "requested",
+            contactShareRequestedByRole = "requester",
+            contactShareRequestedAt = LocalDateTime.now(),
+            contactShareSupplierApprovedAt = LocalDateTime.now(),
+        )
+        `when`(messageThreadRepository.findById(requested.threadId)).thenReturn(Mono.just(requested))
+        `when`(messageThreadRepository.save(any())).thenAnswer { invocation -> Mono.just(invocation.getArgument<MessageThreadEntity>(0)) }
+
+        StepVerifier.create(
+            threadCommandService.approveContactShare(
+                ContactShareCommand(threadId = requested.threadId, userId = "usr_req")
+            )
+        )
+            .assertNext { result ->
+                assertEquals("mutually_approved", result.contactShareState)
+                assertTrue(result.contactShareRequesterApprovedAt != null)
+                assertTrue(result.contactShareSupplierApprovedAt != null)
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `revoke contact share requires original requester`() {
+        val requested = thread().copy(
+            contactShareState = "requested",
+            contactShareRequestedByRole = "requester",
+            contactShareRequestedAt = LocalDateTime.now(),
+        )
+        `when`(messageThreadRepository.findById(requested.threadId)).thenReturn(Mono.just(requested))
+
+        StepVerifier.create(
+            threadCommandService.revokeContactShare(
+                ContactShareCommand(threadId = requested.threadId, userId = "usr_sup", supplierProfileId = "sprof_1")
+            )
+        )
+            .expectErrorSatisfies { error ->
+                assertTrue(error is dev.riss.fsm.shared.error.ContactShareApprovalConflictException)
+                assertEquals("Only the original requester can revoke contact sharing", error.message)
+            }
+            .verify()
+    }
+
+    @Test
+    fun `revoke contact share is forbidden after mutual approval`() {
+        val approved = thread().copy(
+            contactShareState = "mutually_approved",
+            contactShareRequestedByRole = "requester",
+            contactShareRequestedAt = LocalDateTime.now(),
+            contactShareRequesterApprovedAt = LocalDateTime.now(),
+            contactShareSupplierApprovedAt = LocalDateTime.now(),
+        )
+        `when`(messageThreadRepository.findById(approved.threadId)).thenReturn(Mono.just(approved))
+
+        StepVerifier.create(
+            threadCommandService.revokeContactShare(
+                ContactShareCommand(threadId = approved.threadId, userId = "usr_req")
+            )
+        )
+            .expectErrorSatisfies { error ->
+                assertTrue(error is dev.riss.fsm.shared.error.ContactShareRevokeForbiddenException)
+            }
+            .verify()
+    }
+
+    @Test
+    fun `request contact share after revoke starts a new cycle`() {
+        val revoked = thread().copy(
+            contactShareState = "revoked",
+            contactShareRequestedByRole = "supplier",
+            contactShareRequestedAt = LocalDateTime.now().minusHours(2),
+            contactShareRequesterApprovedAt = LocalDateTime.now().minusHours(1),
+            contactShareSupplierApprovedAt = null,
+            contactShareRevokedByRole = "supplier",
+            contactShareRevokedAt = LocalDateTime.now().minusMinutes(30),
+        )
+        `when`(messageThreadRepository.findById(revoked.threadId)).thenReturn(Mono.just(revoked))
+        `when`(messageThreadRepository.save(any())).thenAnswer { invocation -> Mono.just(invocation.getArgument<MessageThreadEntity>(0)) }
+
+        StepVerifier.create(
+            threadCommandService.requestContactShare(
+                ContactShareCommand(threadId = revoked.threadId, userId = "usr_req")
+            )
+        )
+            .assertNext { result ->
+                assertEquals("requested", result.contactShareState)
+                assertEquals("requester", result.contactShareRequestedByRole)
+                assertTrue(result.contactShareRequestedAt != null)
+                assertEquals(null, result.contactShareRequesterApprovedAt)
+                assertEquals(null, result.contactShareSupplierApprovedAt)
+                assertEquals(null, result.contactShareRevokedByRole)
+                assertEquals(null, result.contactShareRevokedAt)
+            }
+            .verifyComplete()
+    }
+
     private fun thread() = MessageThreadEntity(
         threadId = "thd_existing",
         requestId = "req_1",
@@ -150,6 +266,12 @@ class ThreadCommandServiceTest {
         supplierProfileId = "sprof_1",
         quoteId = "quo_1",
         contactShareState = "not_requested",
+        contactShareRequestedByRole = null,
+        contactShareRequestedAt = null,
+        contactShareRequesterApprovedAt = null,
+        contactShareSupplierApprovedAt = null,
+        contactShareRevokedByRole = null,
+        contactShareRevokedAt = null,
         createdAt = LocalDateTime.now(),
     )
 }

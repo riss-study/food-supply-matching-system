@@ -1,7 +1,9 @@
 package dev.riss.fsm.api.supplier
 
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
+import jakarta.validation.Valid
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -19,6 +21,8 @@ class SupplierProfileControllerTest {
         val request = CreateSupplierProfileRequest(
             companyName = "Example Supplier",
             representativeName = "김공급",
+            contactPhone = "010-1111-2222",
+            contactEmail = "supplier@example.com",
             region = "경기도 화성시",
             categories = listOf("snack"),
             equipmentSummary = "자동 포장기 3대",
@@ -34,6 +38,8 @@ class SupplierProfileControllerTest {
             profileId = "sprof_1",
             companyName = request.companyName,
             representativeName = request.representativeName,
+            contactPhone = request.contactPhone,
+            contactEmail = request.contactEmail,
             region = request.region,
             categories = request.categories,
             equipmentSummary = request.equipmentSummary,
@@ -56,5 +62,14 @@ class SupplierProfileControllerTest {
         assertEquals(201, result.statusCode.value())
         assertEquals(100, result.body?.code)
         assertEquals("draft", result.body?.data?.verificationState)
+    }
+
+    @Test
+    fun updateRequestIsValidated() {
+        val updateMethod = SupplierProfileController::class.java.methods.first { method ->
+            method.name == "update"
+        }
+
+        assertTrue(updateMethod.parameters[1].annotations.any { it is Valid })
     }
 }
