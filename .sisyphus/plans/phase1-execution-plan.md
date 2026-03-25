@@ -100,7 +100,7 @@
 | 08 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-08-quote-lifecycle.md` |
 | 09 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-09-message-threads.md` |
 | 10 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-10-contact-share.md` |
-| 11 | 🔴 Not Started | `.sisyphus/plans/phase1-subplans/phase1-task-11-admin-notices-stabilization.md` |
+| 11 | 🟢 Done | `.sisyphus/plans/phase1-subplans/phase1-task-11-admin-notices-stabilization.md` |
 
 ### 의존성 매트릭스
 | Task | Depends On | Enables |

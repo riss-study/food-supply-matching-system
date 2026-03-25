@@ -1,0 +1,46 @@
+Date: 2026-03-25
+
+Task 11 Evidence - Admin Notices, Stats and Stabilization
+=========================================================
+
+Implemented scope
+-----------------
+1. Backend notice domain and APIs
+   - Added notice command domain under `backend/command-domain-notice/`.
+   - Added admin notice APIs under `backend/admin-server/src/main/kotlin/dev/riss/fsm/admin/notice/`.
+   - Added public notice APIs under `backend/api-server/src/main/kotlin/dev/riss/fsm/api/notice/`.
+   - Added relational `notice` table to `backend/docker/mariadb/init/01-schema.sql`.
+
+2. Backend admin stats
+   - Added summary DTO/service/controller in `backend/admin-server/src/main/kotlin/dev/riss/fsm/admin/stats/`.
+   - Implemented deterministic runtime aggregation for users, supplier verification states, reviews, and requests.
+
+3. Frontend admin/main notice and stats UI
+   - Added admin-site notice management and stats dashboard under `frontend/apps/admin-site/src/features/notices/` and `frontend/apps/admin-site/src/features/stats/`.
+   - Added main-site public notices under `frontend/apps/main-site/src/features/notices/`.
+   - Routed notice/stats pages from both app entry points.
+
+4. Stabilization
+   - Preserved code-first Swagger approach.
+   - Re-ran backend and frontend full test/build suites to guard Tasks 01-10.
+
+Verification
+------------
+Backend
+- `./gradlew :command-domain-notice:compileKotlin :query-model-admin-stats:compileKotlin :admin-server:compileKotlin :api-server:compileKotlin` -> PASS
+- `./gradlew :command-domain-notice:test :admin-server:test :api-server:test` -> PASS
+- `./gradlew build` -> PASS
+
+Frontend
+- `yarn workspace @fsm/admin-site type-check` -> PASS
+- `yarn workspace @fsm/main-site type-check` -> PASS
+- `yarn workspace @fsm/admin-site test` -> PASS
+- `yarn workspace @fsm/main-site test` -> PASS
+- `yarn workspace @fsm/admin-site build` -> PASS
+- `yarn workspace @fsm/main-site build` -> PASS
+
+Notes
+-----
+- Public notice detail increments view count on read and remains limited to `published` notices.
+- Final stabilization chose deterministic runtime stats aggregation rather than introducing additional async projection complexity at Phase 1 closeout.
+- Swagger remains code-first; no separate OpenAPI YAML file was introduced.

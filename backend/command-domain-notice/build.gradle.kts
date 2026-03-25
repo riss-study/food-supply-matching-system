@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.spring.dependency.management)
 }
 
@@ -11,9 +12,11 @@ java {
 
 dependencies {
     implementation(project(":shared-core"))
-    implementation(libs.spring.boot.starter.data.mongodb.reactive)
+    implementation(libs.spring.boot.starter.data.r2dbc)
+    implementation(libs.spring.boot.starter.webflux)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation("io.projectreactor:reactor-test")
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

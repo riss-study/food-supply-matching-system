@@ -650,3 +650,153 @@ export interface ContactShareActionResponse {
   supplierApproved: boolean
   sharedContact?: ThreadSharedContact | null
 }
+
+// ========================
+// Notice Types (Task 11)
+// ========================
+
+export type NoticeState = "draft" | "published" | "archived"
+
+export interface NoticeSummary {
+  noticeId: string
+  title: string
+  excerpt: string
+  state: NoticeState
+  author: string
+  authorId: string
+  authorName?: string
+  publishedAt: string | null
+  viewCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NoticeDetail {
+  noticeId: string
+  title: string
+  body: string
+  state: NoticeState
+  authorId: string
+  authorName?: string
+  publishedAt: string | null
+  viewCount: number
+  attachments: NoticeAttachment[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NoticeAttachment {
+  attachmentId: string
+  fileName: string
+  contentType: string
+  fileSize: number
+  url: string
+  createdAt: string
+}
+
+export interface CreateNoticeRequest {
+  title: string
+  body: string
+  state?: NoticeState
+  publishImmediately?: boolean
+}
+
+export interface CreateNoticeResponse {
+  noticeId: string
+  state: NoticeState
+  createdAt: string
+}
+
+export interface UpdateNoticeRequest {
+  title?: string
+  body?: string
+  state?: NoticeState
+}
+
+export interface UpdateNoticeResponse {
+  noticeId: string
+  state: NoticeState
+  publishedAt?: string | null
+  updatedAt: string
+}
+
+export interface PublishNoticeResponse {
+  noticeId: string
+  state: NoticeState
+  publishedAt: string
+}
+
+export interface ArchiveNoticeResponse {
+  noticeId: string
+  state: NoticeState
+  archivedAt: string
+}
+
+export interface PublicNoticeSummary {
+  noticeId: string
+  title: string
+  excerpt: string
+  publishedAt: string
+}
+
+export interface PublicNoticeDetail {
+  noticeId: string
+  title: string
+  body: string
+  publishedAt: string
+  viewCount: number
+  attachments: NoticeAttachment[]
+}
+
+// ========================
+// Stats Types (Task 11)
+// ========================
+
+export interface AdminStatsSummary {
+  users: UserStats
+  suppliersByState: SuppliersByStateStats
+  reviews: ReviewStats
+  requests: RequestStats
+  period: StatsPeriod
+}
+
+export interface UserStats {
+  total: number
+  requesters: number
+  suppliers: number
+  admins: number
+}
+
+export interface SuppliersByStateStats {
+  approved: number
+  submitted: number
+  underReview: number
+  hold: number
+  rejected: number
+  suspended: number
+  draft: number
+}
+
+export interface ReviewStats {
+  pending: number
+  avgReviewDays: number
+  totalReviewed: number
+}
+
+export interface RequestStats {
+  open: number
+  closed: number
+  cancelled: number
+  draft: number
+  total: number
+}
+
+export interface StatsPeriod {
+  from: string | null
+  to: string | null
+}
+
+export interface GetStatsSummaryParams {
+  fromDate?: string
+  toDate?: string
+}

@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":command-domain-request"))
     implementation(project(":command-domain-quote"))
     implementation(project(":command-domain-thread"))
+    implementation(project(":command-domain-notice"))
     implementation(project(":query-model-user"))
     implementation(project(":query-model-supplier"))
     implementation(project(":query-model-request"))

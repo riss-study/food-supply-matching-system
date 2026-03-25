@@ -1,0 +1,21 @@
+Date: 2026-03-25
+
+Task 11 Regression Report
+=========================
+
+Coverage summary
+----------------
+- Existing backend modules still compile and test through `./gradlew build`.
+- Existing frontend apps still pass full suites:
+  - `yarn workspace @fsm/admin-site test`
+  - `yarn workspace @fsm/main-site test`
+
+Key retained behaviors
+----------------------
+- Request, quote, message-thread, and contact-share flows continue to pass existing tests.
+- Admin review queue/detail remains available in admin-site.
+- Public supplier discovery and request/quote routes remain intact in main-site.
+
+Known warnings
+--------------
+- React Router v7 future-flag warnings remain in test output but do not fail tests.

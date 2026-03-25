@@ -1,0 +1,19 @@
+Date: 2026-03-25
+
+Task 11 Swagger Verification
+============================
+
+Code-first checks
+-----------------
+- New Task 11 controllers use annotation-based documentation:
+  - `backend/admin-server/src/main/kotlin/dev/riss/fsm/admin/notice/AdminNoticeController.kt`
+  - `backend/admin-server/src/main/kotlin/dev/riss/fsm/admin/stats/AdminStatsController.kt`
+  - `backend/api-server/src/main/kotlin/dev/riss/fsm/api/notice/PublicNoticeController.kt`
+- Existing OpenAPI configuration remains in code:
+  - `backend/admin-server/src/main/kotlin/dev/riss/fsm/admin/config/AdminOpenApiConfig.kt`
+  - `backend/api-server/src/main/kotlin/dev/riss/fsm/api/config/ApiOpenApiConfig.kt`
+
+Verification notes
+------------------
+- No separate OpenAPI YAML file was introduced for Task 11.
+- Public notice endpoints are now permitted via `ApiSecurityConfig` while admin notice/stats remain authenticated on `admin-server`.

@@ -11,6 +11,7 @@ import { RequestListPage, RequestCreatePage, RequestDetailPage } from "./feature
 import { SupplierRequestFeedPage, SupplierRequestDetailPage } from "./features/supplier-requests"
 import { QuoteCreatePage, SupplierQuoteListPage } from "./features/supplier-quotes"
 import { ThreadListPage, ThreadDetailPage } from "./features/threads"
+import { NoticeListPage, NoticeDetailPage } from "./features/notices"
 
 function HomePage() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
         <Link to="/supplier/requests">Request Feed</Link>
         <Link to="/supplier/quotes">My Quotes</Link>
         <Link to="/threads">Messages</Link>
+        <Link to="/notices">Notices</Link>
       </nav>
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -166,6 +168,14 @@ export default function App() {
               <ThreadDetailPage />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/notices"
+          element={<NoticeListPage />}
+        />
+        <Route
+          path="/notices/:noticeId"
+          element={<NoticeDetailPage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -60,7 +60,7 @@ class ApiSecurityConfig {
             }
             .authorizeExchange { exchanges ->
                 exchanges
-                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/bootstrap/**", "/actuator/**", "/api/auth/signup", "/api/auth/login", "/api/suppliers", "/api/suppliers/**").permitAll()
+                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/bootstrap/**", "/actuator/**", "/api/auth/signup", "/api/auth/login", "/api/suppliers", "/api/suppliers/**", "/api/notices", "/api/notices/**").permitAll()
                     .anyExchange().authenticated()
             }
             .addFilterAt(jwtAuthenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

@@ -10,6 +10,7 @@ include(
     ":command-domain-request",
     ":command-domain-quote",
     ":command-domain-thread",
+    ":command-domain-notice",
     ":query-model-user",
     ":query-model-supplier",
     ":query-model-request",
