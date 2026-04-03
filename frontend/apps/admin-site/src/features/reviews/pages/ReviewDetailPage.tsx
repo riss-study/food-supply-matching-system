@@ -18,29 +18,29 @@ function getActionTypeLabel(actionType: string): string {
 
 function HistoryItem({ item }: { item: AdminReviewHistoryItem }) {
   return (
-    <div style={{ padding: "0.75rem", borderBottom: "1px solid #e5e7eb" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-        <span style={{ fontWeight: 600 }}>{getActionTypeLabel(item.actionType)}</span>
-        <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+    <div className="timeline-item">
+      <div className="timeline-item-header">
+        <span className="timeline-item-action">{getActionTypeLabel(item.actionType)}</span>
+        <span className="timeline-item-date">
           {new Date(item.createdAt).toLocaleString("ko-KR")}
         </span>
       </div>
-      <div style={{ fontSize: "0.875rem", color: "#6b7280", marginBottom: "0.25rem" }}>
+      <div className="timeline-item-actor">
         처리자: {item.actorUserId}
       </div>
       {item.noteInternal && (
-        <div style={{ fontSize: "0.875rem", marginTop: "0.5rem" }}>
-          <span style={{ color: "#6b7280" }}>내부 메모:</span> {item.noteInternal}
+        <div className="timeline-item-note">
+          <span className="timeline-item-label">내부 메모:</span> {item.noteInternal}
         </div>
       )}
       {item.notePublic && (
-        <div style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>
-          <span style={{ color: "#6b7280" }}>공개 메모:</span> {item.notePublic}
+        <div className="timeline-item-note">
+          <span className="timeline-item-label">공개 메모:</span> {item.notePublic}
         </div>
       )}
       {item.reasonCode && (
-        <div style={{ fontSize: "0.875rem", marginTop: "0.25rem" }}>
-          <span style={{ color: "#6b7280" }}>사유 코드:</span> {item.reasonCode}
+        <div className="timeline-item-note">
+          <span className="timeline-item-label">사유 코드:</span> {item.reasonCode}
         </div>
       )}
     </div>
@@ -58,149 +58,132 @@ export function ReviewDetailPage() {
   const [reasonCode, setReasonCode] = useState("")
 
   if (isLoading || !data) {
-    return <section><h1>검수 상세</h1><p>로딩 중...</p></section>
+    return <div className="page"><h1>검수 상세</h1><p>로딩 중...</p></div>
   }
 
   return (
-    <section>
-      <h1>검수 상세</h1>
-      <div style={{ marginBottom: "1rem" }}>
-        <p style={{ fontSize: "1.125rem", fontWeight: 600 }}>{data.companyName}</p>
-        <p style={{ marginTop: "0.5rem" }}>
-          <StateBadge state={data.state} />
-        </p>
+    <div className="page">
+      <div className="page-header">
+        <h1>검수 상세</h1>
       </div>
 
-      <div style={{ display: "grid", gap: "0.5rem", marginBottom: "1.5rem", color: "#374151" }}>
-        <p>지역: {data.region}</p>
-        <p>대표자: {data.representativeName}</p>
-        <p>카테고리: {data.categories.join(", ")}</p>
-        <p>제출일: {new Date(data.submittedAt).toLocaleString("ko-KR")}</p>
-        {data.reviewedAt && (
-          <p>검수일: {new Date(data.reviewedAt).toLocaleString("ko-KR")}</p>
-        )}
-      </div>
-
-      <h2 style={{ borderBottom: "2px solid #e5e7eb", paddingBottom: "0.5rem" }}>제출 파일</h2>
-      <ul style={{ listStyle: "none", padding: 0, marginBottom: "1.5rem" }}>
-        {data.files.map((file) => (
-          <li
-            key={file.fileId}
-            style={{
-              padding: "0.75rem",
-              borderBottom: "1px solid #e5e7eb",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>{file.fileName} ({file.status})</span>
-            {file.downloadUrl ? (
-              <a
-                href={file.downloadUrl}
-                download
-                style={{
-                  padding: "0.25rem 0.75rem",
-                  backgroundColor: "#3b82f6",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "0.25rem",
-                  fontSize: "0.875rem",
-                }}
-              >
-                다운로드
-              </a>
-            ) : (
-              <span style={{ color: "#9ca3af", fontSize: "0.875rem" }}>다운로드 unavailable</span>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      {data.reviewHistory.length > 0 && (
-        <>
-          <h2 style={{ borderBottom: "2px solid #e5e7eb", paddingBottom: "0.5rem" }}>
-            검수 이력 ({data.reviewHistory.length}건)
-          </h2>
-          <div style={{ marginBottom: "1.5rem" }}>
-            {data.reviewHistory.map((item, index) => (
-              <HistoryItem key={index} item={item} />
-            ))}
+      <div className="two-col-sidebar-r">
+        <div>
+          <div className="surface">
+            <div className="surface-section">
+              <h2 className="section-title mb-16">{data.companyName}</h2>
+              <div className="surface-meta">
+                <StateBadge state={data.state} />
+              </div>
+            </div>
+            <dl className="detail-grid">
+              <dt>지역</dt>
+              <dd>{data.region}</dd>
+              <dt>대표자</dt>
+              <dd>{data.representativeName}</dd>
+              <dt>카테고리</dt>
+              <dd>{data.categories.join(", ")}</dd>
+              <dt>제출일</dt>
+              <dd>{new Date(data.submittedAt).toLocaleString("ko-KR")}</dd>
+              {data.reviewedAt && (
+                <>
+                  <dt>검수일</dt>
+                  <dd>{new Date(data.reviewedAt).toLocaleString("ko-KR")}</dd>
+                </>
+              )}
+            </dl>
           </div>
-        </>
-      )}
 
-      <h2 style={{ borderBottom: "2px solid #e5e7eb", paddingBottom: "0.5rem" }}>검수 결정</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1rem" }}>
-        <textarea
-          value={noteInternal}
-          onChange={(e) => setNoteInternal(e.target.value)}
-          placeholder="내부 메모"
-          rows={3}
-          style={{ padding: "0.5rem", borderRadius: "0.25rem", border: "1px solid #d1d5db" }}
-        />
-        <textarea
-          value={notePublic}
-          onChange={(e) => setNotePublic(e.target.value)}
-          placeholder="사용자 표시 메모"
-          rows={3}
-          style={{ padding: "0.5rem", borderRadius: "0.25rem", border: "1px solid #d1d5db" }}
-        />
-        <input
-          value={reasonCode}
-          onChange={(e) => setReasonCode(e.target.value)}
-          placeholder="사유 코드 (선택)"
-          style={{ padding: "0.5rem", borderRadius: "0.25rem", border: "1px solid #d1d5db" }}
-        />
-      </div>
+          <div className="surface">
+            <h2 className="section-title mb-16">제출 서류</h2>
+            <ul className="file-list">
+              {data.files.map((file) => (
+                <li key={file.fileId} className="file-list-item">
+                  <span className="file-list-name">{file.fileName} ({file.status})</span>
+                  {file.downloadUrl ? (
+                    <a className="btn btn-primary btn-sm" href={file.downloadUrl} download>
+                      다운로드
+                    </a>
+                  ) : (
+                    <span className="file-list-unavailable">다운로드 불가</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
 
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
-        <button
-          onClick={() => approveMutation.mutate({ noteInternal, notePublic })}
-          disabled={approveMutation.isPending}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "#10b981",
-            color: "white",
-            border: "none",
-            borderRadius: "0.25rem",
-            cursor: approveMutation.isPending ? "not-allowed" : "pointer",
-            opacity: approveMutation.isPending ? 0.6 : 1,
-          }}
-        >
-          {approveMutation.isPending ? "처리 중..." : "승인"}
-        </button>
-        <button
-          onClick={() => holdMutation.mutate({ noteInternal, notePublic })}
-          disabled={holdMutation.isPending}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "#f59e0b",
-            color: "white",
-            border: "none",
-            borderRadius: "0.25rem",
-            cursor: holdMutation.isPending ? "not-allowed" : "pointer",
-            opacity: holdMutation.isPending ? 0.6 : 1,
-          }}
-        >
-          {holdMutation.isPending ? "처리 중..." : "보류"}
-        </button>
-        <button
-          onClick={() => rejectMutation.mutate({ noteInternal, notePublic, reasonCode })}
-          disabled={rejectMutation.isPending}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "#ef4444",
-            color: "white",
-            border: "none",
-            borderRadius: "0.25rem",
-            cursor: rejectMutation.isPending ? "not-allowed" : "pointer",
-            opacity: rejectMutation.isPending ? 0.6 : 1,
-          }}
-        >
-          {rejectMutation.isPending ? "처리 중..." : "반려"}
-        </button>
+        <div>
+          {data.reviewHistory.length > 0 && (
+            <div className="surface">
+              <h2 className="section-title mb-16">검수 이력 ({data.reviewHistory.length}건)</h2>
+              <div className="timeline">
+                {data.reviewHistory.map((item, index) => (
+                  <HistoryItem key={index} item={item} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="surface">
+            <h2 className="section-title mb-16">검수 결정</h2>
+            <div className="form-stack">
+              <div className="input-field">
+                <label>내부 메모</label>
+                <textarea
+                  className="textarea"
+                  value={noteInternal}
+                  onChange={(e) => setNoteInternal(e.target.value)}
+                  placeholder="내부 메모"
+                  rows={3}
+                />
+              </div>
+              <div className="input-field">
+                <label>사용자 표시 메모</label>
+                <textarea
+                  className="textarea"
+                  value={notePublic}
+                  onChange={(e) => setNotePublic(e.target.value)}
+                  placeholder="사용자 표시 메모"
+                  rows={3}
+                />
+              </div>
+              <div className="input-field">
+                <label>사유 코드 (선택)</label>
+                <input
+                  className="input"
+                  value={reasonCode}
+                  onChange={(e) => setReasonCode(e.target.value)}
+                  placeholder="사유 코드 (선택)"
+                />
+              </div>
+              <div className="btn-group">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => approveMutation.mutate({ noteInternal, notePublic })}
+                  disabled={approveMutation.isPending}
+                >
+                  {approveMutation.isPending ? "처리 중..." : "승인"}
+                </button>
+                <button
+                  className="btn btn-warning"
+                  onClick={() => holdMutation.mutate({ noteInternal, notePublic })}
+                  disabled={holdMutation.isPending}
+                >
+                  {holdMutation.isPending ? "처리 중..." : "보류"}
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => rejectMutation.mutate({ noteInternal, notePublic, reasonCode })}
+                  disabled={rejectMutation.isPending}
+                >
+                  {rejectMutation.isPending ? "처리 중..." : "반려"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   )
 }

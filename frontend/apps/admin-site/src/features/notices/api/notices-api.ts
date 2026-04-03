@@ -66,6 +66,17 @@ export async function publishNotice(noticeId: string): Promise<PublishNoticeResp
   }
 }
 
+export async function uploadNoticeAttachment(noticeId: string, file: File): Promise<{ attachmentId: string; fileName: string; url: string }> {
+  const formData = new FormData()
+  formData.append("file", file)
+  const response = await adminApiClient.post<ApiEnvelope<{ attachmentId: string; fileName: string; url: string }>>(
+    `/api/admin/notices/${noticeId}/attachments`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  )
+  return response.data.data
+}
+
 export async function archiveNotice(noticeId: string): Promise<ArchiveNoticeResponse> {
   const response = await adminApiClient.patch<ApiEnvelope<UpdateNoticeResponse>>(
     `/api/admin/notices/${noticeId}`,

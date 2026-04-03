@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { render, screen, within } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { StatsDashboardPage } from "../pages/StatsDashboardPage"
 import { useStatsSummary } from "../hooks/useStatsSummary"
@@ -46,7 +46,7 @@ describe("StatsDashboardPage", () => {
         suppliersByState: {
           approved: 40,
           submitted: 10,
-          underReview: 5,
+          under_review: 5,
           hold: 3,
           rejected: 2,
           suspended: 5,
@@ -80,15 +80,24 @@ describe("StatsDashboardPage", () => {
     )
 
     expect(screen.getByText("통계 대시보드")).toBeInTheDocument()
-    const userSection = screen.getByRole("heading", { name: "사용자 통계" }).parentElement
-    expect(userSection).not.toBeNull()
-    const scope = within(userSection as HTMLElement)
-    expect(scope.getByText("전체 사용자")).toBeInTheDocument()
-    expect(scope.getByText("의뢰자")).toBeInTheDocument()
-    expect(scope.getByText("공급자")).toBeInTheDocument()
-    expect(scope.getByText("관리자")).toBeInTheDocument()
-    expect(scope.getByText("150")).toBeInTheDocument()
-    expect(scope.getByText("80")).toBeInTheDocument()
-    expect(scope.getByText("65")).toBeInTheDocument()
+
+    // KPI cards
+    expect(screen.getByText("전체 사용자")).toBeInTheDocument()
+    expect(screen.getByText("의뢰자")).toBeInTheDocument()
+    expect(screen.getByText("공급자")).toBeInTheDocument()
+    expect(screen.getByText("검수대기")).toBeInTheDocument()
+    expect(screen.getAllByText("150")).toHaveLength(2) // users.total and reviews.totalReviewed
+    expect(screen.getByText("80")).toBeInTheDocument()
+    expect(screen.getByText("65")).toBeInTheDocument()
+    expect(screen.getByText("12")).toBeInTheDocument()
+
+    // Bar chart section
+    expect(screen.getByText("공급자 검증 상태 분포")).toBeInTheDocument()
+    expect(screen.getByText("승인됨")).toBeInTheDocument()
+
+    // Request stats
+    expect(screen.getByText("의뢰 현황")).toBeInTheDocument()
+    expect(screen.getByText("전체 의뢰")).toBeInTheDocument()
+    expect(screen.getByText("200")).toBeInTheDocument()
   })
 })

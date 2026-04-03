@@ -37,7 +37,7 @@ describe("admin-site stats hooks", () => {
         suppliersByState: {
           approved: 40,
           submitted: 10,
-          underReview: 5,
+          under_review: 5,
           hold: 3,
           rejected: 2,
           suspended: 5,

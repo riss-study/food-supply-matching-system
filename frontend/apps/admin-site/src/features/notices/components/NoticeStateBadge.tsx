@@ -3,13 +3,13 @@ export type NoticeState = "draft" | "published" | "archived"
 export function getNoticeStateBadgeColor(state: string): { bg: string; text: string; border: string } {
   switch (state) {
     case "draft":
-      return { bg: "#f3f4f6", text: "#4b5563", border: "#9ca3af" }
+      return { bg: "var(--panel)", text: "var(--muted)", border: "var(--line-strong)" }
     case "published":
-      return { bg: "#d1fae5", text: "#065f46", border: "#10b981" }
+      return { bg: "var(--success-soft)", text: "var(--success)", border: "var(--success)" }
     case "archived":
-      return { bg: "#fee2e2", text: "#991b1b", border: "#ef4444" }
+      return { bg: "var(--danger-soft)", text: "var(--danger)", border: "var(--danger)" }
     default:
-      return { bg: "#f3f4f6", text: "#374151", border: "#d1d5db" }
+      return { bg: "var(--panel)", text: "var(--muted)", border: "var(--line)" }
   }
 }
 
@@ -32,17 +32,11 @@ export function NoticeStateBadge({ state }: NoticeStateBadgeProps) {
 
   return (
     <span
+      className="badge"
       style={{
-        display: "inline-block",
-        padding: "0.25rem 0.75rem",
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        textTransform: "uppercase" as const,
-        letterSpacing: "0.025em",
         backgroundColor: colors.bg,
         color: colors.text,
         border: `1px solid ${colors.border}`,
-        borderRadius: "9999px",
       }}
     >
       {label}

@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react"
-import type { CreateNoticeRequest, NoticeDetail, UpdateNoticeRequest } from "@fsm/types"
+import { useState, useEffect, useRef } from "react"
+import type { CreateNoticeRequest, NoticeDetail, NoticeAttachment, UpdateNoticeRequest } from "@fsm/types"
 
 interface NoticeCreateEditModalProps {
   isOpen: boolean
   notice?: NoticeDetail | null
   onClose: () => void
-  onSubmit: (data: CreateNoticeRequest | UpdateNoticeRequest) => void
+  onSubmit: (data: CreateNoticeRequest | UpdateNoticeRequest, newFiles?: File[]) => void
   onPublish?: () => void
   onArchive?: () => void
   isSubmitting?: boolean
@@ -23,10 +23,17 @@ export function NoticeCreateEditModal({
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
   const [publishImmediately, setPublishImmediately] = useState(false)
+  const [newFiles, setNewFiles] = useState<File[]>([])
+  const [removedAttachmentIds, setRemovedAttachmentIds] = useState<string[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const isEditMode = !!notice
   const isDraft = notice?.state === "draft"
   const isPublished = notice?.state === "published"
+
+  const existingAttachments: NoticeAttachment[] = (notice?.attachments ?? []).filter(
+    (a) => !removedAttachmentIds.includes(a.attachmentId),
+  )
 
   useEffect(() => {
     if (notice) {
@@ -38,16 +45,42 @@ export function NoticeCreateEditModal({
       setBody("")
       setPublishImmediately(false)
     }
+    setNewFiles([])
+    setRemovedAttachmentIds([])
   }, [notice, isOpen])
 
   if (!isOpen) return null
 
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setNewFiles((prev) => [...prev, ...Array.from(e.target.files!)])
+    }
+    // Reset input so the same file can be selected again if removed
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const handleRemoveNewFile = (index: number) => {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleRemoveExistingAttachment = (attachmentId: string) => {
+    setRemovedAttachmentIds((prev) => [...prev, attachmentId])
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (isEditMode) {
-      onSubmit({ title, body })
+      onSubmit({ title, body }, newFiles.length > 0 ? newFiles : undefined)
     } else {
-      onSubmit({ title, body, publishImmediately })
+      onSubmit({ title, body, publishImmediately }, newFiles.length > 0 ? newFiles : undefined)
     }
   }
 
@@ -65,72 +98,75 @@ export function NoticeCreateEditModal({
   }
 
   const modalStyle: React.CSSProperties = {
-    backgroundColor: "white",
-    padding: "2rem",
-    borderRadius: "8px",
+    backgroundColor: "var(--paper)",
+    padding: 32,
+    borderRadius: 12,
     width: "90%",
-    maxWidth: "800px",
+    maxWidth: 800,
     maxHeight: "90vh",
     overflow: "auto",
   }
 
   const formGroupStyle: React.CSSProperties = {
-    marginBottom: "1rem",
+    marginBottom: 16,
   }
 
   const labelStyle: React.CSSProperties = {
     display: "block",
-    marginBottom: "0.5rem",
+    marginBottom: 8,
     fontWeight: 600,
   }
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    padding: "0.5rem",
-    border: "1px solid #d1d5db",
-    borderRadius: "4px",
-    fontSize: "1rem",
+    padding: "12px 14px",
+    border: "1px solid var(--line)",
+    borderRadius: 10,
+    fontSize: 14,
+    background: "var(--white)",
   }
 
   const textareaStyle: React.CSSProperties = {
     ...inputStyle,
-    minHeight: "200px",
+    minHeight: 200,
     resize: "vertical",
   }
 
   const buttonGroupStyle: React.CSSProperties = {
     display: "flex",
-    gap: "0.5rem",
+    gap: 8,
     justifyContent: "flex-end",
-    marginTop: "1.5rem",
+    marginTop: 24,
   }
 
   const buttonStyle: React.CSSProperties = {
-    padding: "0.5rem 1rem",
-    borderRadius: "4px",
-    border: "1px solid #d1d5db",
+    padding: "8px 16px",
+    borderRadius: 10,
+    border: "1px solid var(--line-strong)",
     cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 500,
   }
 
   const primaryButtonStyle: React.CSSProperties = {
     ...buttonStyle,
-    backgroundColor: "#3b82f6",
-    color: "white",
-    borderColor: "#3b82f6",
+    backgroundColor: "var(--accent)",
+    color: "var(--white)",
+    borderColor: "var(--accent)",
   }
 
   const dangerButtonStyle: React.CSSProperties = {
     ...buttonStyle,
-    backgroundColor: "#ef4444",
-    color: "white",
-    borderColor: "#ef4444",
+    backgroundColor: "var(--danger)",
+    color: "var(--white)",
+    borderColor: "var(--danger)",
   }
 
   const successButtonStyle: React.CSSProperties = {
     ...buttonStyle,
-    backgroundColor: "#10b981",
-    color: "white",
-    borderColor: "#10b981",
+    backgroundColor: "var(--success)",
+    color: "var(--white)",
+    borderColor: "var(--success)",
   }
 
   return (
@@ -153,7 +189,7 @@ export function NoticeCreateEditModal({
                 disabled={isSubmitting}
               />
             </label>
-            <small style={{ color: "#6b7280" }}>5-200자 이내</small>
+            <small style={{ color: "var(--muted)" }}>5-200자 이내</small>
           </div>
 
           <div style={formGroupStyle}>
@@ -169,7 +205,68 @@ export function NoticeCreateEditModal({
                 disabled={isSubmitting}
               />
             </label>
-            <small style={{ color: "#6b7280" }}>10-5000자 이내</small>
+            <small style={{ color: "var(--muted)" }}>10-5000자 이내</small>
+          </div>
+
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>첨부파일</label>
+
+            {existingAttachments.length > 0 && (
+              <ul className="file-list">
+                {existingAttachments.map((attachment) => (
+                  <li key={attachment.attachmentId} className="file-list-item">
+                    <a href={attachment.url} target="_blank" rel="noopener noreferrer">
+                      {attachment.fileName}
+                    </a>
+                    <span className="file-size">({formatFileSize(attachment.fileSize)})</span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => handleRemoveExistingAttachment(attachment.attachmentId)}
+                      disabled={isSubmitting}
+                    >
+                      삭제
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {newFiles.length > 0 && (
+              <ul className="file-list">
+                {newFiles.map((file, index) => (
+                  <li key={`${file.name}-${index}`} className="file-list-item">
+                    <span>{file.name}</span>
+                    <span className="file-size">({formatFileSize(file.size)})</span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => handleRemoveNewFile(index)}
+                      disabled={isSubmitting}
+                    >
+                      삭제
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFilesSelected}
+              disabled={isSubmitting}
+              hidden
+            />
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSubmitting}
+            >
+              파일 선택
+            </button>
           </div>
 
           {!isEditMode && (
@@ -191,7 +288,7 @@ export function NoticeCreateEditModal({
               취소
             </button>
 
-            {isEditMode && isDraft && onPublish && (
+            {isEditMode && (isDraft || notice?.state === "archived") && onPublish && (
               <button
                 type="button"
                 onClick={onPublish}

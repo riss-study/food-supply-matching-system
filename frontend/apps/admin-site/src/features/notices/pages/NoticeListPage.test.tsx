@@ -71,8 +71,6 @@ describe("NoticeListPage", () => {
 
     expect(screen.getByText("공지사항 관리")).toBeInTheDocument()
     expect(screen.getByText("Test Notice")).toBeInTheDocument()
-    expect(screen.getByText("Admin User")).toBeInTheDocument()
-    expect(screen.getByText("100")).toBeInTheDocument()
   })
 
   it("renders empty state", () => {

@@ -13,6 +13,6 @@ describe("admin-site app", () => {
       </QueryClientProvider>,
     )
 
-    expect(screen.getByRole("heading", { name: "Admin Review Workspace" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "운영 작업 공간" })).toBeInTheDocument()
   })
 })
