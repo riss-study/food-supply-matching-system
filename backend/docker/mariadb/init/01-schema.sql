@@ -48,6 +48,29 @@ CREATE TABLE IF NOT EXISTS targeted_supplier_link (
   UNIQUE KEY uk_request_supplier (request_id, supplier_profile_id)
 );
 
+CREATE TABLE IF NOT EXISTS supplier_profile (
+  id VARCHAR(64) PRIMARY KEY,
+  supplier_user_id VARCHAR(64) NOT NULL UNIQUE,
+  company_name VARCHAR(100) NOT NULL,
+  representative_name VARCHAR(50) NOT NULL,
+  contact_phone VARCHAR(64) NULL,
+  contact_email VARCHAR(255) NULL,
+  region VARCHAR(100) NOT NULL,
+  categories TEXT NOT NULL,
+  equipment_summary VARCHAR(500) NULL,
+  monthly_capacity INT NOT NULL,
+  moq INT NOT NULL,
+  oem_available BOOLEAN NOT NULL,
+  odm_available BOOLEAN NOT NULL,
+  raw_material_support BOOLEAN NOT NULL,
+  packaging_labeling_support BOOLEAN NOT NULL,
+  introduction TEXT NULL,
+  verification_state VARCHAR(32) NOT NULL,
+  exposure_state VARCHAR(32) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS quote (
   id VARCHAR(64) PRIMARY KEY,
   request_id VARCHAR(64) NOT NULL,
@@ -102,29 +125,6 @@ CREATE TABLE IF NOT EXISTS thread_participant_read_state (
   last_read_at TIMESTAMP NOT NULL,
   UNIQUE KEY uk_thread_read_state (thread_id, user_id),
   CONSTRAINT fk_thread_read_state_thread FOREIGN KEY (thread_id) REFERENCES message_thread(id)
-);
-
-CREATE TABLE IF NOT EXISTS supplier_profile (
-  id VARCHAR(64) PRIMARY KEY,
-  supplier_user_id VARCHAR(64) NOT NULL UNIQUE,
-  company_name VARCHAR(100) NOT NULL,
-  representative_name VARCHAR(50) NOT NULL,
-  contact_phone VARCHAR(64) NULL,
-  contact_email VARCHAR(255) NULL,
-  region VARCHAR(100) NOT NULL,
-  categories TEXT NOT NULL,
-  equipment_summary VARCHAR(500) NULL,
-  monthly_capacity INT NOT NULL,
-  moq INT NOT NULL,
-  oem_available BOOLEAN NOT NULL,
-  odm_available BOOLEAN NOT NULL,
-  raw_material_support BOOLEAN NOT NULL,
-  packaging_labeling_support BOOLEAN NOT NULL,
-  introduction TEXT NULL,
-  verification_state VARCHAR(32) NOT NULL,
-  exposure_state VARCHAR(32) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS certification_record (

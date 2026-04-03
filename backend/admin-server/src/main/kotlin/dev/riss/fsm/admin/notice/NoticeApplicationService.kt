@@ -2,6 +2,7 @@ package dev.riss.fsm.admin.notice
 
 import dev.riss.fsm.command.notice.NoticeCommandService
 import dev.riss.fsm.command.notice.NoticeRepository
+import dev.riss.fsm.command.supplier.AttachmentMetadataEntity
 import dev.riss.fsm.command.supplier.AttachmentMetadataRepository
 import dev.riss.fsm.query.admin.stats.notice.AdminNoticeViewDocument
 import dev.riss.fsm.query.admin.stats.notice.AdminNoticeViewRepository
@@ -9,13 +10,19 @@ import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewDocument
 import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewRepository
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
+import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.HttpStatus
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.UUID
 
 data class NoticePageResult(
     val items: List<NoticeListItemResponse>,
@@ -213,6 +220,50 @@ class NoticeApplicationService(
                         )
                 }
             }.switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Notice not found")))
+        })
+    }
+
+    fun uploadAttachment(
+        principal: AuthenticatedUserPrincipal,
+        noticeId: String,
+        file: FilePart,
+    ): Mono<NoticeAttachmentResponse> {
+        return ensureAdmin(principal).then(Mono.defer {
+            noticeRepository.findById(noticeId)
+                .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Notice not found")))
+                .flatMap { _ ->
+                    val attachmentId = "att_${UUID.randomUUID()}"
+                    val uploadDir = Path.of(System.getProperty("java.io.tmpdir"), "fsm-uploads", "notices", noticeId)
+                    Files.createDirectories(uploadDir)
+                    val targetPath = uploadDir.resolve("${attachmentId}_${file.filename()}")
+
+                    file.transferTo(targetPath).then(Mono.defer {
+                        val fileSize = Files.size(targetPath)
+                        val contentType = file.headers().contentType?.toString() ?: "application/octet-stream"
+                        val entity = AttachmentMetadataEntity(
+                            attachmentId = attachmentId,
+                            ownerType = "notice",
+                            ownerId = noticeId,
+                            attachmentKind = "notice_attachment",
+                            fileName = file.filename(),
+                            contentType = contentType,
+                            fileSize = fileSize,
+                            storageKey = targetPath.toString(),
+                            createdAt = LocalDateTime.now(),
+                        ).apply { newEntity = true }
+
+                        attachmentMetadataRepository.save(entity).map { saved ->
+                            NoticeAttachmentResponse(
+                                attachmentId = saved.attachmentId,
+                                fileName = saved.fileName,
+                                contentType = saved.contentType,
+                                fileSize = saved.fileSize,
+                                url = "/api/admin/notices/$noticeId/attachments/${saved.attachmentId}",
+                                createdAt = saved.createdAt.toInstant(ZoneOffset.UTC),
+                            )
+                        }
+                    })
+                }
         })
     }
 

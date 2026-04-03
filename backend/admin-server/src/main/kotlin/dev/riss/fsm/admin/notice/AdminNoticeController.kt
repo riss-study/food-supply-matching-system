@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
@@ -77,6 +79,20 @@ class AdminNoticeController(
             .map { response ->
                 ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiSuccessResponse(message = "Notice created", data = response))
+            }
+    }
+
+    @PostMapping("/{noticeId}/attachments")
+    @Operation(summary = "Upload notice attachment", description = "Upload a file attachment to a notice")
+    fun uploadAttachment(
+        @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
+        @Parameter(description = "Notice ID") @PathVariable noticeId: String,
+        @RequestPart("file") file: FilePart,
+    ): Mono<ResponseEntity<ApiSuccessResponse<NoticeAttachmentResponse>>> {
+        return noticeApplicationService.uploadAttachment(principal, noticeId, file)
+            .map { response ->
+                ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiSuccessResponse(message = "Attachment uploaded", data = response))
             }
     }
 
