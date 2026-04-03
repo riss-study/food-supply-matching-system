@@ -2,6 +2,7 @@
 
 > 상태: Active Guide
 > 기준 문서: `system-architecture.md`, `frontend-guide.md`
+> 이 문서는 2026-04-02 프론트엔드 전면 리디자인 반영 기준
 
 ---
 
@@ -10,14 +11,14 @@
 이 문서는 Phase 1 프론트엔드의 시각적/상호작용 기준을 정리한다.
 
 - 메인 사이트와 관리자 사이트가 다른 목적을 가져도 하나의 브랜드 언어를 공유하게 한다.
-- `Emotion + Radix UI + Tailwind` 조합에서 토큰과 시각 규칙의 기준점을 제공한다.
+- 순수 CSS 클래스 시스템 (CSS custom properties) 기반에서 토큰과 시각 규칙의 기준점을 제공한다.
 
 ---
 
 ## 2. 디자인 철학
 
 - 정보 흐름이 막히지 않는 UI
-- Warm Neutral 기반의 차분한 신뢰감
+- Clean Neutral 기반의 차분한 신뢰감 (green accent)
 - B2B 매칭 서비스에 맞는 명확한 상태 표현
 - 관리자 운영 화면에서도 과한 장식보다 가독성과 판독성을 우선
 
@@ -49,54 +50,55 @@
 
 ### 4.1 Color
 
-- Warm Neutral surface
+- Clean Neutral surface (green accent)
 - 차분한 본문 텍스트
 - Accent는 강조보다 상태/그룹 구분 용도
 
+색상 토큰:
+
+- accent: #4A8F6F
+- accent-deep: #357A57
+- accent-soft: #EDF7F1
+- background: #F8F7F5
+- paper: #FFFFFF
+- panel: #FBFAF8
+- ink: #2D2D2F
+- muted: #8B8D94
+- line: #EAEBED
+- line-strong: #D8D9DD
+
 필수 상태 토큰:
 
-- success / approved
-- warning / hold
-- danger / reject
-- muted / inactive
-- info / pending
+- success: #3EAE6A
+- danger: #E25B5B
+- info: #5B8FD9
+- warning: #E5A73C
 
 ### 4.2 Typography
 
-- 기본 폰트 baseline: `Noto Sans JP`
+- 기본 폰트 baseline: `Inter`
 - 본문 가독성 우선
 - 숫자/지표는 tabular number 사용 권장
 
 ### 4.3 Spacing / Radius / Shadow
 
 - 일관된 spacing scale 유지
-- 카드 / 입력 / 버튼 radius는 단계형으로 제한
+- border-radius 기준: 버튼 12px, 카드 16px, 배지 20px, 입력 10px
 - shadow는 soft depth로 제한
 
 ---
 
 ## 5. 컴포넌트 계층
 
-### Radix UI
+### Pure CSS class system with CSS custom properties
 
-- 접근성 기반 primitive
-- Dialog, Select, Tabs, Popover 같은 foundation 제공
-
-### Tailwind
-
-- layout / spacing / responsive utility
-- 빠른 page composition
-
-### Emotion
-
-- token-driven theme binding
-- variant가 많은 공통 컴포넌트의 dynamic style
-- Tailwind class만으로 관리하기 어려운 상태 조합 처리
+- index.css에 정의된 CSS custom properties로 토큰 관리
+- 공통 utility class로 레이아웃, 버튼, 카드, 배지, 입력 등 구성
+- 상태 기반 스타일은 CSS class 조합으로 처리
 
 규칙:
 
-- 토큰은 공통 theme source를 기준으로 유지한다.
-- utility와 dynamic style의 역할을 분리한다.
+- 토큰은 CSS custom properties (:root)를 기준으로 유지한다.
 - 공통 컴포넌트는 `packages/ui`에서 관리한다.
 
 ---
@@ -173,7 +175,7 @@
 
 ## 9. 접근성 / 국제화 기준
 
-- Radix UI 기반 접근성 기준 유지
+- 시맨틱 HTML 기반 접근성 기준 유지
 - 상태와 액션은 색에만 의존하지 않는다.
 - `i18next`를 전제로 라벨 길이 변화에 견디는 컴포넌트를 설계한다.
 - 한글/일본어 혼합 문맥에서도 line-height와 spacing을 유지한다.
@@ -184,7 +186,7 @@
 
 - 메인 사이트와 관리자 사이트를 완전히 다른 브랜드처럼 만드는 것
 - 상태 표현을 색 하나에만 의존하는 것
-- Emotion / Tailwind 역할 없이 스타일을 뒤섞는 것
+- CSS custom properties 체계를 무시하고 인라인 스타일을 남용하는 것
 - 관리자 전용 정보를 사용자 UI 패턴과 같은 톤으로 숨기는 것
 
 ---

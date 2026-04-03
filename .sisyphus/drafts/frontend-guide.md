@@ -27,9 +27,8 @@
 | 라우팅 | React Router | route 관리 |
 | 서버 상태 | TanStack Query | API cache/fetch |
 | 클라이언트 상태 | Zustand | UI/local state |
-| 스타일링 | Emotion | dynamic/theme style |
-| UI 컴포넌트 | Radix UI + Tailwind | primitive + utility styling |
-| 폰트 | Noto Sans JP | KR/JP 지원 기준 |
+| 스타일링 | 순수 CSS 클래스 시스템 | CSS custom properties + utility classes (index.css) |
+| 폰트 | Inter | 깔끔한 B2B 톤 기준 |
 | 다국어 | i18next | 국제화 |
 | 애니메이션 | Lottie-web | JSON animation baseline |
 | HTTP | axios | API client |
@@ -195,25 +194,17 @@ frontend/
 
 ## 7. 스타일링 규칙
 
-### Radix UI
+### 순수 CSS 클래스 시스템
 
-- 접근성 기반 primitive/component foundation
-
-### Tailwind
-
-- layout, spacing, responsive utility, 빠른 화면 조합 담당
-
-### Emotion
-
-- theme token binding
-- component-level dynamic styling
-- Tailwind로 다루기 불편한 상태 기반 스타일 담당
+- index.css에 정의된 CSS custom properties로 디자인 토큰 관리
+- 공통 utility class로 버튼, 카드, 배지, 입력, 레이아웃 등 구성
+- 상태 기반 스타일은 CSS class 조합으로 처리
 
 규칙:
 
-- 같은 컴포넌트 안에서 Tailwind와 Emotion을 무분별하게 섞지 않는다.
+- CSS custom properties (:root)를 통해 토큰을 일관되게 유지한다.
 - 공통 컴포넌트는 먼저 `packages/ui`로 올릴 수 있는지 검토한다.
-- Radix primitive 위에 Tailwind / Emotion 역할 분담을 분명히 한다.
+- 인라인 스타일을 남용하지 않고, 공통 클래스를 우선 사용한다.
 
 ---
 
@@ -249,7 +240,7 @@ frontend/
 - admin UI를 `main-site` hidden mode로 넣는 것
 - 동일한 UI/타입/유틸을 앱마다 복붙하는 것
 - 서버 상태를 Zustand에 재저장해서 이중 source of truth 만드는 것
-- Tailwind / Emotion 혼용 규칙 없이 임의로 스타일 레이어를 늘리는 것
+- CSS custom properties 체계를 무시하고 인라인 스타일을 남용하는 것
 
 ---
 
