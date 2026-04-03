@@ -1,1 +1,1 @@
-export const uiFoundation = { system: "emotion-radix-tailwind" } as const
+export const uiFoundation = { system: "css-custom-properties" } as const

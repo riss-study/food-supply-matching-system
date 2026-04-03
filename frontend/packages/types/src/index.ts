@@ -345,6 +345,7 @@ export interface RequestDetail {
     businessName: string
     contactName: string
   }
+  quoteCount?: number
   createdAt: string
   targetSuppliers: TargetSupplier[]
 }
@@ -770,7 +771,7 @@ export interface UserStats {
 export interface SuppliersByStateStats {
   approved: number
   submitted: number
-  underReview: number
+  under_review: number
   hold: number
   rejected: number
   suspended: number
