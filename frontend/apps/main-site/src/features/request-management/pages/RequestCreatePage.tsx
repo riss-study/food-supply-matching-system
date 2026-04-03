@@ -56,11 +56,6 @@ export function RequestCreatePage() {
     size: 20,
   })
 
-  const toggleCertification = (code: string) => {
-    setSelectedCertifications((prev) =>
-      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code],
-    )
-  }
 
   const toggleTargetSupplier = (supplierId: string) => {
     setTargetSupplierIds((prev) =>
@@ -108,234 +103,182 @@ export function RequestCreatePage() {
   }
 
   return (
-    <section>
-      <h1 style={{ marginBottom: "1.5rem" }}>새 의뢰 등록</h1>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h1>새 의뢰 작성</h1>
+          <p>제조 의뢰 정보를 입력하세요. 공급자가 견적을 보내드립니다.</p>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} style={{ maxWidth: "600px" }}>
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>의뢰 모드</label>
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-20">
+        {/* 기본 정보 */}
+        <section className="surface flex flex-col gap-16">
+          <h2 className="section-title">기본 정보</h2>
+
+          <div className="form-row">
+            <div className="input-field">
+              <label>의뢰 제목</label>
               <input
-                type="radio"
-                name="mode"
-                value="public"
-                checked={mode === "public"}
-                onChange={() => setMode("public")}
+                className="input"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="의뢰 제목을 입력하세요"
+                minLength={5}
+                maxLength={200}
+                required
               />
-              <span>공개 모드 (모든 공급자에게 노출)</span>
-            </label>
-            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-              <input
-                type="radio"
-                name="mode"
-                value="targeted"
-                checked={mode === "targeted"}
-                onChange={() => setMode("targeted")}
-              />
-              <span>지정 모드 (선택한 공급자에게만 노출)</span>
-            </label>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>
-            의뢰 제목 <span style={{ color: "#ef4444" }}>*</span>
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="5-200자로 입력해주세요"
-            minLength={5}
-            maxLength={200}
-            required
-            style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>
-            카테고리 <span style={{ color: "#ef4444" }}>*</span>
-          </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-          >
-            <option value="">카테고리 선택</option>
-            {categories.map((cat) => (
-              <option key={cat.code} value={cat.code}>
-                {cat.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>
-            희망 수량 <span style={{ color: "#ef4444" }}>*</span>
-          </label>
-          <input
-            type="number"
-            value={desiredVolume}
-            onChange={(e) => setDesiredVolume(e.target.value)}
-            placeholder="희망 생산 수량을 입력해주세요"
-            min={1}
-            required
-            style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>희망 단가 범위</label>
-          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-            <input
-              type="number"
-              value={targetPriceMin}
-              onChange={(e) => setTargetPriceMin(e.target.value)}
-              placeholder="최소 단가"
-              min={1}
-              style={{ flex: 1, padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-            />
-            <span>~</span>
-            <input
-              type="number"
-              value={targetPriceMax}
-              onChange={(e) => setTargetPriceMax(e.target.value)}
-              placeholder="최대 단가"
-              min={1}
-              style={{ flex: 1, padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-            />
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>필요 인증</label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-            {certifications.map((cert) => (
-              <label
-                key={cert.code}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.25rem",
-                  padding: "0.375rem 0.75rem",
-                  borderRadius: "9999px",
-                  backgroundColor: selectedCertifications.includes(cert.code) ? "#dbeafe" : "#f3f4f6",
-                  color: selectedCertifications.includes(cert.code) ? "#1e40af" : "#4b5563",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                }}
+            </div>
+            <div className="input-field">
+              <label>카테고리</label>
+              <select
+                className="select"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
               >
-                <input
-                  type="checkbox"
-                  checked={selectedCertifications.includes(cert.code)}
-                  onChange={() => toggleCertification(cert.code)}
-                  style={{ display: "none" }}
-                />
-                {cert.label}
-              </label>
-            ))}
+                <option value="">카테고리 선택</option>
+                {categories.map((cat) => (
+                  <option key={cat.code} value={cat.code}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
 
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>원재료 규칙</label>
-          <select
-            value={rawMaterialRule}
-            onChange={(e) => setRawMaterialRule(e.target.value as typeof rawMaterialRule)}
-            style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-          >
-            <option value="">선택해주세요</option>
-            <option value="requester_provided">의뢰자 제공</option>
-            <option value="supplier_provided">공급자 제공</option>
-          </select>
-        </div>
+          <div className="form-row">
+            <div className="input-field">
+              <label>의뢰 방식</label>
+              <select
+                className="select"
+                value={mode}
+                onChange={(e) => setMode(e.target.value as RequestMode)}
+              >
+                <option value="public">공개</option>
+                <option value="targeted">지정</option>
+              </select>
+            </div>
+            <div className="input-field">
+              <label>희망 수량</label>
+              <input
+                className="input"
+                type="text"
+                value={desiredVolume}
+                onChange={(e) => setDesiredVolume(e.target.value)}
+                placeholder="예: 1,000kg"
+                min={1}
+                required
+              />
+            </div>
+          </div>
+        </section>
 
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>포장/라벨링 요구사항</label>
-          <select
-            value={packagingRequirement}
-            onChange={(e) => setPackagingRequirement(e.target.value as typeof packagingRequirement)}
-            style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-          >
-            <option value="">선택해주세요</option>
-            <option value="private_label">프라이빗 라벨</option>
-            <option value="bulk">벌크</option>
-            <option value="none">없음</option>
-          </select>
-        </div>
+        {/* 제조 조건 */}
+        <section className="surface flex flex-col gap-16">
+          <h2 className="section-title">제조 조건</h2>
 
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>납기 요구사항</label>
-          <input
-            type="date"
-            value={deliveryRequirement}
-            onChange={(e) => setDeliveryRequirement(e.target.value)}
-            style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-          />
-        </div>
+          <div className="form-row">
+            <div className="input-field">
+              <label>목표 단가 범위</label>
+              <input
+                className="input"
+                type="text"
+                value={targetPriceMin && targetPriceMax ? `${targetPriceMin} ~ ${targetPriceMax}` : targetPriceMin || targetPriceMax || ""}
+                onChange={(e) => {
+                  const parts = e.target.value.split("~").map((s) => s.trim())
+                  setTargetPriceMin(parts[0] || "")
+                  setTargetPriceMax(parts[1] || "")
+                }}
+                placeholder="예: 5,000 ~ 8,000원/kg"
+              />
+            </div>
+            <div className="input-field">
+              <label>인증 요구사항</label>
+              <select
+                className="select"
+                value={selectedCertifications[0] ?? ""}
+                onChange={(e) => setSelectedCertifications(e.target.value ? [e.target.value] : [])}
+              >
+                <option value="">HACCP, ISO 등</option>
+                {certifications.map((cert) => (
+                  <option key={cert.code} value={cert.code}>{cert.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>추가 요구사항</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="추가 요구사항이 있으면 입력해주세요 (최대 2000자)"
-            maxLength={2000}
-            rows={4}
-            style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db", resize: "vertical" }}
-          />
-        </div>
+          <div className="form-row">
+            <div className="input-field">
+              <label>원료 규정</label>
+              <input
+                className="input"
+                type="text"
+                value={rawMaterialRule === "requester_provided" ? "의뢰자 제공" : rawMaterialRule === "supplier_provided" ? "공급자 제공" : ""}
+                onChange={() => {}}
+                onClick={() => setRawMaterialRule((prev) => prev === "requester_provided" ? "supplier_provided" : "requester_provided")}
+                placeholder="원료 관련 요구사항"
+                readOnly
+              />
+            </div>
+            <div className="input-field">
+              <label>포장 요구사항</label>
+              <input
+                className="input"
+                type="text"
+                value={packagingRequirement === "private_label" ? "프라이빗 라벨" : packagingRequirement === "bulk" ? "벌크" : packagingRequirement === "none" ? "없음" : ""}
+                onChange={() => {}}
+                onClick={() => setPackagingRequirement((prev) => prev === "private_label" ? "bulk" : prev === "bulk" ? "none" : "private_label")}
+                placeholder="포장 사양을 입력하세요"
+                readOnly
+              />
+            </div>
+          </div>
 
+          <div className="input-field">
+            <label>납품 요구사항</label>
+            <input
+              className="input"
+              type="text"
+              value={deliveryRequirement}
+              onChange={(e) => setDeliveryRequirement(e.target.value)}
+              placeholder="희망 납품일, 조건 등"
+            />
+          </div>
+
+          <div className="input-field">
+            <label>추가 요청사항</label>
+            <textarea
+              className="textarea"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="공급자에게 전달할 추가 메모나 요청사항을 작성하세요."
+              maxLength={2000}
+              rows={4}
+            />
+          </div>
+        </section>
+
+        {/* Targeted supplier selection */}
         {mode === "targeted" && (
-          <div style={{ marginBottom: "1.5rem", padding: "1rem", backgroundColor: "#f9fafb", borderRadius: "0.5rem" }}>
-            <label style={{ display: "block", marginBottom: "0.75rem", fontWeight: 500 }}>
-              지정 공급자 선택 <span style={{ color: "#ef4444" }}>*</span>
-              <span style={{ fontWeight: "normal", color: "#6b7280", marginLeft: "0.5rem" }}>
-                ({targetSupplierIds.length}개 선택됨)
-              </span>
-            </label>
+          <section className="surface flex flex-col gap-12">
+            <h2 className="section-title">
+              지정 공급자 선택 <span className="text-danger">*</span>
+              <span className="text-muted font-medium text-sm"> ({targetSupplierIds.length}개 선택됨)</span>
+            </h2>
 
             {hasPrefilledSupplier && targetSupplierIdFromUrl && targetSupplierIds.includes(targetSupplierIdFromUrl) && !prefilledSupplierCleared && (
-              <div
-                style={{
-                  padding: "0.75rem",
-                  backgroundColor: "#ecfdf5",
-                  border: "1px solid #a7f3d0",
-                  borderRadius: "0.5rem",
-                  marginBottom: "0.75rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "0.75rem",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span style={{ color: "#16a34a" }}>✓</span>
-                  <span style={{ fontWeight: 500, color: "#166534" }}>
-                    {targetSupplierNameFromUrl}
-                  </span>
-                  <span style={{ fontSize: "0.875rem", color: "#15803d" }}>
-                    (선택됨)
-                  </span>
+              <div className="flex items-center justify-between gap-8 p-12 bg-accent-soft rounded">
+                <div className="flex items-center gap-8">
+                  <span className="text-success">✓</span>
+                  <span className="font-semibold">{targetSupplierNameFromUrl}</span>
+                  <span className="text-sm text-muted">(선택됨)</span>
                 </div>
                 <button
                   type="button"
+                  className="btn btn-sm btn-ghost"
                   onClick={() => {
                     setPrefilledSupplierCleared(true)
                     toggleTargetSupplier(targetSupplierIdFromUrl)
-                  }}
-                  style={{
-                    padding: "0.25rem 0.5rem",
-                    fontSize: "0.75rem",
-                    color: "#166534",
-                    backgroundColor: "transparent",
-                    border: "1px solid #166534",
-                    borderRadius: "0.25rem",
-                    cursor: "pointer",
                   }}
                 >
                   제거
@@ -343,37 +286,26 @@ export function RequestCreatePage() {
               </div>
             )}
 
-            <input
-              type="text"
-              value={supplierSearchKeyword}
-              onChange={(e) => setSupplierSearchKeyword(e.target.value)}
-              placeholder="공급자 검색..."
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "0.375rem",
-                border: "1px solid #d1d5db",
-                marginBottom: "0.75rem",
-              }}
-            />
+            <div className="input-field">
+              <input
+                className="input"
+                type="text"
+                value={supplierSearchKeyword}
+                onChange={(e) => setSupplierSearchKeyword(e.target.value)}
+                placeholder="공급자 검색..."
+              />
+            </div>
 
-            <div style={{ maxHeight: "200px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <div className="flex flex-col gap-8 overflow-auto">
               {suppliersData?.items.length === 0 ? (
-                <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>검색 결과가 없습니다.</p>
+                <p className="text-muted text-sm">검색 결과가 없습니다.</p>
               ) : (
                 suppliersData?.items.map((supplier) => (
                   <label
                     key={supplier.profileId}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.75rem",
-                      padding: "0.75rem",
-                      borderRadius: "0.375rem",
-                      backgroundColor: targetSupplierIds.includes(supplier.profileId) ? "#dbeafe" : "white",
-                      border: `1px solid ${targetSupplierIds.includes(supplier.profileId) ? "#3b82f6" : "#e5e7eb"}`,
-                      cursor: "pointer",
-                    }}
+                    className={`flex items-center gap-12 p-12 rounded border cursor-pointer ${
+                      targetSupplierIds.includes(supplier.profileId) ? "bg-accent-soft" : "bg-paper"
+                    }`}
                   >
                     <input
                       type="checkbox"
@@ -381,10 +313,8 @@ export function RequestCreatePage() {
                       onChange={() => toggleTargetSupplier(supplier.profileId)}
                     />
                     <div>
-                      <div style={{ fontWeight: 500 }}>{supplier.companyName}</div>
-                      <div style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                        {supplier.region} • {supplier.categories.join(", ")}
-                      </div>
+                      <div className="font-medium">{supplier.companyName}</div>
+                      <div className="text-sm text-muted">{supplier.region} · {supplier.categories.join(", ")}</div>
                     </div>
                   </label>
                 ))
@@ -392,52 +322,35 @@ export function RequestCreatePage() {
             </div>
 
             {targetSupplierIds.length === 0 && (
-              <p style={{ color: "#ef4444", fontSize: "0.875rem", marginTop: "0.5rem" }}>
-                지정 모드에서는 최소 1개 이상의 공급자를 선택해야 합니다.
-              </p>
+              <p className="text-danger text-sm">지정 모드에서는 최소 1개 이상의 공급자를 선택해야 합니다.</p>
             )}
-          </div>
+          </section>
         )}
 
         {createMutation.isError && (
-          <div style={{ color: "#ef4444", marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#fee2e2", borderRadius: "0.375rem" }}>
-            의뢰 등록에 실패했습니다. 다시 시도해주세요.
+          <div className="surface">
+            <p className="text-danger">의뢰 등록에 실패했습니다. 다시 시도해주세요.</p>
           </div>
         )}
 
-        <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
-          <button
-            type="submit"
-            disabled={!isFormValid || createMutation.isPending}
-            style={{
-              padding: "0.75rem 1.5rem",
-              backgroundColor: isFormValid ? "#3b82f6" : "#9ca3af",
-              color: "white",
-              border: "none",
-              borderRadius: "0.375rem",
-              cursor: isFormValid ? "pointer" : "not-allowed",
-              fontSize: "1rem",
-            }}
-          >
-            {createMutation.isPending ? "등록 중..." : "의뢰 등록"}
-          </button>
+        {/* Footer actions */}
+        <div className="flex gap-12">
           <button
             type="button"
+            className="btn btn-secondary"
             onClick={() => navigate("/requests")}
-            style={{
-              padding: "0.75rem 1.5rem",
-              backgroundColor: "transparent",
-              color: "#374151",
-              border: "1px solid #d1d5db",
-              borderRadius: "0.375rem",
-              cursor: "pointer",
-              fontSize: "1rem",
-            }}
           >
             취소
           </button>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={!isFormValid || createMutation.isPending}
+          >
+            {createMutation.isPending ? "등록 중..." : "의뢰 등록"}
+          </button>
         </div>
       </form>
-    </section>
+    </div>
   )
 }

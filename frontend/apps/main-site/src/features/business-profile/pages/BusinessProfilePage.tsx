@@ -12,26 +12,16 @@ const statusLabels: Record<BusinessApprovalState, string> = {
   rejected: "반려됨",
 }
 
-const statusColors: Record<BusinessApprovalState, string> = {
-  not_submitted: "#6b7280",
-  submitted: "#f59e0b",
-  approved: "#10b981",
-  rejected: "#ef4444",
+const statusBadgeClass: Record<BusinessApprovalState, string> = {
+  not_submitted: "badge badge-gray",
+  submitted: "badge badge-amber",
+  approved: "badge badge-green",
+  rejected: "badge badge-red",
 }
 
 function StatusBadge({ state }: { state: BusinessApprovalState }) {
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "0.25rem 0.75rem",
-        borderRadius: "9999px",
-        fontSize: "0.875rem",
-        fontWeight: 500,
-        backgroundColor: statusColors[state] + "20",
-        color: statusColors[state],
-      }}
-    >
+    <span className={statusBadgeClass[state]}>
       {statusLabels[state]}
     </span>
   )
@@ -102,50 +92,54 @@ function BusinessProfileForm({
     contactEmail.length > 0
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "400px" }}>
-      <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-        <span>상호명</span>
-        <input
-          value={businessName}
-          onChange={(e) => setBusinessName(e.target.value)}
-          placeholder="2-100자"
-          minLength={2}
-          maxLength={100}
-          required
-        />
-      </label>
+    <form className="surface" onSubmit={handleSubmit}>
+      <div className="form-stack">
+        <div className="input-field">
+          <label>상호명</label>
+          <input
+            className="input"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            placeholder="2-100자"
+            minLength={2}
+            maxLength={100}
+            required
+          />
+        </div>
 
-      <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-        <span>사업자등록번호</span>
-        <input
-          value={businessRegistrationNumber}
-          onChange={(e) => setBusinessRegistrationNumber(formatRegistrationNumber(e.target.value))}
-          placeholder="000-00-00000"
-          required
-        />
-        {!isValidRegistrationNumber(businessRegistrationNumber) && businessRegistrationNumber && (
-          <span style={{ color: "#ef4444", fontSize: "0.875rem" }}>올바른 형식이 아닙니다 (000-00-00000)</span>
-        )}
-      </label>
+        <div className="input-field">
+          <label>사업자등록번호</label>
+          <input
+            className="input"
+            value={businessRegistrationNumber}
+            onChange={(e) => setBusinessRegistrationNumber(formatRegistrationNumber(e.target.value))}
+            placeholder="000-00-00000"
+            required
+          />
+          {!isValidRegistrationNumber(businessRegistrationNumber) && businessRegistrationNumber && (
+            <span className="text-danger text-sm">올바른 형식이 아닙니다 (000-00-00000)</span>
+          )}
+        </div>
 
-      <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-        <span>담당자 이름</span>
-        <input value={contactName} onChange={(e) => setContactName(e.target.value)} required />
-      </label>
+        <div className="input-field">
+          <label>담당자 이름</label>
+          <input className="input" value={contactName} onChange={(e) => setContactName(e.target.value)} required />
+        </div>
 
-      <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-        <span>담당자 연락처</span>
-        <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} required />
-      </label>
+        <div className="input-field">
+          <label>담당자 연락처</label>
+          <input className="input" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} required />
+        </div>
 
-      <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-        <span>담당자 이메일</span>
-        <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} required />
-      </label>
+        <div className="input-field">
+          <label>담당자 이메일</label>
+          <input className="input" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} required />
+        </div>
 
-      <button type="submit" disabled={!isFormValid || isPending}>
-        {isPending ? "처리 중..." : submitLabel}
-      </button>
+        <button className="btn btn-primary" type="submit" disabled={!isFormValid || isPending}>
+          {isPending ? "처리 중..." : submitLabel}
+        </button>
+      </div>
     </form>
   )
 }
@@ -158,89 +152,79 @@ export function BusinessProfilePage() {
 
   if (isLoading) {
     return (
-      <section>
-        <h1>사업자 정보</h1>
+      <div className="page">
+        <div className="page-header"><h1>사업자 정보</h1></div>
         <p>로딩 중...</p>
-      </section>
+      </div>
     )
   }
 
   if (!profile || profile.approvalState === "not_submitted") {
     return (
-      <section>
-        <h1>사업자 정보 등록</h1>
-        <p style={{ marginBottom: "1rem" }}>의뢰를 등록하려면 사업자 정보를 제출해야 합니다.</p>
+      <div className="page" style={{ alignItems: 'center' }}>
+        <div className="content-narrow">
+        <div className="page-header">
+          <div className="page-header-text">
+            <h1>사업자 정보 등록</h1>
+            <p>의뢰를 등록하려면 사업자 정보를 먼저 제출하고 승인 상태를 확인해야 합니다.</p>
+          </div>
+        </div>
         <BusinessProfileForm
           onSubmit={(data) => submitMutation.mutate(data)}
           isPending={submitMutation.isPending}
           submitLabel="제출하기"
         />
-        {submitMutation.isError && <p style={{ color: "#ef4444", marginTop: "1rem" }}>제출에 실패했습니다.</p>}
-      </section>
+        {submitMutation.isError && <p className="text-danger">제출에 실패했습니다.</p>}
+        </div>
+      </div>
     )
   }
 
   const canEdit = profile.approvalState === "submitted" || profile.approvalState === "rejected"
 
   return (
-    <section>
-      <h1>사업자 정보 관리</h1>
+    <div className="page" style={{ alignItems: 'center' }}>
+      <div className="content-narrow" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="page-header">
+        <div className="page-header-text">
+          <h1>사업자 정보 관리</h1>
+        </div>
+      </div>
 
-      <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-          <span>승인 상태:</span>
+      <div className="surface">
+        <div className="flex items-center gap-12 mb-16">
+          <span className="text-muted">승인 상태:</span>
           <StatusBadge state={profile.approvalState} />
         </div>
 
         {profile.approvalState === "submitted" && (
-          <div
-            style={{
-              padding: "1rem",
-              backgroundColor: "#fef3c7",
-              borderRadius: "0.375rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <p style={{ margin: 0 }}>승인 대기 중입니다. 관리자 검토 후 의뢰 생성이 가능합니다.</p>
+          <div className="surface-highlight p-16 rounded mb-16">
+            <p>승인 대기 중입니다. 관리자 검토 후 의뢰 생성이 가능합니다.</p>
           </div>
         )}
 
         {profile.approvalState === "approved" && (
-          <div
-            style={{
-              padding: "1rem",
-              backgroundColor: "#d1fae5",
-              borderRadius: "0.375rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <p style={{ margin: 0 }}>승인이 완료되었습니다. 의뢰 생성이 가능합니다.</p>
-            <Link to="/requests/new" style={{ display: "inline-block", marginTop: "0.5rem" }}>
-              새 의뢰 등록하기 →
+          <div className="surface-highlight p-16 rounded mb-16">
+            <p>승인이 완료되었습니다. 의뢰 생성이 가능합니다.</p>
+            <Link to="/requests/new" className="btn btn-primary btn-sm mt-8">
+              새 의뢰 등록하기
             </Link>
           </div>
         )}
 
         {profile.approvalState === "rejected" && (
-          <div
-            style={{
-              padding: "1rem",
-              backgroundColor: "#fee2e2",
-              borderRadius: "0.375rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <p style={{ margin: 0 }}>반려되었습니다. 아래 사유를 확인하고 수정해 주세요.</p>
+          <div className="surface surface-highlight p-16 rounded mb-16">
+            <p className="text-danger">반려되었습니다. 아래 사유를 확인하고 수정해 주세요.</p>
             {profile.rejectionReason && (
-              <p style={{ margin: "0.5rem 0 0", fontWeight: 500 }}>사유: {profile.rejectionReason}</p>
+              <p className="font-medium mt-4">사유: {profile.rejectionReason}</p>
             )}
           </div>
         )}
       </div>
 
       {isEditing ? (
-        <div>
-          <h2>정보 수정</h2>
+        <div className="surface">
+          <h2 className="section-title mb-16">정보 수정</h2>
           <BusinessProfileForm
             initialData={{
               businessName: profile.businessName,
@@ -257,18 +241,15 @@ export function BusinessProfilePage() {
             isPending={updateMutation.isPending}
             submitLabel="수정하기"
           />
-          <button
-            onClick={() => setIsEditing(false)}
-            style={{ marginTop: "0.5rem", backgroundColor: "transparent", color: "#374151" }}
-          >
+          <button className="btn btn-ghost mt-8" onClick={() => setIsEditing(false)}>
             취소
           </button>
-          {updateMutation.isError && <p style={{ color: "#ef4444", marginTop: "1rem" }}>수정에 실패했습니다.</p>}
+          {updateMutation.isError && <p className="text-danger mt-12">수정에 실패했습니다.</p>}
         </div>
       ) : (
-        <div>
-          <h2>등록된 정보</h2>
-          <dl style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "0.5rem 1rem" }}>
+        <div className="surface">
+          <h2 className="section-title mb-16">등록된 정보</h2>
+          <dl className="detail-grid">
             <dt>상호명</dt>
             <dd>{profile.businessName}</dd>
             <dt>사업자등록번호</dt>
@@ -289,12 +270,13 @@ export function BusinessProfilePage() {
             )}
           </dl>
           {canEdit && (
-            <button onClick={() => setIsEditing(true)} style={{ marginTop: "1rem" }}>
+            <button className="btn btn-secondary mt-16" onClick={() => setIsEditing(true)}>
               정보 수정
             </button>
           )}
         </div>
       )}
-    </section>
+      </div>
+    </div>
   )
 }

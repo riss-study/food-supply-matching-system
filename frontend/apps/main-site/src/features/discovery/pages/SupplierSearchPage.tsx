@@ -43,207 +43,171 @@ export function SupplierSearchPage() {
       }
     })
 
-    newParams.page = "1"
+    // 페이지가 명시적으로 지정되지 않은 경우만 1페이지로 리셋
+    if (!("page" in updates)) {
+      newParams.page = "1"
+    }
     setSearchParams(newParams)
   }
 
-  const handleReset = () => {
-    setSearchParams({ page: "1" })
-  }
-
-  const hasActiveFilters = keyword || category || region || oem || odm || minCapacity || maxMoq
-
   return (
-    <section>
-      <h1>공급자 탐색</h1>
-      <div style={{ display: "grid", gap: "0.75rem", maxWidth: "420px", marginBottom: "1rem" }}>
-        <input
-          value={keyword}
-          onChange={(e) => updateSearchParams({ keyword: e.target.value })}
-          placeholder="회사명 키워드"
-          style={{ padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-        />
-        <select
-          value={category}
-          onChange={(e) => updateSearchParams({ category: e.target.value })}
-          style={{ padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-        >
-          <option value="">전체 카테고리</option>
-          {categories?.map((item) => <option key={item.category} value={item.category}>{item.category}</option>)}
-        </select>
-        <select
-          value={region}
-          onChange={(e) => updateSearchParams({ region: e.target.value })}
-          style={{ padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-        >
-          <option value="">전체 지역</option>
-          {regions?.map((item) => <option key={item.region} value={item.region}>{item.region}</option>)}
-        </select>
+    <div className="supplier-search-layout">
+      <div className="supplier-search-body">
+        {/* LEFT: Filter sidebar */}
+        <aside className="supplier-filter-panel">
+          <h2 style={{ fontSize: 16, fontWeight: 700 }}>필터</h2>
 
-        <div style={{ display: "flex", gap: "1rem", padding: "0.5rem 0" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+          <div className="input-field">
             <input
-              type="checkbox"
-              checked={oem}
-              onChange={(e) => updateSearchParams({ oem: e.target.checked ? "true" : undefined })}
+              className="input"
+              value={keyword}
+              onChange={(e) => updateSearchParams({ keyword: e.target.value })}
+              placeholder="🔍 업체명 검색"
             />
-            <span>OEM 가능</span>
-          </label>
-          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-            <input
-              type="checkbox"
-              checked={odm}
-              onChange={(e) => updateSearchParams({ odm: e.target.checked ? "true" : undefined })}
-            />
-            <span>ODM 가능</span>
-          </label>
-        </div>
+          </div>
 
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          <span style={{ fontSize: "0.875rem", color: "#4b5563", whiteSpace: "nowrap" }}>월 생산량:</span>
-          <input
-            type="number"
-            value={minCapacity}
-            onChange={(e) => updateSearchParams({ minCapacity: e.target.value })}
-            placeholder="최소"
-            min={0}
-            style={{ flex: 1, padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-          />
-        </div>
-
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          <span style={{ fontSize: "0.875rem", color: "#4b5563", whiteSpace: "nowrap" }}>최대 MOQ:</span>
-          <input
-            type="number"
-            value={maxMoq}
-            onChange={(e) => updateSearchParams({ maxMoq: e.target.value })}
-            placeholder="최대 MOQ"
-            min={0}
-            style={{ flex: 1, padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid #d1d5db" }}
-          />
-        </div>
-
-        {hasActiveFilters && (
-          <button
-            onClick={handleReset}
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "transparent",
-              color: "#6b7280",
-              border: "1px solid #d1d5db",
-              borderRadius: "0.375rem",
-              cursor: "pointer",
-              fontSize: "0.875rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.5rem",
-            }}
-          >
-            <span>×</span>
-            필터 초기화
-          </button>
-        )}
-      </div>
-
-      <div style={{ display: "grid", gap: "1rem" }}>
-        {data?.items.map((item) => (
-          <article
-            key={item.profileId}
-            style={{
-              border: "1px solid #d6d3d1",
-              padding: "1rem",
-              borderRadius: "0.75rem",
-              backgroundColor: "white",
-              display: "flex",
-              gap: "1rem",
-              alignItems: "flex-start",
-            }}
-          >
-            <div
-              style={{
-                width: "64px",
-                height: "64px",
-                borderRadius: "0.5rem",
-                backgroundColor: "#f3f4f6",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                overflow: "hidden",
-              }}
+          <div className="input-field">
+            <label>카테고리</label>
+            <select
+              className="select"
+              value={category}
+              onChange={(e) => updateSearchParams({ category: e.target.value })}
             >
-              {item.logoUrl ? (
-                <img
-                  src={item.logoUrl}
-                  alt={`${item.companyName} 로고`}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <span style={{ fontSize: "1.5rem", color: "#9ca3af" }}>🏭</span>
-              )}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h2 style={{ margin: "0 0 0.25rem 0", fontSize: "1.125rem" }}>{item.companyName}</h2>
-              <p style={{ margin: "0 0 0.5rem 0", color: "#6b7280", fontSize: "0.875rem" }}>
-                {item.region} • {item.categories.join(", ")}
-              </p>
-              <div style={{ display: "flex", gap: "1rem", fontSize: "0.875rem", color: "#4b5563", flexWrap: "wrap" }}>
-                <span>월 생산량: {item.monthlyCapacity.toLocaleString()}</span>
-                <span>MOQ: {item.moq.toLocaleString()}</span>
-                <span>OEM: {item.oemAvailable ? "가능" : "불가"} / ODM: {item.odmAvailable ? "가능" : "불가"}</span>
-              </div>
-              <Link
-                to={`/suppliers/${item.profileId}`}
-                style={{
-                  display: "inline-block",
-                  marginTop: "0.75rem",
-                  padding: "0.375rem 0.75rem",
-                  backgroundColor: "#3b82f6",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "0.375rem",
-                  fontSize: "0.875rem",
-                }}
-              >
-                상세 보기
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
+              <option value="">전체</option>
+              {categories?.map((item) => <option key={item.category} value={item.category}>{item.category}</option>)}
+            </select>
+          </div>
 
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem", alignItems: "center" }}>
-        <button
-          disabled={!data?.meta.hasPrev}
-          onClick={() => updateSearchParams({ page: String(Math.max(1, page - 1)) })}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: data?.meta.hasPrev ? "white" : "#f3f4f6",
-            color: data?.meta.hasPrev ? "#374151" : "#9ca3af",
-            border: "1px solid #d1d5db",
-            borderRadius: "0.375rem",
-            cursor: data?.meta.hasPrev ? "pointer" : "not-allowed",
-          }}
-        >
-          이전
-        </button>
-        <span>페이지 {data?.meta.page ?? 1} / {data?.meta.totalPages ?? 1}</span>
-        <button
-          disabled={!data?.meta.hasNext}
-          onClick={() => updateSearchParams({ page: String(page + 1) })}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: data?.meta.hasNext ? "white" : "#f3f4f6",
-            color: data?.meta.hasNext ? "#374151" : "#9ca3af",
-            border: "1px solid #d1d5db",
-            borderRadius: "0.375rem",
-            cursor: data?.meta.hasNext ? "pointer" : "not-allowed",
-          }}
-        >
-          다음
-        </button>
+          <div className="input-field">
+            <label>지역</label>
+            <select
+              className="select"
+              value={region}
+              onChange={(e) => updateSearchParams({ region: e.target.value })}
+            >
+              <option value="">전체</option>
+              {regions?.map((item) => <option key={item.region} value={item.region}>{item.region}</option>)}
+            </select>
+          </div>
+
+          <div className="input-field">
+            <label>월 생산능력 (톤)</label>
+            <input
+              className="input"
+              type="number"
+              value={minCapacity}
+              onChange={(e) => updateSearchParams({ minCapacity: e.target.value })}
+              placeholder="최소값"
+              min={0}
+            />
+          </div>
+
+          <div className="input-field">
+            <label>최소 주문량 (MOQ)</label>
+            <input
+              className="input"
+              type="number"
+              value={maxMoq}
+              onChange={(e) => updateSearchParams({ maxMoq: e.target.value })}
+              placeholder="최대값"
+              min={0}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-8 block">제조 방식</label>
+            <div className="flex gap-8">
+              <button
+                type="button"
+                className={`chip ${oem ? "chip--active" : ""}`}
+                onClick={() => updateSearchParams({ oem: oem ? undefined : "true" })}
+              >
+                OEM
+              </button>
+              <button
+                type="button"
+                className={`chip ${odm ? "chip--active" : ""}`}
+                onClick={() => updateSearchParams({ odm: odm ? undefined : "true" })}
+              >
+                ODM
+              </button>
+            </div>
+          </div>
+
+          <button
+            className="btn btn-primary w-full"
+            onClick={() => updateSearchParams({})}
+          >
+            필터 적용
+          </button>
+        </aside>
+
+        {/* RIGHT: Results */}
+        <div className="supplier-result-area">
+          {data?.items.length ? (
+            <>
+            <div className="flex items-center gap-8">
+              <h1 style={{ fontSize: 18, fontWeight: 700 }}>
+                검색 결과
+              </h1>
+              <span className="text-muted" style={{ fontSize: 14 }}>· {data.meta.totalElements}개 업체</span>
+            </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {data?.items.map((item) => (
+              <Link to={`/suppliers/${item.profileId}`} className="supplier-card" key={item.profileId}>
+                <div className="flex items-center gap-8">
+                  <h2 className="font-bold text-base">{item.companyName}</h2>
+                  <span className="badge badge-green">인증</span>
+                </div>
+                <p className="text-muted text-sm">
+                  {item.region} · {item.categories.join(", ")}
+                </p>
+                <div className="flex gap-8 flex-wrap">
+                  {item.oemAvailable && <span className="badge badge-blue">OEM</span>}
+                  {item.odmAvailable && <span className="badge badge-blue">ODM</span>}
+                </div>
+                <p className="text-muted text-sm">
+                  월 {item.monthlyCapacity.toLocaleString()}톤 &nbsp;&nbsp; MOQ {item.moq.toLocaleString()}
+                </p>
+              </Link>
+            ))}
+          </div>
+
+          {data.meta && data.meta.totalPages > 1 && (
+            <div className="pagination">
+              <button
+                disabled={!data.meta.hasPrev}
+                onClick={() => updateSearchParams({ page: String(Math.max(1, page - 1)) })}
+              >
+                ‹
+              </button>
+              {Array.from({ length: Math.min(data.meta.totalPages, 5) }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  className={p === page ? "active" : ""}
+                  onClick={() => updateSearchParams({ page: String(p) })}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                disabled={!data.meta.hasNext}
+                onClick={() => updateSearchParams({ page: String(page + 1) })}
+              >
+                ›
+              </button>
+            </div>
+          )}
+          </>
+          ) : (
+            <div className="empty-state">
+              <p>조건에 맞는 공급자가 없습니다.</p>
+            </div>
+          )}
+        </div>
       </div>
-    </section>
+    </div>
   )
 }
+

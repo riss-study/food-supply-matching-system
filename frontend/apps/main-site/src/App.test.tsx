@@ -22,7 +22,7 @@ describe("main-site auth skeleton", () => {
   it("redirects unauthenticated dashboard access to login page", () => {
     renderWithProviders(["/dashboard"])
 
-    expect(screen.getByRole("heading", { name: "Login" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "로그인" })).toBeInTheDocument()
   })
 
   it("renders dashboard for authenticated user", () => {
@@ -34,6 +34,6 @@ describe("main-site auth skeleton", () => {
 
     renderWithProviders(["/dashboard"])
 
-    expect(screen.getByRole("heading", { name: "Authenticated Dashboard" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "요청자 시작 화면" })).toBeInTheDocument()
   })
 })

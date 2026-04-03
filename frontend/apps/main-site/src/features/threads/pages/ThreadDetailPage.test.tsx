@@ -141,8 +141,8 @@ describe("ThreadDetailPage", () => {
     } as never)
 
     renderPage()
-    expect(screen.getByText("Supplier Co")).toBeInTheDocument()
-    expect(screen.getByText("의뢰: Test Request")).toBeInTheDocument()
+    expect(screen.getByText(/Supplier Co/)).toBeInTheDocument()
+    expect(screen.getByText("Test Request")).toBeInTheDocument()
     expect(screen.getByText("Hello there")).toBeInTheDocument()
   })
 
@@ -244,9 +244,9 @@ describe("ThreadDetailPage", () => {
     } as never)
 
     renderPage()
-    expect(screen.getByText("요청자 연락처")).toBeInTheDocument()
-    expect(screen.getByText("공급자 연락처")).toBeInTheDocument()
-    expect(screen.getByText("010-3333-4444")).toBeInTheDocument()
+    expect(screen.getByText("요청자")).toBeInTheDocument()
+    expect(screen.getByText("공급자")).toBeInTheDocument()
+    expect(screen.getByText(/010-3333-4444/)).toBeInTheDocument()
   })
 
   it("allows a new request after contact share was revoked", () => {

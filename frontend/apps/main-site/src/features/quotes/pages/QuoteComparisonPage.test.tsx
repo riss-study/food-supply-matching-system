@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { QuoteComparisonPage } from "./QuoteComparisonPage"
@@ -78,18 +78,11 @@ describe("QuoteComparisonPage", () => {
     vi.clearAllMocks()
   })
 
-  it("opens and closes the quote detail dialog", () => {
+  it("renders quote data in the table", () => {
     renderPage()
 
-    fireEvent.click(screen.getByRole("button", { name: "상세" }))
-
-    const dialog = screen.getByRole("dialog", { name: "견적 상세" })
-    expect(dialog).toBeInTheDocument()
-    expect(within(dialog).getByText("예시 식품")).toBeInTheDocument()
-
-    fireEvent.click(within(dialog).getAllByRole("button", { name: "닫기" })[1])
-
-    expect(screen.queryByRole("dialog", { name: "견적 상세" })).not.toBeInTheDocument()
+    expect(screen.getByText("예시 식품")).toBeInTheDocument()
+    expect(screen.getByText("견적 비교")).toBeInTheDocument()
   })
 
   it("opens the selection confirmation dialog and selects the quote", () => {

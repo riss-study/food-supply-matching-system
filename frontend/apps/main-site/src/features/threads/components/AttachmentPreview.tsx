@@ -88,11 +88,11 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "0.75rem",
-        padding: "0.75rem",
-        backgroundColor: "#f8fafc",
-        borderRadius: "0.5rem",
-        border: "1px solid #e2e8f0",
+        gap: 12,
+        padding: 12,
+        backgroundColor: "var(--panel)",
+        borderRadius: 8,
+        border: "1px solid var(--line)",
         cursor: isImage ? "pointer" : "default",
       }}
       onClick={handleClick}
@@ -111,11 +111,11 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
       {isImage ? (
         <div
           style={{
-            width: "48px",
-            height: "48px",
-            borderRadius: "0.375rem",
+            width: 48,
+            height: 48,
+            borderRadius: 6,
             overflow: "hidden",
-            backgroundColor: "#e2e8f0",
+            backgroundColor: "var(--line)",
             flexShrink: 0,
           }}
         >
@@ -132,17 +132,17 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
       ) : (
         <div
           style={{
-            width: "48px",
-            height: "48px",
-            borderRadius: "0.375rem",
-            backgroundColor: "#fee2e2",
+            width: 48,
+            height: 48,
+            borderRadius: 6,
+            backgroundColor: "var(--danger-soft)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
-            fontSize: "0.75rem",
+            fontSize: 12,
             fontWeight: 600,
-            color: "#dc2626",
+            color: "var(--danger)",
           }}
         >
           PDF
@@ -152,9 +152,9 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: "0.875rem",
+            fontSize: 14,
             fontWeight: 500,
-            color: "#1e293b",
+            color: "var(--ink)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -163,7 +163,7 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
         >
           {attachment.fileName}
         </div>
-        <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "0.25rem" }}>
+        <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
           {formatFileSize(attachment.fileSize)}
         </div>
       </div>
@@ -175,13 +175,13 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
           }}
           disabled={isDownloading || !attachmentRef}
           style={{
-            padding: "0.375rem 0.75rem",
-            fontSize: "0.75rem",
-            backgroundColor: "white",
-            border: "1px solid #cbd5e1",
-            borderRadius: "0.375rem",
+            padding: "6px 12px",
+            fontSize: 12,
+            backgroundColor: "var(--paper)",
+            border: "1px solid var(--line-strong)",
+            borderRadius: 6,
             cursor: isDownloading || !attachmentRef ? "not-allowed" : "pointer",
-            color: "#475569",
+            color: "var(--muted)",
           }}
         >
           {isDownloading ? "준비 중..." : "다운로드"}

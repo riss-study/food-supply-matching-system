@@ -94,10 +94,10 @@ export function FileUpload({ onFilesSelected, disabled, maxFiles = 5 }: FileUplo
         onDrop={handleDrop}
         onClick={handleClick}
         style={{
-          padding: "1.5rem",
-          border: `2px dashed ${isDragging ? "#2563eb" : "#cbd5e1"}`,
-          borderRadius: "0.75rem",
-          backgroundColor: isDragging ? "#eff6ff" : disabled ? "#f1f5f9" : "#f8fafc",
+          padding: 24,
+          border: `2px dashed ${isDragging ? "var(--accent)" : "var(--line)"}`,
+          borderRadius: 12,
+          backgroundColor: isDragging ? "var(--accent-soft)" : disabled ? "var(--panel)" : "var(--panel)",
           textAlign: "center",
           cursor: disabled ? "not-allowed" : "pointer",
           transition: "all 0.2s ease",
@@ -113,11 +113,11 @@ export function FileUpload({ onFilesSelected, disabled, maxFiles = 5 }: FileUplo
           style={{ display: "none" }}
         />
 
-        <div style={{ color: "#64748b", fontSize: "0.875rem" }}>
-          <p style={{ margin: "0 0 0.5rem" }}>
+        <div style={{ color: "var(--muted)", fontSize: 14 }}>
+          <p style={{ margin: "0 0 8px" }}>
             <strong>파일을 드래그하여 업로드</strong>하거나 클릭하여 선택하세요
           </p>
-          <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8" }}>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
             최대 {maxFiles}개, {formatFileSize(MAX_ATTACHMENT_SIZE)} 이하 (JPEG, PNG, GIF, PDF)
           </p>
         </div>
@@ -126,12 +126,12 @@ export function FileUpload({ onFilesSelected, disabled, maxFiles = 5 }: FileUplo
       {validationError && (
         <div
           style={{
-            marginTop: "0.75rem",
-            padding: "0.75rem",
-            backgroundColor: "#fee2e2",
-            borderRadius: "0.5rem",
-            color: "#dc2626",
-            fontSize: "0.875rem",
+            marginTop: 12,
+            padding: 12,
+            backgroundColor: "var(--danger-soft)",
+            borderRadius: 8,
+            color: "var(--danger)",
+            fontSize: 14,
             whiteSpace: "pre-line",
           }}
         >
@@ -157,25 +157,25 @@ export function UploadingFileList({ files, onRemove }: UploadingFileListProps) {
   if (files.length === 0) return null
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.75rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
       {files.map((file) => (
         <div
           key={file.id}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.75rem",
-            padding: "0.75rem",
-            backgroundColor: "#f1f5f9",
-            borderRadius: "0.5rem",
+            gap: 12,
+            padding: 12,
+            backgroundColor: "var(--panel)",
+            borderRadius: 8,
           }}
         >
           <div style={{ flex: 1 }}>
             <div
               style={{
-                fontSize: "0.875rem",
+                fontSize: 14,
                 fontWeight: 500,
-                color: "#1e293b",
+                color: "var(--ink)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -183,15 +183,15 @@ export function UploadingFileList({ files, onRemove }: UploadingFileListProps) {
             >
               {file.file.name}
             </div>
-            <div style={{ fontSize: "0.75rem", color: "#64748b" }}>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>
               {formatFileSize(file.file.size)}
             </div>
             <div
               style={{
-                height: "4px",
-                backgroundColor: "#e2e8f0",
-                borderRadius: "2px",
-                marginTop: "0.5rem",
+                height: 4,
+                backgroundColor: "var(--line)",
+                borderRadius: 2,
+                marginTop: 8,
                 overflow: "hidden",
               }}
             >
@@ -199,7 +199,7 @@ export function UploadingFileList({ files, onRemove }: UploadingFileListProps) {
                 style={{
                   height: "100%",
                   width: `${file.progress}%`,
-                  backgroundColor: "#2563eb",
+                  backgroundColor: "var(--accent)",
                   transition: "width 0.3s ease",
                 }}
               />
@@ -209,12 +209,12 @@ export function UploadingFileList({ files, onRemove }: UploadingFileListProps) {
           <button
             onClick={() => onRemove(file.id)}
             style={{
-              padding: "0.375rem",
+              padding: 6,
               backgroundColor: "transparent",
               border: "none",
               cursor: "pointer",
-              color: "#64748b",
-              fontSize: "1.25rem",
+              color: "var(--muted)",
+              fontSize: 20,
               lineHeight: 1,
             }}
             aria-label="Remove file"

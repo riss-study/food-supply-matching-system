@@ -11,14 +11,14 @@ const stateLabels: Record<SupplierVerificationState, string> = {
   suspended: "중단됨",
 }
 
-const stateColors: Record<SupplierVerificationState, string> = {
-  draft: "#6b7280",
-  submitted: "#f59e0b",
-  under_review: "#3b82f6",
-  hold: "#f97316",
-  approved: "#10b981",
-  rejected: "#ef4444",
-  suspended: "#991b1b",
+const stateBadgeClass: Record<SupplierVerificationState, string> = {
+  draft: "badge badge-gray",
+  submitted: "badge badge-amber",
+  under_review: "badge badge-blue",
+  hold: "badge badge-amber",
+  approved: "badge badge-green",
+  rejected: "badge badge-red",
+  suspended: "badge badge-red",
 }
 
 interface VerificationStatusCardProps {
@@ -32,60 +32,41 @@ export function VerificationStatusCard({ submission, profileId, verificationStat
 
   if (!submission) {
     return (
-      <div style={{ padding: "1rem", border: "1px dashed #9ca3af", borderRadius: "0.5rem" }}>
+      <div className="surface">
         <strong>검수 제출 전</strong>
-        <p style={{ margin: "0.5rem 0 0" }}>사업자등록증과 필요한 파일을 업로드해 검수를 시작하세요.</p>
+        <p className="text-muted mt-8">사업자등록증과 필요한 파일을 업로드해 검수를 시작하세요.</p>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: "1rem", borderRadius: "0.5rem", border: `1px solid ${stateColors[submission.state]}` }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+    <div className="surface">
+      <div className="flex items-center gap-12 mb-12">
         <strong>검수 상태</strong>
-        <span style={{ color: stateColors[submission.state] }}>{stateLabels[submission.state]}</span>
+        <span className={stateBadgeClass[submission.state]}>{stateLabels[submission.state]}</span>
       </div>
-      <p style={{ margin: 0 }}>제출일: {new Date(submission.submittedAt).toLocaleDateString("ko-KR")}</p>
-      {submission.reviewNotePublic ? <p style={{ marginTop: "0.5rem" }}>안내: {submission.reviewNotePublic}</p> : null}
+      <p className="text-muted text-sm">제출일: {new Date(submission.submittedAt).toLocaleDateString("ko-KR")}</p>
+      {submission.reviewNotePublic ? <p className="mt-8 text-sm">안내: {submission.reviewNotePublic}</p> : null}
       {submission.files.length > 0 ? (
-        <ul style={{ marginTop: "0.75rem" }}>
+        <ul className="file-list mt-12">
           {submission.files.map((file) => (
-            <li key={file.fileId}>{file.fileName} ({file.status})</li>
+            <li key={file.fileId} className="file-list-item">{file.fileName} ({file.status})</li>
           ))}
         </ul>
       ) : null}
 
       {isApproved && profileId && (
-        <div style={{ marginTop: "1rem", padding: "1rem", backgroundColor: "#f0fdf4", borderRadius: "0.5rem", border: "1px solid #bbf7d0" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-            <div style={{ flex: 1, minWidth: "200px" }}>
-              <p style={{ margin: "0 0 0.25rem 0", fontWeight: 500, color: "#166534" }}>
+        <div className="surface-highlight p-16 rounded mt-16">
+          <div className="flex items-center gap-16 flex-wrap">
+            <div className="flex-1">
+              <p className="font-medium text-success">
                 승인 완료! 공개 프로필이 활성화되었습니다.
               </p>
-              <p style={{ margin: 0, fontSize: "0.875rem", color: "#15803d" }}>
+              <p className="text-sm text-muted mt-4">
                 요청자들이 내 프로필을 검색하고 의뢰를 받을 수 있습니다.
               </p>
             </div>
-            <Link
-              to={`/suppliers/${profileId}`}
-              style={{
-                padding: "0.625rem 1.25rem",
-                backgroundColor: "#16a34a",
-                color: "white",
-                textDecoration: "none",
-                borderRadius: "0.5rem",
-                fontWeight: 500,
-                fontSize: "0.875rem",
-                whiteSpace: "nowrap",
-                transition: "background-color 0.15s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#15803d"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#16a34a"
-              }}
-            >
+            <Link to={`/suppliers/${profileId}`} className="btn btn-primary btn-sm">
               내 공개 프로필 보기
             </Link>
           </div>
