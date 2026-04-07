@@ -125,6 +125,7 @@ class PublicNoticeApplicationService(
                 PublicNoticeAttachmentResponse(
                     attachmentId = it.attachmentId,
                     fileName = it.fileName,
+                    fileSize = it.fileSize,
                     url = noticeAttachmentUrl(noticeId, it.attachmentId),
                 )
             }

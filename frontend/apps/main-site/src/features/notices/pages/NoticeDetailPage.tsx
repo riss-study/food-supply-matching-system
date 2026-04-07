@@ -56,7 +56,7 @@ export function NoticeDetailPage() {
           {data.attachments.map((attachment) => (
             <div key={attachment.attachmentId} className="flex items-center gap-8 border-b p-8">
               <a
-                href={attachment.url}
+                href={`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"}${attachment.url}`}
                 download={attachment.fileName}
                 className="text-accent"
               >

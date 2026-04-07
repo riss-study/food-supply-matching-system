@@ -108,7 +108,7 @@ export function NoticeListDetailPage() {
                     <h3 className="section-title">첨부 파일</h3>
                     {detail.attachments.map((attachment) => (
                       <div key={attachment.attachmentId} className="flex items-center gap-8 text-sm">
-                        <a href={attachment.url} download={attachment.fileName} className="text-accent">
+                        <a href={`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"}${attachment.url}`} download={attachment.fileName} className="text-accent">
                           {attachment.fileName}
                         </a>
                         <span className="text-muted">({(attachment.fileSize / 1024).toFixed(1)} KB)</span>

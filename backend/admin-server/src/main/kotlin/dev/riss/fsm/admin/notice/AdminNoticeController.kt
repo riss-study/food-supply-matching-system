@@ -8,7 +8,10 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.core.io.FileSystemResource
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -94,6 +97,23 @@ class AdminNoticeController(
             .map { response ->
                 ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiSuccessResponse(message = "Attachment uploaded", data = response))
+            }
+    }
+
+    @GetMapping("/{noticeId}/attachments/{attachmentId}/download")
+    @Operation(summary = "Download notice attachment", description = "Download a file attachment")
+    fun downloadAttachment(
+        @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
+        @PathVariable noticeId: String,
+        @PathVariable attachmentId: String,
+    ): Mono<ResponseEntity<FileSystemResource>> {
+        return noticeApplicationService.getAttachmentFile(principal, noticeId, attachmentId)
+            .map { (entity, resource) ->
+                ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${entity.fileName}\"")
+                    .contentType(MediaType.parseMediaType(entity.contentType))
+                    .contentLength(entity.fileSize)
+                    .body(resource)
             }
     }
 

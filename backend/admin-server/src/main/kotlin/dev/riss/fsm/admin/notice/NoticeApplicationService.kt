@@ -34,6 +34,7 @@ data class NoticePageResult(
 
 @Service
 class NoticeApplicationService(
+    @org.springframework.beans.factory.annotation.Value("\${fsm.storage.local-root:backend/local-storage}") private val localRoot: String,
     private val noticeCommandService: NoticeCommandService,
     private val noticeRepository: NoticeRepository,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
@@ -233,9 +234,10 @@ class NoticeApplicationService(
                 .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Notice not found")))
                 .flatMap { _ ->
                     val attachmentId = "att_${UUID.randomUUID()}"
-                    val uploadDir = Path.of(System.getProperty("java.io.tmpdir"), "fsm-uploads", "notices", noticeId)
-                    Files.createDirectories(uploadDir)
-                    val targetPath = uploadDir.resolve("${attachmentId}_${file.filename()}")
+                    val sanitized = file.filename().replace(Regex("[^A-Za-z0-9._-]"), "_")
+                    val storageKey = "notice/$noticeId/$attachmentId-$sanitized"
+                    val targetPath = Path.of(localRoot, storageKey)
+                    Files.createDirectories(targetPath.parent)
 
                     file.transferTo(targetPath).then(Mono.defer {
                         val fileSize = Files.size(targetPath)
@@ -248,7 +250,7 @@ class NoticeApplicationService(
                             fileName = file.filename(),
                             contentType = contentType,
                             fileSize = fileSize,
-                            storageKey = targetPath.toString(),
+                            storageKey = storageKey,
                             createdAt = LocalDateTime.now(),
                         ).apply { newEntity = true }
 
@@ -258,11 +260,32 @@ class NoticeApplicationService(
                                 fileName = saved.fileName,
                                 contentType = saved.contentType,
                                 fileSize = saved.fileSize,
-                                url = "/api/admin/notices/$noticeId/attachments/${saved.attachmentId}",
+                                url = "/api/admin/notices/$noticeId/attachments/${saved.attachmentId}/download",
                                 createdAt = saved.createdAt.toInstant(ZoneOffset.UTC),
                             )
                         }
                     })
+                }
+        })
+    }
+
+    private fun resolveStoragePath(storageKey: String): Path {
+        return Path.of(localRoot, storageKey)
+    }
+
+    fun getAttachmentFile(
+        principal: AuthenticatedUserPrincipal,
+        noticeId: String,
+        attachmentId: String,
+    ): Mono<Pair<AttachmentMetadataEntity, org.springframework.core.io.FileSystemResource>> {
+        return ensureAdmin(principal).then(Mono.defer {
+            attachmentMetadataRepository.findById(attachmentId)
+                .filter { it.ownerType == "notice" && it.ownerId == noticeId }
+                .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Attachment not found")))
+                .map { entity ->
+                    val file = resolveStoragePath(entity.storageKey).toFile()
+                    if (!file.exists()) throw ResponseStatusException(HttpStatus.NOT_FOUND, "File not found on disk")
+                    Pair(entity, org.springframework.core.io.FileSystemResource(file))
                 }
         })
     }
@@ -277,7 +300,7 @@ class NoticeApplicationService(
                 .filter { it.ownerType == "notice" && it.ownerId == noticeId }
                 .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Attachment not found")))
                 .flatMap { entity ->
-                    val filePath = Path.of(entity.storageKey)
+                    val filePath = resolveStoragePath(entity.storageKey)
                     try { Files.deleteIfExists(filePath) } catch (_: Exception) {}
                     attachmentMetadataRepository.deleteById(attachmentId)
                 }
@@ -292,7 +315,7 @@ class NoticeApplicationService(
                     fileName = it.fileName,
                     contentType = it.contentType,
                     fileSize = it.fileSize,
-                    url = it.storageKey,
+                    url = "/api/admin/notices/${it.ownerId}/attachments/${it.attachmentId}/download",
                     createdAt = it.createdAt.toInstant(ZoneOffset.UTC),
                 )
             }

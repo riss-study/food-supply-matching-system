@@ -8,6 +8,9 @@ spring:
     password: fsm
   mongodb:
     uri: mongodb://localhost:27018/fsm_read
+fsm:
+  storage:
+    local-root: ${user.dir}/../local-storage
 management:
   endpoint:
     health:

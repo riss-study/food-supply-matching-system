@@ -26,5 +26,6 @@ data class PublicNoticeDetailResponse(
 data class PublicNoticeAttachmentResponse(
     val attachmentId: String,
     val fileName: String,
+    val fileSize: Long,
     val url: String,
 )

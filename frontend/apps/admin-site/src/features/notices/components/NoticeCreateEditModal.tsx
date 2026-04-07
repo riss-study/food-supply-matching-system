@@ -52,13 +52,18 @@ export function NoticeCreateEditModal({
   if (!isOpen) return null
 
   const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setNewFiles((prev) => [...prev, ...Array.from(e.target.files!)])
+    const files = e.target.files
+    if (files && files.length > 0) {
+      const selected = Array.from(files)
+      setNewFiles((prev) => [...prev, ...selected])
     }
     // Reset input so the same file can be selected again if removed
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
+    // Use setTimeout to avoid clearing files reference during the same event
+    setTimeout(() => {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }, 0)
   }
 
   const handleRemoveNewFile = (index: number) => {
@@ -217,7 +222,7 @@ export function NoticeCreateEditModal({
               <ul className="file-list">
                 {existingAttachments.map((attachment) => (
                   <li key={attachment.attachmentId} className="file-list-item">
-                    <a href={attachment.url} target="_blank" rel="noopener noreferrer">
+                    <a href={`${import.meta.env.VITE_ADMIN_API_BASE_URL ?? "http://localhost:8081"}${attachment.url}`} target="_blank" rel="noopener noreferrer">
                       {attachment.fileName}
                     </a>
                     <span className="file-size">({formatFileSize(attachment.fileSize)})</span>
@@ -235,22 +240,24 @@ export function NoticeCreateEditModal({
             )}
 
             {newFiles.length > 0 && (
-              <ul className="file-list">
-                {newFiles.map((file, index) => (
-                  <li key={`${file.name}-${index}`} className="file-list-item">
-                    <span>{file.name}</span>
-                    <span className="file-size">({formatFileSize(file.size)})</span>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-ghost"
-                      onClick={() => handleRemoveNewFile(index)}
-                      disabled={isSubmitting}
-                    >
-                      삭제
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: 13, color: "var(--success)", fontWeight: 500, marginBottom: 8 }}>새 파일 ({newFiles.length}개)</p>
+                <ul className="file-list" style={{ border: "1px solid var(--line)", borderRadius: 8, padding: "0 12px" }}>
+                  {newFiles.map((file, index) => (
+                    <li key={`${file.name}-${index}`} className="file-list-item">
+                      <span>{file.name} ({formatFileSize(file.size)})</span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => handleRemoveNewFile(index)}
+                        disabled={isSubmitting}
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             <input
@@ -259,7 +266,7 @@ export function NoticeCreateEditModal({
               multiple
               onChange={handleFilesSelected}
               disabled={isSubmitting}
-              hidden
+              style={{ display: "none" }}
             />
             <button
               type="button"
