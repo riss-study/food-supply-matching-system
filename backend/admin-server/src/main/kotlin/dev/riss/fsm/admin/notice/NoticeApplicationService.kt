@@ -267,6 +267,23 @@ class NoticeApplicationService(
         })
     }
 
+    fun deleteAttachment(
+        principal: AuthenticatedUserPrincipal,
+        noticeId: String,
+        attachmentId: String,
+    ): Mono<Void> {
+        return ensureAdmin(principal).then(Mono.defer {
+            attachmentMetadataRepository.findById(attachmentId)
+                .filter { it.ownerType == "notice" && it.ownerId == noticeId }
+                .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Attachment not found")))
+                .flatMap { entity ->
+                    val filePath = Path.of(entity.storageKey)
+                    try { Files.deleteIfExists(filePath) } catch (_: Exception) {}
+                    attachmentMetadataRepository.deleteById(attachmentId)
+                }
+        })
+    }
+
     private fun noticeAttachments(noticeId: String): Mono<List<NoticeAttachmentResponse>> {
         return attachmentMetadataRepository.findAllByOwnerTypeAndOwnerId("notice", noticeId)
             .map {

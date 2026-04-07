@@ -72,9 +72,12 @@ export async function uploadNoticeAttachment(noticeId: string, file: File): Prom
   const response = await adminApiClient.post<ApiEnvelope<{ attachmentId: string; fileName: string; url: string }>>(
     `/api/admin/notices/${noticeId}/attachments`,
     formData,
-    { headers: { "Content-Type": "multipart/form-data" } },
   )
   return response.data.data
+}
+
+export async function deleteNoticeAttachment(noticeId: string, attachmentId: string): Promise<void> {
+  await adminApiClient.delete(`/api/admin/notices/${noticeId}/attachments/${attachmentId}`)
 }
 
 export async function archiveNotice(noticeId: string): Promise<ArchiveNoticeResponse> {

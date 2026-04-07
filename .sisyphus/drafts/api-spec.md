@@ -2933,6 +2933,86 @@ Content-Type: application/json
 
 ---
 
+#### POST /api/admin/notices/{noticeId}/attachments
+
+**설명:** 공지 첨부파일 업로드
+
+**인증:** 필요 (role=admin)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| noticeId | string | 공지 ID |
+
+**Request Headers:**
+```
+Authorization: Bearer <JWT>
+Content-Type: multipart/form-data
+```
+
+**Request Body:** (multipart/form-data)
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| file | file | O | 업로드할 파일 |
+
+**Success Response (201):**
+```json
+{
+  "code": 100,
+  "message": "Attachment uploaded",
+  "data": {
+    "attachmentId": "att_01HQX...",
+    "fileName": "사업자등록증.pdf",
+    "contentType": "application/pdf",
+    "fileSize": 102400,
+    "url": "/api/admin/notices/ntc_01/attachments/att_01HQX...",
+    "createdAt": "2026-03-12T15:00:00Z"
+  }
+}
+```
+
+**Error Responses:**
+
+| HTTP | code | 설명 |
+|------|------|------|
+| 404 | 4040 | 공지를 찾을 수 없음 |
+
+---
+
+#### DELETE /api/admin/notices/{noticeId}/attachments/{attachmentId}
+
+**설명:** 공지 첨부파일 삭제
+
+**인증:** 필요 (role=admin)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| noticeId | string | 공지 ID |
+| attachmentId | string | 첨부파일 ID |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Attachment deleted",
+  "data": {
+    "attachmentId": "att_01HQX..."
+  }
+}
+```
+
+**Error Responses:**
+
+| HTTP | code | 설명 |
+|------|------|------|
+| 404 | 4040 | 첨부파일을 찾을 수 없음 |
+
+---
+
 ### 4.3 관리자 통계
 
 #### GET /api/admin/stats/summary

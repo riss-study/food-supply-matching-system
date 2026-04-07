@@ -13,7 +13,7 @@ import { useUpdateNotice } from "./features/notices/hooks/useUpdateNotice"
 import { usePublishNotice } from "./features/notices/hooks/usePublishNotice"
 import { useArchiveNotice } from "./features/notices/hooks/useArchiveNotice"
 import { useNoticeDetail } from "./features/notices/hooks/useNoticeDetail"
-import { uploadNoticeAttachment } from "./features/notices/api/notices-api"
+import { uploadNoticeAttachment, deleteNoticeAttachment } from "./features/notices/api/notices-api"
 import type { CreateNoticeRequest, UpdateNoticeRequest } from "@fsm/types"
 
 function HomePage() {
@@ -58,12 +58,19 @@ function NoticeManagementPage() {
     }
   }
 
-  const handleSubmit = (data: CreateNoticeRequest | UpdateNoticeRequest, newFiles?: File[]) => {
+  const deleteFiles = async (noticeId: string, attachmentIds: string[]) => {
+    for (const id of attachmentIds) {
+      await deleteNoticeAttachment(noticeId, id)
+    }
+  }
+
+  const handleSubmit = (data: CreateNoticeRequest | UpdateNoticeRequest, newFiles?: File[], removedAttachmentIds?: string[]) => {
     if (editingNoticeId) {
       updateNotice.mutate(
         { noticeId: editingNoticeId, request: data as UpdateNoticeRequest },
         {
           onSuccess: async () => {
+            if (removedAttachmentIds?.length) await deleteFiles(editingNoticeId, removedAttachmentIds)
             if (newFiles?.length) await uploadFiles(editingNoticeId, newFiles)
             handleCloseModal()
           },

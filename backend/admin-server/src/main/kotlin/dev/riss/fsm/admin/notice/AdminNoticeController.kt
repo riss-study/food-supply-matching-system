@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -94,6 +95,22 @@ class AdminNoticeController(
                 ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiSuccessResponse(message = "Attachment uploaded", data = response))
             }
+    }
+
+    @DeleteMapping("/{noticeId}/attachments/{attachmentId}")
+    @Operation(summary = "Delete notice attachment", description = "Delete an attachment from a notice")
+    fun deleteAttachment(
+        @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
+        @Parameter(description = "Notice ID") @PathVariable noticeId: String,
+        @Parameter(description = "Attachment ID") @PathVariable attachmentId: String,
+    ): Mono<ResponseEntity<ApiSuccessResponse<Map<String, String>>>> {
+        return noticeApplicationService.deleteAttachment(principal, noticeId, attachmentId)
+            .then(Mono.just(
+                ResponseEntity.ok(ApiSuccessResponse(
+                    message = "Attachment deleted",
+                    data = mapOf("attachmentId" to attachmentId),
+                ))
+            ))
     }
 
     @PatchMapping("/{noticeId}")

@@ -5,7 +5,7 @@ interface NoticeCreateEditModalProps {
   isOpen: boolean
   notice?: NoticeDetail | null
   onClose: () => void
-  onSubmit: (data: CreateNoticeRequest | UpdateNoticeRequest, newFiles?: File[]) => void
+  onSubmit: (data: CreateNoticeRequest | UpdateNoticeRequest, newFiles?: File[], removedAttachmentIds?: string[]) => void
   onPublish?: () => void
   onArchive?: () => void
   isSubmitting?: boolean
@@ -77,10 +77,12 @@ export function NoticeCreateEditModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const files = newFiles.length > 0 ? newFiles : undefined
+    const removed = removedAttachmentIds.length > 0 ? removedAttachmentIds : undefined
     if (isEditMode) {
-      onSubmit({ title, body }, newFiles.length > 0 ? newFiles : undefined)
+      onSubmit({ title, body }, files, removed)
     } else {
-      onSubmit({ title, body, publishImmediately }, newFiles.length > 0 ? newFiles : undefined)
+      onSubmit({ title, body, publishImmediately }, files, removed)
     }
   }
 
