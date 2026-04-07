@@ -2402,7 +2402,8 @@ Authorization: Bearer <JWT>
       {
         "attachmentId": "att_01",
         "fileName": "notice.pdf",
-        "url": "https://..."
+        "fileSize": 102400,
+        "url": "/api/notices/ntc_01HQX.../attachments/att_01"
       }
     ]
   }
@@ -2420,7 +2421,33 @@ Authorization: Bearer <JWT>
 | attachments | array | 첨부 파일 목록 |
 | attachments[].attachmentId | string | 첨부 ID |
 | attachments[].fileName | string | 파일명 |
-| attachments[].url | string | 파일 URL |
+| attachments[].fileSize | long | 파일 크기 (바이트) |
+| attachments[].url | string | 첨부파일 다운로드 상대 경로 |
+
+---
+
+#### GET /api/notices/{noticeId}/attachments/{attachmentId}
+
+**설명:** 공개 공지 첨부파일 다운로드
+
+**인증:** 불필요
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| noticeId | string | 공지 ID |
+| attachmentId | string | 첨부파일 ID |
+
+**Success Response (200):**
+
+바이너리 파일 스트림 (`Content-Disposition: attachment; filename="..."`)
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 404 | 4040 | 공지 또는 첨부파일을 찾을 수 없음 |
 
 ---
 
@@ -2909,6 +2936,16 @@ Content-Type: application/json
 | body | string | X | 10-5000자 |
 | state | string | X | `draft`, `published`, `archived` |
 
+**Notice State Transitions:**
+
+모든 상태 간 전환이 허용된다. `archived` -> `published` 전환도 지원한다.
+
+- `draft` -> `published`: 게시 (publishedAt 설정)
+- `published` -> `archived`: 보관
+- `archived` -> `published`: 재게시 (publishedAt 갱신)
+- `published` -> `draft`: 게시 취소 (publishedAt 제거)
+- 기타 조합도 PATCH로 전환 가능
+
 **Success Response (200):**
 ```json
 {
@@ -3004,6 +3041,36 @@ Content-Type: multipart/form-data
   }
 }
 ```
+
+**Error Responses:**
+
+| HTTP | code | 설명 |
+|------|------|------|
+| 404 | 4040 | 첨부파일을 찾을 수 없음 |
+
+---
+
+#### GET /api/admin/notices/{noticeId}/attachments/{attachmentId}/download
+
+**설명:** 관리자 공지 첨부파일 다운로드
+
+**인증:** 필요 (role=admin)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| noticeId | string | 공지 ID |
+| attachmentId | string | 첨부파일 ID |
+
+**Request Headers:**
+```
+Authorization: Bearer <JWT>
+```
+
+**Success Response (200):**
+
+바이너리 파일 스트림 (`Content-Disposition: attachment; filename="..."`)
 
 **Error Responses:**
 
@@ -3174,6 +3241,7 @@ Authorization: Bearer <JWT>
 | 1.0 | 2026-03-12 | Phase 1 상세 API 계약 정의 |
 | 1.1 | 2026-03-12 | Field-schema-level consistency 적용 |
 | 1.2 | 2026-03-16 | Terminology consistency pass: ID rule clarity, state/action naming alignment, typo fix (server-side validation wording) |
+| 1.3 | 2026-04-02 | Public notice attachment: fileSize 필드 추가, 다운로드 엔드포인트 추가. Admin notice attachment download 엔드포인트 추가. Notice 상태 전이 규칙 명시 (archived -> published 포함). |
 
 ---
 

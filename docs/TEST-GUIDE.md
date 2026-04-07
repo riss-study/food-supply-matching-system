@@ -99,7 +99,7 @@ cd frontend/apps/admin-site && npx vite --port 5174 &
 
 ## 4. 화면 목록 (22개)
 
-### Main-site (18개)
+### Main-site (17개)
 
 | # | 화면명 | URL | 설명 |
 |---|--------|-----|------|
@@ -119,10 +119,9 @@ cd frontend/apps/admin-site && npx vite --port 5174 &
 | 14 | 공급자 의뢰 피드 | `/supplier/requests` | 검색 + 카테고리 필터 + 의뢰 카드 |
 | 15 | 공급자 의뢰 상세 | `/supplier/requests/:id` | 의뢰 정보 + 견적 제출 폼 |
 | 16 | 내 견적 | `/supplier/quotes` | 탭 언더라인 + 데이터 테이블 |
-| 17 | 공지사항 목록 | `/notices` | 공개 공지 목록 |
-| 18 | 공지사항 상세 | `/notices/:id` | 공지 본문 |
+| 17 | 공지사항 (Split View) | `/notices` | 좌측 공지 목록 + 우측 공지 상세 (NoticeListDetailPage) |
 
-### Admin-site (6개)
+### Admin-site (5개)
 
 | # | 화면명 | URL | 설명 |
 |---|--------|-----|------|
@@ -335,7 +334,22 @@ cd frontend/apps/admin-site && npx vite --port 5174 &
 | 4 | 기존 공지 선택 → 수정 | 수정 폼에 기존 데이터 로드, 수정 후 저장 가능 |
 | 5 | 공지 삭제 | 삭제 확인 후 목록에서 제거 |
 
-#### 4-5. 통계 대시보드
+#### 4-5. 공지 첨부파일 관리
+
+| 단계 | 행동 | 기대 결과 |
+|------|------|----------|
+| 1 | 공지 작성 후 저장 | draft 상태 공지 생성 |
+| 2 | 해당 공지에 첨부파일 업로드 (POST `/api/admin/notices/{noticeId}/attachments`, multipart/form-data) | 업로드 성공, attachmentId/fileName/fileSize/url 반환 |
+| 3 | 공지를 published로 전환 | 공지 게시 성공 |
+| 4 | Main-site `/notices`에서 해당 공지 선택 | 공지 상세에 첨부파일 목록 표시 (fileSize 포함) |
+| 5 | 첨부파일 다운로드 링크 클릭 (GET `/api/notices/{noticeId}/attachments/{attachmentId}`) | 파일 다운로드 정상 |
+| 6 | Admin에서 첨부파일 다운로드 (GET `/api/admin/notices/{noticeId}/attachments/{attachmentId}/download`) | 파일 다운로드 정상 |
+| 7 | Admin에서 첨부파일 삭제 (DELETE) | 삭제 성공, 목록에서 제거 |
+| 8 | 공지를 archived로 전환 후 다시 published로 전환 | archived -> published 상태 전이 정상 동작 |
+
+---
+
+#### 4-6. 통계 대시보드
 
 | 단계 | 행동 | 기대 결과 |
 |------|------|----------|
@@ -393,9 +407,16 @@ cd frontend/apps/admin-site && npx vite --port 5174 &
 | 토큰명 | 값 | 용도 |
 |--------|-----|------|
 | Accent (올리브) | `#6F7A65` | 주요 강조색, 버튼, 링크 |
+| Accent Deep | `#2C2F29` | 깊은 강조 |
+| Accent Soft | `#D6DECC` | 부드러운 배경 강조 |
 | Ink (다크) | `#2C2F29` | 본문 텍스트, 제목 |
-| Background | `#F2EFE9` | 전체 배경색 |
-| Surface | 흰색 계열 | 카드, 패널 배경 |
+| Background | `#F2EFE9` | 전체 배경색 (웜 베이지) |
+| Paper | `#FBF9F6` | 카드/서피스 배경 |
+| Panel | `#F7F5F0` | 보조 패널 배경 |
+| Muted | `#8E8E84` | 보조 텍스트 |
+| Line | `#DED9CE` | 구분선 |
+| Success | `#5E7F4D` | 성공 상태 |
+| Danger | `#BF5A4A` | 위험/에러 상태 |
 
 - [ ] 전체 페이지 배경색이 `#F2EFE9`(웜 베이지) 계열인지 확인
 - [ ] 주요 버튼/링크에 올리브/카키 계열 `#6F7A65` 적용 여부
@@ -506,6 +527,8 @@ DB 연결 문제 시 `status`가 `"DOWN"`으로 표시되며 `details`에 원인
 - **파일 업로드**: 사업자등록증 등 파일 업로드 기능이 로컬 환경에서 제한될 수 있습니다. 업로드 경로 및 저장소 설정을 확인하세요.
 - **이메일 발송**: 로컬 환경에서는 실제 이메일이 발송되지 않습니다. 로그에서 발송 내역을 확인하세요.
 - **CQRS 구조**: 커맨드(MariaDB)와 쿼리(MongoDB) 모델이 분리되어 있어, 데이터 작성 후 조회에 약간의 지연(eventual consistency)이 발생할 수 있습니다.
+- **401 자동 로그아웃**: 양쪽 사이트 모두 API 응답이 401일 경우 자동으로 인증 상태를 초기화하고 로그인 페이지로 리다이렉트합니다. 토큰 만료 후 화면 조작 시 자동 로그아웃을 확인하세요.
+- **파일 저장 경로**: 로컬 환경에서는 `fsm.storage.local-root`(application-local.yml)에 지정된 경로에 파일이 저장됩니다. `.gitignore`에 `backend/local-storage/`가 포함되어 있습니다.
 
 ### 테스트 수행 시 주의
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import type { CreateNoticeRequest, NoticeDetail, NoticeAttachment, UpdateNoticeRequest } from "@fsm/types"
+import { adminApiClient } from "../../auth/lib/api-client"
 
 interface NoticeCreateEditModalProps {
   isOpen: boolean
@@ -64,6 +65,16 @@ export function NoticeCreateEditModal({
         fileInputRef.current.value = ""
       }
     }, 0)
+  }
+
+  const handleDownload = async (url: string, fileName: string) => {
+    const response = await adminApiClient.get(url, { responseType: "blob" })
+    const blobUrl = URL.createObjectURL(response.data)
+    const a = document.createElement("a")
+    a.href = blobUrl
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(blobUrl)
   }
 
   const handleRemoveNewFile = (index: number) => {
@@ -222,9 +233,13 @@ export function NoticeCreateEditModal({
               <ul className="file-list">
                 {existingAttachments.map((attachment) => (
                   <li key={attachment.attachmentId} className="file-list-item">
-                    <a href={`${import.meta.env.VITE_ADMIN_API_BASE_URL ?? "http://localhost:8081"}${attachment.url}`} target="_blank" rel="noopener noreferrer">
+                    <button
+                      type="button"
+                      style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", padding: 0, fontSize: 14 }}
+                      onClick={() => handleDownload(attachment.url, attachment.fileName)}
+                    >
                       {attachment.fileName}
-                    </a>
+                    </button>
                     <span className="file-size">({formatFileSize(attachment.fileSize)})</span>
                     <button
                       type="button"

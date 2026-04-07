@@ -91,10 +91,10 @@ frontend/
 
 #### admin
 
-- 검수 큐
-- 공급자
-- 요청자
-- 공지
+사이드바에는 3개 메뉴만 존재한다:
+
+- 업체 검수
+- 공지 관리
 - 통계
 
 ### 4.2 핵심 화면-모델 매핑
@@ -113,7 +113,8 @@ frontend/
 | 검수 제출 | 공급자 | VerificationSubmission |
 | 검수 큐 | 관리자 | AdminReviewItem |
 | 검수 상세 | 관리자 | VerificationSubmission |
-| 공지 목록 / 편집 | 관리자 | Notice |
+| 공지 목록/상세 (split view) | 요청자 / 공급자 / 공개 | Notice (NoticeListDetailPage) |
+| 공지 관리 | 관리자 | Notice |
 | 통계 대시보드 | 관리자 | PlatformStatSummary |
 
 ### 4.3 핵심 사용자 흐름
@@ -196,15 +197,30 @@ frontend/
 
 ### 순수 CSS 클래스 시스템
 
-- index.css에 정의된 CSS custom properties로 디자인 토큰 관리
+- 디자인 토큰은 `packages/ui/src/shared.css`의 `:root` CSS custom properties에 정의
+- 각 사이트 `index.css`는 `@import "@fsm/ui/src/shared.css"`로 공유 토큰을 가져옴
 - 공통 utility class로 버튼, 카드, 배지, 입력, 레이아웃 등 구성
 - 상태 기반 스타일은 CSS class 조합으로 처리
+
+주요 레이아웃 클래스 (olive/khaki 리디자인 기준):
+
+- `section-title`, `home-section-title`: 섹션 제목
+- `two-col-sidebar-l` / `two-col-sidebar-r`: 사이드바 레이아웃
+- `two-col-master-detail`: 목록/상세 split view (공지 등)
+- `supplier-hero`: 공급자 상세 히어로
+- `thread-layout`: 메시지 채팅 레이아웃
+- `empty-state`: 빈 상태 (모든 list/table 페이지에 적용)
+- `auth-layout-*`: 로그인/회원가입 split 레이아웃
 
 규칙:
 
 - CSS custom properties (:root)를 통해 토큰을 일관되게 유지한다.
 - 공통 컴포넌트는 먼저 `packages/ui`로 올릴 수 있는지 검토한다.
 - 인라인 스타일을 남용하지 않고, 공통 클래스를 우선 사용한다.
+
+### 401 자동 로그아웃
+
+- 양쪽 사이트(main-site, admin-site) 모두 axios interceptor에서 401 응답 시 자동으로 인증 상태를 초기화하고 로그인 페이지로 리다이렉트한다.
 
 ---
 

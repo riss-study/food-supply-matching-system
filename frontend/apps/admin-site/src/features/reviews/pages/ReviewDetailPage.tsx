@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useReviewDetail } from "../hooks/useReviewDetail"
 import { useApproveReview, useHoldReview, useRejectReview } from "../hooks/useReviewActions"
 import { StateBadge } from "../components/StateBadge"
+import { adminApiClient } from "../../auth/lib/api-client"
 import type { AdminReviewHistoryItem } from "@fsm/types"
 
 function getActionTypeLabel(actionType: string): string {
@@ -101,9 +102,21 @@ export function ReviewDetailPage() {
                 <li key={file.fileId} className="file-list-item">
                   <span className="file-list-name">{file.fileName} ({file.status})</span>
                   {file.downloadUrl ? (
-                    <a className="btn btn-primary btn-sm" href={file.downloadUrl} download>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={async () => {
+                        const res = await adminApiClient.get(file.downloadUrl, { responseType: "blob" })
+                        const url = URL.createObjectURL(res.data)
+                        const a = document.createElement("a")
+                        a.href = url
+                        a.download = file.fileName
+                        a.click()
+                        URL.revokeObjectURL(url)
+                      }}
+                    >
                       다운로드
-                    </a>
+                    </button>
                   ) : (
                     <span className="file-list-unavailable">다운로드 불가</span>
                   )}

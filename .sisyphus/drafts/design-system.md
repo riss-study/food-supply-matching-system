@@ -18,7 +18,7 @@
 ## 2. 디자인 철학
 
 - 정보 흐름이 막히지 않는 UI
-- Clean Neutral 기반의 차분한 신뢰감 (green accent)
+- Warm Neutral 기반의 차분한 신뢰감 (olive/khaki accent)
 - B2B 매칭 서비스에 맞는 명확한 상태 표현
 - 관리자 운영 화면에서도 과한 장식보다 가독성과 판독성을 우선
 
@@ -50,29 +50,36 @@
 
 ### 4.1 Color
 
-- Clean Neutral surface (green accent)
-- 차분한 본문 텍스트
+- Warm Neutral surface (olive/khaki accent)
+- 차분한 본문 텍스트 (짙은 올리브 블랙)
 - Accent는 강조보다 상태/그룹 구분 용도
+- Soft 변형 토큰(-soft)이 상태 배경에 사용됨
 
-색상 토큰:
+색상 토큰 (olive/khaki palette — `.pen` 디자인 파일 기준):
 
-- accent: #4A8F6F
-- accent-deep: #357A57
-- accent-soft: #EDF7F1
-- background: #F8F7F5
-- paper: #FFFFFF
-- panel: #FBFAF8
-- ink: #2D2D2F
-- muted: #8B8D94
-- line: #EAEBED
-- line-strong: #D8D9DD
+- accent: #6F7A65 (올리브)
+- accent-deep: #2C2F29
+- accent-soft: #D6DECC
+- background: #F2EFE9 (웜 베이지)
+- paper: #FBF9F6
+- panel: #F7F5F0
+- ink: #2C2F29 (짙은 올리브 블랙)
+- inverse: #2C2F29
+- inverse-fg: #FBF9F6
+- muted: #8E8E84
+- line: #DED9CE
+- line-strong: #C5C0B4
 
 필수 상태 토큰:
 
-- success: #3EAE6A
-- danger: #E25B5B
-- info: #5B8FD9
-- warning: #E5A73C
+- success: #5E7F4D
+- success-soft: #E9F1E3
+- danger: #BF5A4A
+- danger-soft: #FBF0ED
+- info: #5B7E92
+- info-soft: #EBF2F6
+- warning: #C49A3A
+- warning-soft: #FBF4E2
 
 ### 4.2 Typography
 
@@ -83,8 +90,9 @@
 ### 4.3 Spacing / Radius / Shadow
 
 - 일관된 spacing scale 유지
-- border-radius 기준: 버튼 12px, 카드 16px, 배지 20px, 입력 10px
-- shadow는 soft depth로 제한
+- border-radius 기준: --radius-sm 8px, --radius-md 10px (입력), --radius-lg 12px (버튼), --radius-xl 16px (카드), --radius-badge 20px (배지)
+- shadow-card: 0 2px 8px rgba(0,0,0,0.06)
+- shadow-header: 0 1px 4px rgba(0,0,0,0.04)
 
 ---
 
@@ -96,10 +104,22 @@
 - 공통 utility class로 레이아웃, 버튼, 카드, 배지, 입력 등 구성
 - 상태 기반 스타일은 CSS class 조합으로 처리
 
+주요 레이아웃/유틸리티 CSS 클래스:
+
+- `section-title` / `home-section-title`: 섹션 제목
+- `two-col-sidebar-l`: 좌측 사이드바 + 우측 메인 (공급자 검색 등)
+- `two-col-sidebar-r`: 좌측 메인 + 우측 사이드바 (의뢰 상세 등)
+- `two-col-master-detail`: 좌측 목록 + 우측 상세 split view (공지 등)
+- `supplier-hero`: 공급자 상세 히어로 카드
+- `thread-layout`: 메시지 채팅 레이아웃
+- `empty-state`: 데이터 없음 상태 표시 (모든 list/table 페이지에 적용)
+- `auth-layout-*`: 로그인/회원가입 split 레이아웃
+
 규칙:
 
-- 토큰은 CSS custom properties (:root)를 기준으로 유지한다.
+- 토큰은 CSS custom properties (:root)를 기준으로 유지한다. 토큰은 `packages/ui/src/shared.css`에서 정의한다.
 - 공통 컴포넌트는 `packages/ui`에서 관리한다.
+- 각 사이트 `index.css`는 shared.css를 import하고 사이트 전용 클래스를 정의한다.
 
 ---
 
@@ -142,12 +162,13 @@
 
 ### main-site 주요 패턴
 
-- supplier search list
-- supplier detail
+- supplier search list (two-col-sidebar-l: 좌측 필터 + 우측 카드 그리드)
+- supplier detail (supplier-hero + 제조 역량 그리드 + CTA 카드)
 - request form
+- request detail (two-col-sidebar-r: 좌측 의뢰 상세 + 우측 견적 카드)
 - quote comparison
-- thread summary / thread detail
-- public notice list
+- thread summary / thread detail (thread-layout: master-detail 채팅)
+- notice list-detail (two-col-master-detail: 좌측 목록 + 우측 상세 split view)
 
 ### admin-site 주요 패턴
 
