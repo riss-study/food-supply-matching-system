@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom"
+import { getApiBaseUrl } from "@fsm/utils"
 import { usePublicNoticeDetail } from "../hooks/usePublicNoticeDetail"
 
 export function NoticeDetailPage() {
@@ -56,7 +57,7 @@ export function NoticeDetailPage() {
           {data.attachments.map((attachment) => (
             <div key={attachment.attachmentId} className="flex items-center gap-8 border-b p-8">
               <a
-                href={`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"}${attachment.url}`}
+                href={`${getApiBaseUrl()}${attachment.url}`}
                 download={attachment.fileName}
                 className="text-accent"
               >

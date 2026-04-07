@@ -1,13 +1,13 @@
-import { createApiClient } from "@fsm/utils"
+import { createApiClient, getApiBaseUrl, getAdminApiBaseUrl } from "@fsm/utils"
 import { useAdminAuthStore } from "../store/admin-auth-store"
 
 export const adminAuthApiClient = createApiClient(
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080",
+  getApiBaseUrl(),
   () => useAdminAuthStore.getState().accessToken,
 )
 
 export const adminApiClient = createApiClient(
-  import.meta.env.VITE_ADMIN_API_BASE_URL ?? "http://localhost:8081",
+  getAdminApiBaseUrl(),
   () => useAdminAuthStore.getState().accessToken,
 )
 

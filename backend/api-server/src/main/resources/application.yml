@@ -2,11 +2,11 @@ spring:
   application:
     name: api-server
   r2dbc:
-    url: r2dbc:mariadb://localhost:3306/fsm_command
-    username: fsm
-    password: fsm
+    url: ${SPRING_R2DBC_URL:r2dbc:mariadb://localhost:3306/fsm_command}
+    username: ${SPRING_R2DBC_USERNAME:fsm}
+    password: ${SPRING_R2DBC_PASSWORD:fsm}
   mongodb:
-    uri: mongodb://localhost:27017/fsm_read
+    uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/fsm_read}
 management:
   endpoints:
     web:
@@ -14,11 +14,11 @@ management:
         include: health,info
 security:
   jwt:
-    issuer: dev.riss.fsm
-    secret: task01-local-secret-task01-local-secret
-    access-token-ttl-seconds: 3600
+    issuer: ${SECURITY_JWT_ISSUER:dev.riss.fsm}
+    secret: ${SECURITY_JWT_SECRET}
+    access-token-ttl-seconds: ${SECURITY_JWT_ACCESS_TOKEN_TTL:3600}
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

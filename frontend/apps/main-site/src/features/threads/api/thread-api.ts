@@ -1,3 +1,4 @@
+import { getApiBaseUrl } from "@fsm/utils"
 import type {
   ApiEnvelope,
   ContactShareActionResponse,
@@ -132,7 +133,7 @@ export async function revokeContactShare(threadId: string): Promise<ContactShare
 }
 
 export function getAttachmentUrl(threadId: string, attachmentId: string): string {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"
+  const baseUrl = getApiBaseUrl()
   return `${baseUrl}/api/threads/${threadId}/attachments/${attachmentId}`
 }
 
