@@ -158,8 +158,8 @@ export default function App() {
   // Close sidebar on route change
   const closeSidebar = () => setSidebarOpen(false)
 
-  // Login page renders without the admin shell (no sidebar)
-  if (!adminUser) {
+  // 비로그인 또는 관리자가 아닌 경우 로그인 페이지
+  if (!adminUser || adminUser.role !== "admin") {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />

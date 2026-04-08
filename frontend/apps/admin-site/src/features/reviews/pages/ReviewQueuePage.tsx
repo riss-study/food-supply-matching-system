@@ -14,8 +14,8 @@ const tabs = [
 
 export function ReviewQueuePage() {
   const [state, setState] = useState("")
-  const [fromDate, setFromDate] = useState("")
-  const [toDate, setToDate] = useState("")
+  const [fromDate, setFromDate] = useState(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
+  const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0])
   const [sort] = useState("")
   const [order] = useState<"asc" | "desc">("desc")
   const [page, setPage] = useState(1)
@@ -38,25 +38,9 @@ export function ReviewQueuePage() {
       <div className="page-header">
         <h1>업체 검수</h1>
         <div className="page-header-actions">
-          <select
-            className="select"
-            style={{ minWidth: 120 }}
-            value={fromDate ? "custom" : "30"}
-            onChange={(e) => {
-              const days = Number(e.target.value)
-              if (days) {
-                const from = new Date()
-                from.setDate(from.getDate() - days)
-                setFromDate(from.toISOString().split("T")[0])
-                setToDate("")
-              }
-              setPage(1)
-            }}
-          >
-            <option value="30">최근 30일</option>
-            <option value="60">최근 60일</option>
-            <option value="90">최근 90일</option>
-          </select>
+          <input className="input" type="date" value={fromDate} max={toDate || new Date().toISOString().split("T")[0]} onChange={(e) => { setFromDate(e.target.value); setPage(1) }} />
+          <span className="text-muted">~</span>
+          <input className="input" type="date" value={toDate} min={fromDate} max={new Date().toISOString().split("T")[0]} onChange={(e) => { setToDate(e.target.value); setPage(1) }} />
         </div>
       </div>
 
