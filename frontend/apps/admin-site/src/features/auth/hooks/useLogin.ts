@@ -7,13 +7,7 @@ export function useLogin() {
   const setAuth = useAdminAuthStore((state) => state.setAuth)
 
   return useMutation({
-    mutationFn: async (request: LoginRequest) => {
-      const response = await login(request)
-      if (response.user.role !== "admin") {
-        throw new Error("관리자 계정만 로그인할 수 있습니다.")
-      }
-      return response
-    },
+    mutationFn: (request: LoginRequest) => login(request),
     onSuccess: (response) => setAuth(response),
   })
 }

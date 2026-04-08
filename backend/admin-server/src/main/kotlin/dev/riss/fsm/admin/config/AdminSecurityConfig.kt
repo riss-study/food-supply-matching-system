@@ -58,7 +58,7 @@ class AdminSecurityConfig(
             }
             .authorizeExchange { exchanges ->
                 exchanges
-                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/admin/bootstrap/**", "/actuator/**").permitAll()
+                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/admin/bootstrap/**", "/api/admin/auth/**", "/actuator/**").permitAll()
                     .anyExchange().authenticated()
             }
             .addFilterAt(adminJwtAuthenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

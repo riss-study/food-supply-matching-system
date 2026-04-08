@@ -1,10 +1,5 @@
-import { createApiClient, getApiBaseUrl, getAdminApiBaseUrl } from "@fsm/utils"
+import { createApiClient, getAdminApiBaseUrl } from "@fsm/utils"
 import { useAdminAuthStore } from "../store/admin-auth-store"
-
-export const adminAuthApiClient = createApiClient(
-  getApiBaseUrl(),
-  () => useAdminAuthStore.getState().accessToken,
-)
 
 export const adminApiClient = createApiClient(
   getAdminApiBaseUrl(),
