@@ -1,7 +1,8 @@
 // ============================================================
 // 잇다(food2008) MongoDB Read Model 시드 데이터
 // MariaDB 02-mock-data.sql과 1:1 대응
-// 실행: seed-mongodb.sh 또는 직접 실행
+// 모든 테스트 계정 비밀번호: Test1234!
+// 실행: seed-mongodb.sh 또는 seed-all.sh
 // ============================================================
 
 db = db.getSiblingDB('fsm_read');

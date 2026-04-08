@@ -34,7 +34,8 @@ DELETE FROM user_account WHERE email IN ('admin@test.com','admin2@test.com','buy
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- BCrypt hash for 'Test1234!'
+-- BCrypt hash for 'Test1234!' (모든 시드 계정 공통 비밀번호)
+-- 평문: Test1234!
 SET @PW = '$2a$10$byaAb13ApzqHWtTyrROgWOd/D9vKsNJ2aOZFcHhGPQOBWCYUK1Kvq';
 
 -- ============================================================
