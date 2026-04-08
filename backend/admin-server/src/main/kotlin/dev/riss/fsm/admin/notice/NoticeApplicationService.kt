@@ -45,6 +45,8 @@ class NoticeApplicationService(
     fun list(
         principal: AuthenticatedUserPrincipal,
         state: String?,
+        fromDate: String?,
+        toDate: String?,
         page: Int,
         size: Int,
         sort: String,
@@ -52,6 +54,8 @@ class NoticeApplicationService(
     ): Mono<NoticePageResult> {
         val normalizedPage = page.coerceAtLeast(1)
         val normalizedSize = size.coerceIn(1, 100)
+        val parsedFrom = fromDate?.let { java.time.LocalDate.parse(it).atStartOfDay().toInstant(java.time.ZoneOffset.UTC) }
+        val parsedTo = toDate?.let { java.time.LocalDate.parse(it).plusDays(1).atStartOfDay().toInstant(java.time.ZoneOffset.UTC) }
         return ensureAdmin(principal).then(Mono.defer {
             if (state != null) {
                 adminNoticeViewRepository.findAllByStateOrderByCreatedAtDesc(state)
@@ -61,6 +65,11 @@ class NoticeApplicationService(
                     .collectList()
             }
         }).map { documents ->
+            var filtered = documents
+            if (parsedFrom != null) filtered = filtered.filter { it.createdAt >= parsedFrom }
+            if (parsedTo != null) filtered = filtered.filter { it.createdAt < parsedTo }
+            filtered
+        }.map { documents ->
             val sorted = documents.sortedWith(adminComparator(sort, order))
             val totalElements = sorted.size.toLong()
             val totalPages = ((totalElements + normalizedSize - 1) / normalizedSize).toInt().coerceAtLeast(1)

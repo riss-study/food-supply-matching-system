@@ -24,21 +24,21 @@ function daysAgo(d) { return new Date(now.getTime() - d * 24 * 60 * 60 * 1000); 
 // 1. user_me_view (15명)
 // ============================================================
 var users = [
-  { _id: 'usr_seed_admin01',    userId: 'usr_seed_admin01',    email: 'admin@test.com',      role: 'admin',     businessApprovalState: null,        createdAt: daysAgo(90) },
-  { _id: 'usr_seed_admin02',    userId: 'usr_seed_admin02',    email: 'admin2@test.com',     role: 'admin',     businessApprovalState: null,        createdAt: daysAgo(60) },
-  { _id: 'usr_seed_buyer01',    userId: 'usr_seed_buyer01',    email: 'buyer@test.com',      role: 'requester', businessApprovalState: 'approved',  createdAt: daysAgo(80) },
-  { _id: 'usr_seed_buyer02',    userId: 'usr_seed_buyer02',    email: 'buyer2@test.com',     role: 'requester', businessApprovalState: 'approved',  createdAt: daysAgo(70) },
-  { _id: 'usr_seed_buyer03',    userId: 'usr_seed_buyer03',    email: 'buyer3@test.com',     role: 'requester', businessApprovalState: 'submitted', createdAt: daysAgo(50) },
-  { _id: 'usr_seed_buyer04',    userId: 'usr_seed_buyer04',    email: 'buyer4@test.com',     role: 'requester', businessApprovalState: 'approved',  createdAt: daysAgo(40) },
-  { _id: 'usr_seed_buyer05',    userId: 'usr_seed_buyer05',    email: 'buyer5@test.com',     role: 'requester', businessApprovalState: 'rejected',  createdAt: daysAgo(20) },
-  { _id: 'usr_seed_supplier01', userId: 'usr_seed_supplier01', email: 'supplier@test.com',   role: 'supplier',  businessApprovalState: null,        createdAt: daysAgo(85) },
-  { _id: 'usr_seed_supplier02', userId: 'usr_seed_supplier02', email: 'supplier2@test.com',  role: 'supplier',  businessApprovalState: null,        createdAt: daysAgo(75) },
-  { _id: 'usr_seed_supplier03', userId: 'usr_seed_supplier03', email: 'supplier3@test.com',  role: 'supplier',  businessApprovalState: null,        createdAt: daysAgo(65) },
-  { _id: 'usr_seed_supplier04', userId: 'usr_seed_supplier04', email: 'supplier4@test.com',  role: 'supplier',  businessApprovalState: null,        createdAt: daysAgo(55) },
-  { _id: 'usr_seed_supplier05', userId: 'usr_seed_supplier05', email: 'supplier5@test.com',  role: 'supplier',  businessApprovalState: null,        createdAt: daysAgo(45) },
-  { _id: 'usr_seed_supplier06', userId: 'usr_seed_supplier06', email: 'supplier6@test.com',  role: 'supplier',  businessApprovalState: null,        createdAt: daysAgo(35) },
-  { _id: 'usr_seed_supplier07', userId: 'usr_seed_supplier07', email: 'supplier7@test.com',  role: 'supplier',  businessApprovalState: null,        createdAt: daysAgo(25) },
-  { _id: 'usr_seed_supplier08', userId: 'usr_seed_supplier08', email: 'supplier8@test.com',  role: 'supplier',  businessApprovalState: null,        createdAt: daysAgo(15) }
+  { _id: 'usr_seed_admin01',    userId: 'usr_seed_admin01',    email: 'admin@test.com',      role: 'ADMIN',     businessApprovalState: null,        createdAt: daysAgo(90) },
+  { _id: 'usr_seed_admin02',    userId: 'usr_seed_admin02',    email: 'admin2@test.com',     role: 'ADMIN',     businessApprovalState: null,        createdAt: daysAgo(60) },
+  { _id: 'usr_seed_buyer01',    userId: 'usr_seed_buyer01',    email: 'buyer@test.com',      role: 'REQUESTER', businessApprovalState: 'approved',  createdAt: daysAgo(80) },
+  { _id: 'usr_seed_buyer02',    userId: 'usr_seed_buyer02',    email: 'buyer2@test.com',     role: 'REQUESTER', businessApprovalState: 'approved',  createdAt: daysAgo(70) },
+  { _id: 'usr_seed_buyer03',    userId: 'usr_seed_buyer03',    email: 'buyer3@test.com',     role: 'REQUESTER', businessApprovalState: 'submitted', createdAt: daysAgo(50) },
+  { _id: 'usr_seed_buyer04',    userId: 'usr_seed_buyer04',    email: 'buyer4@test.com',     role: 'REQUESTER', businessApprovalState: 'approved',  createdAt: daysAgo(40) },
+  { _id: 'usr_seed_buyer05',    userId: 'usr_seed_buyer05',    email: 'buyer5@test.com',     role: 'REQUESTER', businessApprovalState: 'rejected',  createdAt: daysAgo(20) },
+  { _id: 'usr_seed_supplier01', userId: 'usr_seed_supplier01', email: 'supplier@test.com',   role: 'SUPPLIER',  businessApprovalState: null,        createdAt: daysAgo(85) },
+  { _id: 'usr_seed_supplier02', userId: 'usr_seed_supplier02', email: 'supplier2@test.com',  role: 'SUPPLIER',  businessApprovalState: null,        createdAt: daysAgo(75) },
+  { _id: 'usr_seed_supplier03', userId: 'usr_seed_supplier03', email: 'supplier3@test.com',  role: 'SUPPLIER',  businessApprovalState: null,        createdAt: daysAgo(65) },
+  { _id: 'usr_seed_supplier04', userId: 'usr_seed_supplier04', email: 'supplier4@test.com',  role: 'SUPPLIER',  businessApprovalState: null,        createdAt: daysAgo(55) },
+  { _id: 'usr_seed_supplier05', userId: 'usr_seed_supplier05', email: 'supplier5@test.com',  role: 'SUPPLIER',  businessApprovalState: null,        createdAt: daysAgo(45) },
+  { _id: 'usr_seed_supplier06', userId: 'usr_seed_supplier06', email: 'supplier6@test.com',  role: 'SUPPLIER',  businessApprovalState: null,        createdAt: daysAgo(35) },
+  { _id: 'usr_seed_supplier07', userId: 'usr_seed_supplier07', email: 'supplier7@test.com',  role: 'SUPPLIER',  businessApprovalState: null,        createdAt: daysAgo(25) },
+  { _id: 'usr_seed_supplier08', userId: 'usr_seed_supplier08', email: 'supplier8@test.com',  role: 'SUPPLIER',  businessApprovalState: null,        createdAt: daysAgo(15) }
 ];
 users.forEach(function(u) { db.user_me_view.updateOne({ _id: u._id }, { $set: u }, { upsert: true }); });
 

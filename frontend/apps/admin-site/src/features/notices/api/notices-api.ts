@@ -14,6 +14,8 @@ import { adminApiClient } from "../../auth/lib/api-client"
 
 export interface GetNoticesParams {
   state?: string
+  fromDate?: string
+  toDate?: string
   page?: number
   size?: number
   sort?: string
@@ -24,6 +26,8 @@ export async function getNotices(params: GetNoticesParams = {}) {
   const response = await adminApiClient.get<ApiEnvelope<NoticeSummary[]>>("/api/admin/notices", {
     params: {
       state: params.state,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
       page: params.page,
       size: params.size,
       sort: params.sort,

@@ -2804,6 +2804,8 @@ Authorization: Bearer <JWT>
 | 파라미터 | 타입 | 필수 | 설명 |
 |----------|------|------|------|
 | state | string | X | `draft`, `published`, `archived` |
+| fromDate | string | X | 조회 시작일 (YYYY-MM-DD) |
+| toDate | string | X | 조회 종료일 (YYYY-MM-DD), 최대 3개월 |
 | page | integer | X | 페이지 번호 (기본 1) |
 | size | integer | X | 페이지 크기 (기본 20, 최대 100) |
 | sort | string | X | 정렬 필드 (기본 createdAt) |

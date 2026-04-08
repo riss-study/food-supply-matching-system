@@ -41,12 +41,16 @@ class AdminNoticeController(
         @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
         @Parameter(description = "State filter: draft, published, archived")
         @RequestParam(required = false) state: String?,
+        @Parameter(description = "조회 시작일 (YYYY-MM-DD)")
+        @RequestParam(required = false) fromDate: String?,
+        @Parameter(description = "조회 종료일 (YYYY-MM-DD)")
+        @RequestParam(required = false) toDate: String?,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
         @RequestParam(defaultValue = "createdAt") sort: String,
         @RequestParam(defaultValue = "desc") order: String,
     ): Mono<ApiSuccessResponse<List<NoticeListItemResponse>>> {
-        return noticeApplicationService.list(principal, state, page, size, sort, order)
+        return noticeApplicationService.list(principal, state, fromDate, toDate, page, size, sort, order)
             .map { result ->
                 ApiSuccessResponse(
                     message = "Success",

@@ -22,8 +22,26 @@ export function NoticeListPage({ onCreateClick, onEditClick }: NoticeListPagePro
   const [page, setPage] = useState(1)
   const [size] = useState(20)
 
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+  const today = new Date().toISOString().split("T")[0]
+  const [fromDate, setFromDate] = useState(thirtyDaysAgo)
+  const [toDate, setToDate] = useState(today)
+  const [period, setPeriod] = useState("30")
+
+  const handlePeriodChange = (days: string) => {
+    setPeriod(days)
+    const d = Number(days)
+    if (d > 0) {
+      setFromDate(new Date(Date.now() - d * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
+      setToDate(new Date().toISOString().split("T")[0])
+    }
+    setPage(1)
+  }
+
   const { data, isLoading } = useNotices({
     state: state || undefined,
+    fromDate: fromDate || undefined,
+    toDate: toDate || undefined,
     sort: sort || undefined,
     order,
     page,
@@ -37,6 +55,11 @@ export function NoticeListPage({ onCreateClick, onEditClick }: NoticeListPagePro
       <div className="page-header">
         <h1>공지사항 관리</h1>
         <div className="page-header-actions">
+          <select className="select" style={{ minWidth: 120 }} value={period} onChange={(e) => handlePeriodChange(e.target.value)}>
+            <option value="30">최근 30일</option>
+            <option value="60">최근 60일</option>
+            <option value="90">최근 90일</option>
+          </select>
           <button className="btn btn-primary" onClick={onCreateClick}>
             새 공지 작성
           </button>

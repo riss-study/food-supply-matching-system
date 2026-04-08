@@ -73,6 +73,8 @@ class AdminReviewController(
                         size = result.size,
                         totalElements = result.totalElements.toLong(),
                         totalPages = result.totalPages,
+                        hasNext = result.page < result.totalPages,
+                        hasPrev = result.page > 1,
                     ),
                 )
             }
