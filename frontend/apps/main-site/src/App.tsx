@@ -175,7 +175,7 @@ export default function App() {
               </div>
               {userMenuOpen && (
                 <div className="user-dropdown">
-                  <Link to="/business-profile" className="user-dropdown-item" onClick={() => setUserMenuOpen(false)}>
+                  <Link to={user?.role === "supplier" ? "/supplier/profile" : "/business-profile"} className="user-dropdown-item" onClick={() => setUserMenuOpen(false)}>
                     내 프로필
                   </Link>
                   <button type="button" className="user-dropdown-item" onClick={() => { clearAuth(); setUserMenuOpen(false); }}>
@@ -209,7 +209,7 @@ export default function App() {
             ))}
             {user ? (
               <>
-                <Link to="/business-profile" onClick={() => setMobileMenuOpen(false)}>내 프로필</Link>
+                <Link to={user?.role === "supplier" ? "/supplier/profile" : "/business-profile"} onClick={() => setMobileMenuOpen(false)}>내 프로필</Link>
                 <button type="button" className="mobile-nav-logout" onClick={() => { clearAuth(); setMobileMenuOpen(false); }}>로그아웃</button>
               </>
             ) : (

@@ -174,7 +174,7 @@ export function SupplierSearchPage() {
             ))}
           </div>
 
-          {data.meta && data.meta.totalPages > 1 && (
+          {data.meta && data.meta.totalPages >= 1 && (
             <div className="pagination">
               <button
                 disabled={!data.meta.hasPrev}

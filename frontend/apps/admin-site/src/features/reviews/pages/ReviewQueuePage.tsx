@@ -91,25 +91,13 @@ export function ReviewQueuePage() {
         </div>
       ) : null}
 
-      {meta != null && meta.totalPages > 1 && (
+      {meta != null && meta.totalPages >= 1 && (
         <div className="pagination">
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={!meta.hasPrev}
-          >
-            이전
-          </button>
-          <span className="pagination-info">
-            {meta.page} / {meta.totalPages} 페이지 (총 {meta.totalElements}건)
-          </span>
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => setPage((p) => Math.min(meta.totalPages || p, p + 1))}
-            disabled={!meta.hasNext}
-          >
-            다음
-          </button>
+          <button disabled={!meta.hasPrev} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
+          {Array.from({ length: Math.min(meta.totalPages, 5) }, (_, i) => i + 1).map((p) => (
+            <button key={p} className={p === page ? "active" : ""} onClick={() => setPage(p)}>{p}</button>
+          ))}
+          <button disabled={!meta.hasNext} onClick={() => setPage((p) => Math.min(meta.totalPages || p, p + 1))}>›</button>
         </div>
       )}
     </div>

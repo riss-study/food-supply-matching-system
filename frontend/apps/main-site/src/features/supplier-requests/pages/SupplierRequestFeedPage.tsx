@@ -89,25 +89,13 @@ export function SupplierRequestFeedPage() {
             ))}
           </div>
 
-          {(data?.meta?.totalPages ?? 0) > 1 && (
+          {(data?.meta?.totalPages ?? 0) >= 1 && (
             <div className="pagination">
-              <button
-                className="btn btn-ghost btn-sm"
-                disabled={!data?.meta.hasPrev}
-                onClick={() => setSearchParams({ category, page: String(Math.max(1, page - 1)) })}
-              >
-                이전
-              </button>
-              <span>
-                페이지 {data?.meta.page ?? 1} / {data?.meta.totalPages ?? 1}
-              </span>
-              <button
-                className="btn btn-ghost btn-sm"
-                disabled={!data?.meta.hasNext}
-                onClick={() => setSearchParams({ category, page: String(page + 1) })}
-              >
-                다음
-              </button>
+              <button disabled={!data?.meta.hasPrev} onClick={() => setSearchParams({ category, page: String(Math.max(1, page - 1)) })}>‹</button>
+              {Array.from({ length: Math.min(data?.meta.totalPages ?? 1, 5) }, (_, i) => i + 1).map((p) => (
+                <button key={p} className={p === page ? "active" : ""} onClick={() => setSearchParams({ category, page: String(p) })}>{p}</button>
+              ))}
+              <button disabled={!data?.meta.hasNext} onClick={() => setSearchParams({ category, page: String(page + 1) })}>›</button>
             </div>
           )}
         </>

@@ -168,11 +168,13 @@ export function QuoteComparisonPage() {
         </table>
       </div>
 
-      {meta != null && meta.totalPages > 1 && (
+      {meta != null && meta.totalPages >= 1 && (
         <div className="pagination">
-          <button onClick={() => updateFilter({ page: String(Math.max(1, page - 1)) })} disabled={!meta.hasPrev}>이전</button>
-          <span>{page} / {meta.totalPages}</span>
-          <button onClick={() => updateFilter({ page: String(page + 1) })} disabled={!meta.hasNext}>다음</button>
+          <button disabled={!meta.hasPrev} onClick={() => updateFilter({ page: String(Math.max(1, page - 1)) })}>‹</button>
+          {Array.from({ length: Math.min(meta.totalPages, 5) }, (_, i) => i + 1).map((p) => (
+            <button key={p} className={p === page ? "active" : ""} onClick={() => updateFilter({ page: String(p) })}>{p}</button>
+          ))}
+          <button disabled={!meta.hasNext} onClick={() => updateFilter({ page: String(page + 1) })}>›</button>
         </div>
       )}
       </>

@@ -207,11 +207,13 @@ export function SupplierQuoteListPage() {
         </div>
       )}
 
-      {(data?.meta?.totalPages ?? 0) > 1 && (
+      {(data?.meta?.totalPages ?? 0) >= 1 && (
         <div className="pagination">
-          <button disabled={!data.meta.hasPrev} onClick={() => setPage((current) => Math.max(1, current - 1))}>이전</button>
-          <span>{page} / {data.meta.totalPages}</span>
-          <button disabled={!data.meta.hasNext} onClick={() => setPage((current) => current + 1)}>다음</button>
+          <button disabled={!data.meta.hasPrev} onClick={() => setPage((current) => Math.max(1, current - 1))}>‹</button>
+          {Array.from({ length: Math.min(data.meta.totalPages, 5) }, (_, i) => i + 1).map((p) => (
+            <button key={p} className={p === page ? "active" : ""} onClick={() => setPage(p)}>{p}</button>
+          ))}
+          <button disabled={!data.meta.hasNext} onClick={() => setPage((current) => current + 1)}>›</button>
         </div>
       )}
     </div>

@@ -100,21 +100,13 @@ export function RequestListPage() {
             </table>
           </div>
 
-          {(data?.meta.totalPages ?? 0) > 1 && (
+          {(data?.meta.totalPages ?? 0) >= 1 && (
             <div className="pagination">
-              <button
-                disabled={!data.meta.hasPrev}
-                onClick={() => setSearchParams({ state: stateFilter, page: String(Math.max(1, page - 1)) })}
-              >
-                이전
-              </button>
-              <span>{data.meta.page} / {data.meta.totalPages}</span>
-              <button
-                disabled={!data.meta.hasNext}
-                onClick={() => setSearchParams({ state: stateFilter, page: String(page + 1) })}
-              >
-                다음
-              </button>
+              <button disabled={!data.meta.hasPrev} onClick={() => setSearchParams({ state: stateFilter, page: String(Math.max(1, page - 1)) })}>‹</button>
+              {Array.from({ length: Math.min(data.meta.totalPages, 5) }, (_, i) => i + 1).map((p) => (
+                <button key={p} className={p === page ? "active" : ""} onClick={() => setSearchParams({ state: stateFilter, page: String(p) })}>{p}</button>
+              ))}
+              <button disabled={!data.meta.hasNext} onClick={() => setSearchParams({ state: stateFilter, page: String(page + 1) })}>›</button>
             </div>
           )}
         </>

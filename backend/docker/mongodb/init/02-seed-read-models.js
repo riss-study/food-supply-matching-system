@@ -18,6 +18,7 @@ function daysAgo(d) { return new Date(now.getTime() - d * 24 * 60 * 60 * 1000); 
  'user_me_view', 'requester_business_profile_view'
 ].forEach(function(c) {
   db[c].deleteMany({ _id: /seed_/ });
+  db[c].deleteMany({ _id: /^feed_seed_/ });
 });
 
 // ============================================================
@@ -46,11 +47,11 @@ users.forEach(function(u) { db.user_me_view.updateOne({ _id: u._id }, { $set: u 
 // 2. requester_business_profile_view (5명)
 // ============================================================
 var bprofiles = [
-  { _id: 'bprof_seed_buyer01', userId: 'usr_seed_buyer01', businessName: '(주)푸드마트',         approvalState: 'approved',  createdAt: daysAgo(75) },
-  { _id: 'bprof_seed_buyer02', userId: 'usr_seed_buyer02', businessName: '(주)그린마켓',         approvalState: 'approved',  createdAt: daysAgo(65) },
-  { _id: 'bprof_seed_buyer03', userId: 'usr_seed_buyer03', businessName: '(주)헬스푸드코리아',   approvalState: 'submitted', createdAt: daysAgo(50) },
-  { _id: 'bprof_seed_buyer04', userId: 'usr_seed_buyer04', businessName: '(주)편의점프레시',     approvalState: 'approved',  createdAt: daysAgo(35) },
-  { _id: 'bprof_seed_buyer05', userId: 'usr_seed_buyer05', businessName: '(주)온라인몰다이렉트', approvalState: 'rejected',  createdAt: daysAgo(20) }
+  { _id: 'bprof_seed_buyer01', profileId: 'bprof_seed_buyer01', userId: 'usr_seed_buyer01', businessName: '(주)푸드마트',         businessRegistrationNumber: '123-45-67890', contactName: '김바이어', contactPhone: '02-1234-5678', contactEmail: 'buyer@test.com',  verificationScope: 'domestic', approvalState: 'approved',  submittedAt: daysAgo(75), approvedAt: daysAgo(70), rejectedAt: null, rejectionReason: null, updatedAt: daysAgo(70) },
+  { _id: 'bprof_seed_buyer02', profileId: 'bprof_seed_buyer02', userId: 'usr_seed_buyer02', businessName: '(주)그린마켓',         businessRegistrationNumber: '234-56-78901', contactName: '이그린',   contactPhone: '02-2345-6789', contactEmail: 'buyer2@test.com', verificationScope: 'domestic', approvalState: 'approved',  submittedAt: daysAgo(65), approvedAt: daysAgo(60), rejectedAt: null, rejectionReason: null, updatedAt: daysAgo(60) },
+  { _id: 'bprof_seed_buyer03', profileId: 'bprof_seed_buyer03', userId: 'usr_seed_buyer03', businessName: '(주)헬스푸드코리아',   businessRegistrationNumber: '345-67-89012', contactName: '박건강',   contactPhone: '02-3456-7890', contactEmail: 'buyer3@test.com', verificationScope: 'domestic', approvalState: 'submitted', submittedAt: daysAgo(5),  approvedAt: null,        rejectedAt: null, rejectionReason: null, updatedAt: daysAgo(5) },
+  { _id: 'bprof_seed_buyer04', profileId: 'bprof_seed_buyer04', userId: 'usr_seed_buyer04', businessName: '(주)편의점프레시',     businessRegistrationNumber: '456-78-90123', contactName: '최프레',   contactPhone: '02-4567-8901', contactEmail: 'buyer4@test.com', verificationScope: 'domestic', approvalState: 'approved',  submittedAt: daysAgo(35), approvedAt: daysAgo(30), rejectedAt: null, rejectionReason: null, updatedAt: daysAgo(30) },
+  { _id: 'bprof_seed_buyer05', profileId: 'bprof_seed_buyer05', userId: 'usr_seed_buyer05', businessName: '(주)온라인몰다이렉트', businessRegistrationNumber: '567-89-01234', contactName: '정온라',   contactPhone: '02-5678-9012', contactEmail: 'buyer5@test.com', verificationScope: 'domestic', approvalState: 'rejected',  submittedAt: daysAgo(18), approvedAt: null,        rejectedAt: daysAgo(15), rejectionReason: '사업자등록증 확인 불가', updatedAt: daysAgo(15) }
 ];
 bprofiles.forEach(function(b) { db.requester_business_profile_view.updateOne({ _id: b._id }, { $set: b }, { upsert: true }); });
 
@@ -120,11 +121,11 @@ requests.forEach(function(r) { db.requester_request_summary_view.updateOne({ _id
 // 8. supplier_request_feed_view (open 의뢰 5건)
 // ============================================================
 var feed = [
-  { _id: 'req_seed_01', requestId: 'req_seed_01', requesterBusinessName: '(주)푸드마트',     title: '프로틴바 OEM 제조사 찾습니다',  category: 'snack',    desiredVolume: 10000, targetPriceMin: 800,  targetPriceMax: 1200, certificationRequirement: ['HACCP'],           mode: 'public',   isTargeted: false, createdAt: daysAgo(10) },
-  { _id: 'req_seed_02', requestId: 'req_seed_02', requesterBusinessName: '(주)푸드마트',     title: '과일주스 소량 생산 가능한 업체', category: 'beverage', desiredVolume: 5000,  targetPriceMin: 1500, targetPriceMax: 2500, certificationRequirement: ['HACCP'],           mode: 'public',   isTargeted: false, createdAt: daysAgo(8) },
-  { _id: 'req_seed_03', requestId: 'req_seed_03', requesterBusinessName: '(주)그린마켓',     title: '유기농 그래놀라 ODM 의뢰',       category: 'health',   desiredVolume: 3000,  targetPriceMin: 2000, targetPriceMax: 4000, certificationRequirement: ['HACCP','ORGANIC'], mode: 'public',   isTargeted: false, createdAt: daysAgo(7) },
-  { _id: 'req_seed_04', requestId: 'req_seed_04', requesterBusinessName: '(주)그린마켓',     title: '냉동만두 대량생산 파트너 모집',   category: 'frozen',   desiredVolume: 50000, targetPriceMin: 500,  targetPriceMax: 900,  certificationRequirement: ['HACCP'],           mode: 'targeted', isTargeted: true,  createdAt: daysAgo(5) },
-  { _id: 'req_seed_05', requestId: 'req_seed_05', requesterBusinessName: '(주)편의점프레시', title: 'PB 베이커리 제조 파트너',         category: 'bakery',   desiredVolume: 20000, targetPriceMin: 600,  targetPriceMax: 1000, certificationRequirement: ['HACCP'],           mode: 'public',   isTargeted: false, createdAt: daysAgo(3) }
+  { _id: 'feed_seed_01', feedItemId: 'feed_seed_01', requestId: 'req_seed_01', requesterBusinessName: '(주)푸드마트',     title: '프로틴바 OEM 제조사 찾습니다',  category: 'snack',    desiredVolume: 10000, targetPriceMin: 800,  targetPriceMax: 1200, certificationRequirement: ['HACCP'],           mode: 'public',   isTargeted: false, hasQuoted: false, createdAt: daysAgo(10) },
+  { _id: 'feed_seed_02', feedItemId: 'feed_seed_02', requestId: 'req_seed_02', requesterBusinessName: '(주)푸드마트',     title: '과일주스 소량 생산 가능한 업체', category: 'beverage', desiredVolume: 5000,  targetPriceMin: 1500, targetPriceMax: 2500, certificationRequirement: ['HACCP'],           mode: 'public',   isTargeted: false, hasQuoted: false, createdAt: daysAgo(8) },
+  { _id: 'feed_seed_03', feedItemId: 'feed_seed_03', requestId: 'req_seed_03', requesterBusinessName: '(주)그린마켓',     title: '유기농 그래놀라 ODM 의뢰',       category: 'health',   desiredVolume: 3000,  targetPriceMin: 2000, targetPriceMax: 4000, certificationRequirement: ['HACCP','ORGANIC'], mode: 'public',   isTargeted: false, hasQuoted: false, createdAt: daysAgo(7) },
+  { _id: 'feed_seed_04', feedItemId: 'feed_seed_04', requestId: 'req_seed_04', requesterBusinessName: '(주)그린마켓',     title: '냉동만두 대량생산 파트너 모집',   category: 'frozen',   desiredVolume: 50000, targetPriceMin: 500,  targetPriceMax: 900,  certificationRequirement: ['HACCP'],           mode: 'targeted', isTargeted: true,  hasQuoted: false, createdAt: daysAgo(5) },
+  { _id: 'feed_seed_05', feedItemId: 'feed_seed_05', requestId: 'req_seed_05', requesterBusinessName: '(주)편의점프레시', title: 'PB 베이커리 제조 파트너',         category: 'bakery',   desiredVolume: 20000, targetPriceMin: 600,  targetPriceMax: 1000, certificationRequirement: ['HACCP'],           mode: 'public',   isTargeted: false, hasQuoted: false, createdAt: daysAgo(3) }
 ];
 feed.forEach(function(f) { db.supplier_request_feed_view.updateOne({ _id: f._id }, { $set: f }, { upsert: true }); });
 

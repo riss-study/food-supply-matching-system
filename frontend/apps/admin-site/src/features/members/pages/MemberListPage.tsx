@@ -121,25 +121,13 @@ export function MemberListPage() {
         </table>
       </div>
 
-      {totalPages > 1 && (
+      {totalPages >= 1 && (
         <div className="pagination">
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-          >
-            이전
-          </button>
-          <span className="pagination-info">
-            {page} / {totalPages} 페이지 (총 {filtered.length}건)
-          </span>
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-          >
-            다음
-          </button>
+          <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
+          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
+            <button key={p} className={p === page ? "active" : ""} onClick={() => setPage(p)}>{p}</button>
+          ))}
+          <button disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>›</button>
         </div>
       )}
     </div>
