@@ -219,7 +219,7 @@ class QuoteCommandServiceTest {
         mode = "public",
         title = "견적 테스트 의뢰",
         category = "snack",
-        desiredVolume = 1000,
+        desiredVolume = "1000",
         targetPriceMin = null,
         targetPriceMax = null,
         certificationRequirement = null,

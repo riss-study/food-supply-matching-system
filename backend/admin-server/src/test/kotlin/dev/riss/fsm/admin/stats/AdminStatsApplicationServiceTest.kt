@@ -147,7 +147,7 @@ class AdminStatsApplicationServiceTest {
         mode = "public",
         title = "의뢰 $state",
         category = "snack",
-        desiredVolume = 1000,
+        desiredVolume = "1000",
         targetPriceMin = null,
         targetPriceMax = null,
         certificationRequirement = null,

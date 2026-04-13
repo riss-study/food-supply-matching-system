@@ -333,7 +333,7 @@ export interface RequestDetail {
   mode: RequestMode
   title: string
   category: string
-  desiredVolume: number
+  desiredVolume: string
   targetPriceRange?: TargetPriceRange
   certificationRequirement: string[]
   rawMaterialRule?: RawMaterialRule
@@ -354,7 +354,7 @@ export interface CreateRequestRequest {
   mode: RequestMode
   title: string
   category: string
-  desiredVolume: number
+  desiredVolume: string
   targetPriceRange?: TargetPriceRange
   certificationRequirement?: string[]
   rawMaterialRule?: RawMaterialRule
@@ -372,7 +372,7 @@ export interface CreateRequestResponse {
 
 export interface UpdateRequestRequest {
   title?: string
-  desiredVolume?: number
+  desiredVolume?: string
   targetPriceRange?: TargetPriceRange
   certificationRequirement?: string[]
   rawMaterialRule?: RawMaterialRule
@@ -413,7 +413,7 @@ export interface SupplierRequestFeedItem {
   requestId: string
   title: string
   category: string
-  desiredVolume: number
+  desiredVolume: string
   targetPriceRange?: TargetPriceRange
   mode: RequestMode
   requesterBusinessName: string
@@ -427,7 +427,7 @@ export interface SupplierRequestDetail {
   mode: RequestMode
   title: string
   category: string
-  desiredVolume: number
+  desiredVolume: string
   targetPriceRange?: TargetPriceRange
   certificationRequirement?: string[]
   rawMaterialRule?: RawMaterialRule

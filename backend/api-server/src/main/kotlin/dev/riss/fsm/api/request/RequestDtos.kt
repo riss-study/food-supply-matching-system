@@ -32,7 +32,7 @@ data class CreateRequestRequest(
     @field:Min(1)
     @field:Max(1_000_000_000)
     @Schema(description = "Desired volume", example = "10000", required = true)
-    val desiredVolume: Int,
+    val desiredVolume: String,
     @Schema(description = "Target price range")
     val targetPriceRange: CreateRequestPriceRange?,
     @Schema(description = "Required certifications", example = "[\"HACCP\"]")
@@ -70,7 +70,7 @@ data class UpdateRequestRequest(
     @field:Min(1)
     @field:Max(1_000_000_000)
     @Schema(description = "Desired volume", example = "15000")
-    val desiredVolume: Int?,
+    val desiredVolume: String?,
     @Schema(description = "Target price range")
     val targetPriceRange: CreateRequestPriceRange?,
     @Schema(description = "Required certifications", example = "[\"HACCP\", \"ISO22000\"]")
@@ -125,7 +125,7 @@ data class RequestDetailResponse(
     @Schema(description = "Product category", example = "snack")
     val category: String,
     @Schema(description = "Desired volume", example = "10000")
-    val desiredVolume: Int,
+    val desiredVolume: String,
     @Schema(description = "Target price range")
     val targetPriceRange: CreateRequestPriceRange?,
     @Schema(description = "Required certifications", example = "[\"HACCP\"]")

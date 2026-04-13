@@ -117,9 +117,10 @@ export function SupplierDetailPage() {
                 <Link to={requestUrl} className="btn btn-primary w-full">
                   의뢰하기
                 </Link>
-                <button className="btn btn-secondary w-full" type="button">
+                <Link to={requestUrl} className="btn btn-secondary w-full">
                   메시지 보내기
-                </button>
+                </Link>
+                <p className="text-muted text-sm" style={{ fontSize: 11 }}>의뢰 등록 후 메시지를 보낼 수 있습니다</p>
               </>
             ) : (
               <p className="text-muted text-sm">

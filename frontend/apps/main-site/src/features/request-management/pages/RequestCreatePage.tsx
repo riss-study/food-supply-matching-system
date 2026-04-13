@@ -67,7 +67,7 @@ export function RequestCreatePage() {
     title.length >= 5 &&
     title.length <= 200 &&
     category &&
-    Number(desiredVolume) > 0 &&
+    desiredVolume.trim().length > 0 &&
     (mode === "public" || targetSupplierIds.length > 0)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -78,7 +78,7 @@ export function RequestCreatePage() {
       mode,
       title,
       category,
-      desiredVolume: Number(desiredVolume),
+      desiredVolume: desiredVolume.trim(),
       ...(targetPriceMin || targetPriceMax
         ? {
             targetPriceRange: {
@@ -165,8 +165,7 @@ export function RequestCreatePage() {
                 type="text"
                 value={desiredVolume}
                 onChange={(e) => setDesiredVolume(e.target.value)}
-                placeholder="예: 1,000kg"
-                min={1}
+                placeholder="예: 10,000개, 50톤, 1,000박스"
                 required
               />
             </div>
@@ -210,27 +209,28 @@ export function RequestCreatePage() {
           <div className="form-row">
             <div className="input-field">
               <label>원료 규정</label>
-              <input
-                className="input"
-                type="text"
-                value={rawMaterialRule === "requester_provided" ? "의뢰자 제공" : rawMaterialRule === "supplier_provided" ? "공급자 제공" : ""}
-                onChange={() => {}}
-                onClick={() => setRawMaterialRule((prev) => prev === "requester_provided" ? "supplier_provided" : "requester_provided")}
-                placeholder="원료 관련 요구사항"
-                readOnly
-              />
+              <select
+                className="select"
+                value={rawMaterialRule}
+                onChange={(e) => setRawMaterialRule(e.target.value as typeof rawMaterialRule)}
+              >
+                <option value="">선택하세요</option>
+                <option value="requester_provided">의뢰자 제공</option>
+                <option value="supplier_provided">공급자 제공</option>
+              </select>
             </div>
             <div className="input-field">
               <label>포장 요구사항</label>
-              <input
-                className="input"
-                type="text"
-                value={packagingRequirement === "private_label" ? "프라이빗 라벨" : packagingRequirement === "bulk" ? "벌크" : packagingRequirement === "none" ? "없음" : ""}
-                onChange={() => {}}
-                onClick={() => setPackagingRequirement((prev) => prev === "private_label" ? "bulk" : prev === "bulk" ? "none" : "private_label")}
-                placeholder="포장 사양을 입력하세요"
-                readOnly
-              />
+              <select
+                className="select"
+                value={packagingRequirement}
+                onChange={(e) => setPackagingRequirement(e.target.value as typeof packagingRequirement)}
+              >
+                <option value="">선택하세요</option>
+                <option value="private_label">프라이빗 라벨</option>
+                <option value="bulk">벌크</option>
+                <option value="none">없음</option>
+              </select>
             </div>
           </div>
 

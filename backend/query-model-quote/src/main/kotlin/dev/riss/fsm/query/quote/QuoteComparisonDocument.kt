@@ -13,7 +13,7 @@ data class QuoteComparisonDocument(
     val companyName: String,
     val requestTitle: String,
     val requestCategory: String,
-    val requestDesiredVolume: Int,
+    val requestDesiredVolume: String,
     val unitPriceEstimate: Int,
     val moq: Int,
     val leadTime: Int,

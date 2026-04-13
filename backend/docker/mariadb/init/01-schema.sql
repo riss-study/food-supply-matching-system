@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS request_record (
   mode VARCHAR(20) NOT NULL,
   title VARCHAR(200) NOT NULL,
   category VARCHAR(100) NOT NULL,
-  desired_volume INT NOT NULL,
+  desired_volume VARCHAR(100) NOT NULL,
   target_price_min INT NULL,
   target_price_max INT NULL,
   certification_requirement TEXT NULL,

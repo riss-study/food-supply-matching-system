@@ -12,7 +12,7 @@ data class SupplierRequestFeedDocument(
     val requesterBusinessName: String,
     val title: String,
     val category: String,
-    val desiredVolume: Int,
+    val desiredVolume: String,
     val targetPriceMin: Int?,
     val targetPriceMax: Int?,
     val certificationRequirement: List<String>?,

@@ -90,7 +90,7 @@ export function SupplierRequestDetailPage() {
             <dd>{request.category}</dd>
 
             <dt>희망 수량</dt>
-            <dd>{request.desiredVolume.toLocaleString()}개</dd>
+            <dd>{request.desiredVolume}</dd>
 
             {request.targetPriceRange && (
               <>

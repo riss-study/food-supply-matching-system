@@ -116,15 +116,15 @@ ON DUPLICATE KEY UPDATE type=VALUES(type);
 -- 7. 의뢰 (8건: open4 + closed1 + cancelled1 + draft2)
 -- ============================================================
 INSERT INTO request_record (id, requester_user_id, mode, title, category, desired_volume, target_price_min, target_price_max, certification_requirement, raw_material_rule, packaging_requirement, delivery_requirement, notes, state, created_at, updated_at) VALUES
-('req_seed_01', 'usr_seed_buyer01', 'public',   '프로틴바 OEM 제조사 찾습니다',        'snack',    10000, 800,  1200, 'HACCP',         'supplier_provided', 'private_label', '계약 후 30일 이내', '유기농 원료 사용 필수. 개별포장 50g 기준.', 'open', DATE_SUB(NOW(), INTERVAL 10 DAY), NOW()),
-('req_seed_02', 'usr_seed_buyer01', 'public',   '과일주스 소량 생산 가능한 업체',       'beverage',  5000, 1500, 2500, 'HACCP',         'requester_provided', 'bulk',         '2개월 이내',        'NFC 과일주스. 원료는 당사에서 공급.',       'open', DATE_SUB(NOW(), INTERVAL 8 DAY),  NOW()),
-('req_seed_03', 'usr_seed_buyer02', 'public',   '유기농 그래놀라 ODM 의뢰',             'health',    3000, 2000, 4000, 'HACCP,ORGANIC', 'supplier_provided', 'private_label', '45일 이내',         '유기농 인증 필수. 견과류 기반 그래놀라.',   'open', DATE_SUB(NOW(), INTERVAL 7 DAY),  NOW()),
-('req_seed_04', 'usr_seed_buyer02', 'targeted', '냉동만두 대량생산 파트너 모집',         'frozen',   50000, 500,  900,  'HACCP',         'supplier_provided', 'bulk',         '매월 납품',         '김치만두·고기만두 2종. 월 50톤 이상.',     'open', DATE_SUB(NOW(), INTERVAL 5 DAY),  NOW()),
-('req_seed_05', 'usr_seed_buyer04', 'public',   'PB 베이커리 제조 파트너',               'bakery',   20000, 600,  1000, 'HACCP',         'supplier_provided', 'private_label', '3개월 이내',        '편의점 PB 빵류. 다품종 소량 대응 필요.',   'open', DATE_SUB(NOW(), INTERVAL 3 DAY),  NOW()),
-('req_seed_06', 'usr_seed_buyer01', 'public',   '간장소스류 OEM 제조 완료건',            'sauce',     8000, 2000, 3500, 'HACCP',         'requester_provided', NULL,           '완료',              '간장·불고기소스 2종. 납품 완료.',          'closed', DATE_SUB(NOW(), INTERVAL 30 DAY), NOW()),
-('req_seed_07', 'usr_seed_buyer04', 'targeted', '도시락 반찬류 냉동제품 (취소)',          'frozen',   15000, 700,  1100, 'HACCP',         'supplier_provided', 'bulk',         NULL,                '예산 사정으로 취소.',                       'cancelled', DATE_SUB(NOW(), INTERVAL 20 DAY), NOW()),
-('req_seed_08', 'usr_seed_buyer02', 'public',   '건강음료 시제품 개발 (작성중)',          'beverage',  1000, 3000, 5000, NULL,            NULL,                 NULL,           NULL,                NULL,                                        'draft', DATE_SUB(NOW(), INTERVAL 1 DAY),  NOW())
-ON DUPLICATE KEY UPDATE title=VALUES(title);
+('req_seed_01', 'usr_seed_buyer01', 'public',   '프로틴바 OEM 제조사 찾습니다',        'snack',    '10,000개', 800,  1200, 'HACCP',         'supplier_provided', 'private_label', '계약 후 30일 이내', '유기농 원료 사용 필수. 개별포장 50g 기준.', 'open', DATE_SUB(NOW(), INTERVAL 10 DAY), NOW()),
+('req_seed_02', 'usr_seed_buyer01', 'public',   '과일주스 소량 생산 가능한 업체',       'beverage',  '5,000개', 1500, 2500, 'HACCP',         'requester_provided', 'bulk',         '2개월 이내',        'NFC 과일주스. 원료는 당사에서 공급.',       'open', DATE_SUB(NOW(), INTERVAL 8 DAY),  NOW()),
+('req_seed_03', 'usr_seed_buyer02', 'public',   '유기농 그래놀라 ODM 의뢰',             'health',    '3,000개', 2000, 4000, 'HACCP,ORGANIC', 'supplier_provided', 'private_label', '45일 이내',         '유기농 인증 필수. 견과류 기반 그래놀라.',   'open', DATE_SUB(NOW(), INTERVAL 7 DAY),  NOW()),
+('req_seed_04', 'usr_seed_buyer02', 'targeted', '냉동만두 대량생산 파트너 모집',         'frozen',   '50톤', 500,  900,  'HACCP',         'supplier_provided', 'bulk',         '매월 납품',         '김치만두·고기만두 2종. 월 50톤 이상.',     'open', DATE_SUB(NOW(), INTERVAL 5 DAY),  NOW()),
+('req_seed_05', 'usr_seed_buyer04', 'public',   'PB 베이커리 제조 파트너',               'bakery',   '20,000개', 600,  1000, 'HACCP',         'supplier_provided', 'private_label', '3개월 이내',        '편의점 PB 빵류. 다품종 소량 대응 필요.',   'open', DATE_SUB(NOW(), INTERVAL 3 DAY),  NOW()),
+('req_seed_06', 'usr_seed_buyer01', 'public',   '간장소스류 OEM 제조 완료건',            'sauce',     '8,000개', 2000, 3500, 'HACCP',         'requester_provided', NULL,           '완료',              '간장·불고기소스 2종. 납품 완료.',          'closed', DATE_SUB(NOW(), INTERVAL 30 DAY), NOW()),
+('req_seed_07', 'usr_seed_buyer04', 'targeted', '도시락 반찬류 냉동제품 (취소)',          'frozen',   '15,000개', 700,  1100, 'HACCP',         'supplier_provided', 'bulk',         NULL,                '예산 사정으로 취소.',                       'cancelled', DATE_SUB(NOW(), INTERVAL 20 DAY), NOW()),
+('req_seed_08', 'usr_seed_buyer02', 'public',   '건강음료 시제품 개발 (작성중)',          'beverage',  '1,000개', 3000, 5000, NULL,            NULL,                 NULL,           NULL,                NULL,                                        'draft', DATE_SUB(NOW(), INTERVAL 1 DAY),  NOW())
+ON DUPLICATE KEY UPDATE title=VALUES(title), desired_volume=VALUES(desired_volume);
 
 -- ============================================================
 -- 8. 지정 공급자 링크

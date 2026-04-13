@@ -75,7 +75,7 @@ class QuoteApplicationServiceTest {
             mode = "public",
             title = "Test request",
             category = "snack",
-            desiredVolume = 100,
+            desiredVolume = "100",
             targetPriceMin = null,
             targetPriceMax = null,
             certificationRequirement = null,

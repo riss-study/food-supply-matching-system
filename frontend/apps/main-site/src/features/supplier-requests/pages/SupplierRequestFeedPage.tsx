@@ -66,7 +66,7 @@ export function SupplierRequestFeedPage() {
                 <h2 className="section-title mb-8">{request.title}</h2>
 
                 <p className="text-sm text-muted mb-8">
-                  카테고리: {request.category} &nbsp;&nbsp; 수량: {request.desiredVolume.toLocaleString()}개/월 &nbsp;&nbsp;
+                  카테고리: {request.category} &nbsp;&nbsp; 수량: {request.desiredVolume} &nbsp;&nbsp;
                   {request.targetPriceRange && (
                     <>
                       희망 단가: {request.targetPriceRange.min?.toLocaleString() ?? ""}~{request.targetPriceRange.max?.toLocaleString() ?? ""}원

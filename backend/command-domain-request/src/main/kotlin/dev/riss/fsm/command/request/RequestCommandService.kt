@@ -145,7 +145,7 @@ data class CreateRequestCommand(
     val mode: String,
     val title: String,
     val category: String,
-    val desiredVolume: Int,
+    val desiredVolume: String,
     val targetPriceMin: Int?,
     val targetPriceMax: Int?,
     val certificationRequirement: List<String>?,
@@ -158,7 +158,7 @@ data class CreateRequestCommand(
 
 data class UpdateRequestCommand(
     val title: String? = null,
-    val desiredVolume: Int? = null,
+    val desiredVolume: String? = null,
     val targetPriceMin: Int? = null,
     val targetPriceMax: Int? = null,
     val certificationRequirement: List<String>? = null,

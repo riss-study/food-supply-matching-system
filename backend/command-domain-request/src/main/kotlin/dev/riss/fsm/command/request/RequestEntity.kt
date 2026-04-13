@@ -21,7 +21,7 @@ data class RequestEntity(
     @Column("category")
     val category: String,
     @Column("desired_volume")
-    val desiredVolume: Int,
+    val desiredVolume: String,
     @Column("target_price_min")
     val targetPriceMin: Int?,
     @Column("target_price_max")

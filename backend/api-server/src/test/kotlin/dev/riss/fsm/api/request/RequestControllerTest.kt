@@ -22,7 +22,7 @@ class RequestControllerTest {
             mode = "public",
             title = "수제 과자 제조 의뢰",
             category = "snack",
-            desiredVolume = 10000,
+            desiredVolume = "10000",
             targetPriceRange = CreateRequestPriceRange(min = 500, max = 1000),
             certificationRequirement = listOf("HACCP"),
             rawMaterialRule = "supplier_provided",

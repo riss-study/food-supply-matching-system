@@ -108,7 +108,7 @@ export function RequestDetailPage() {
         requestId: request.requestId,
         request: {
           title: editTitle,
-          desiredVolume: Number(editDesiredVolume),
+          desiredVolume: editDesiredVolume.trim(),
           targetPriceRange:
             editTargetPriceMin || editTargetPriceMax
               ? {
@@ -213,7 +213,7 @@ export function RequestDetailPage() {
             <button
               className="btn btn-primary btn-sm"
               onClick={handleUpdate}
-              disabled={updateMutation.isPending || editTitle.trim().length < 5 || Number(editDesiredVolume) <= 0}
+              disabled={updateMutation.isPending || editTitle.trim().length < 5 || editDesiredVolume.trim().length === 0}
             >
               {updateMutation.isPending ? "저장 중..." : "변경 저장"}
             </button>
@@ -265,7 +265,7 @@ export function RequestDetailPage() {
           <div className="surface">
             <h2 className="section-title mb-12">의뢰 상세</h2>
             <dl className="detail-grid">
-              <dt>희망 수량</dt><dd>{request.desiredVolume.toLocaleString()}개</dd>
+              <dt>희망 수량</dt><dd>{request.desiredVolume}</dd>
               {request.targetPriceRange && (
                 <>
                   <dt>목표 단가</dt>
