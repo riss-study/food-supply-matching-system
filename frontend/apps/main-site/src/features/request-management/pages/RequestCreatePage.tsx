@@ -349,6 +349,14 @@ export function RequestCreatePage() {
           >
             {createMutation.isPending ? "등록 중..." : "의뢰 등록"}
           </button>
+          {!isFormValid && (
+            <p className="text-danger text-sm">
+              {title.length < 5 ? "제목을 5자 이상 입력하세요. " : ""}
+              {!category ? "카테고리를 선택하세요. " : ""}
+              {desiredVolume.trim().length === 0 ? "희망 수량을 입력하세요. " : ""}
+              {mode === "targeted" && targetSupplierIds.length === 0 ? "지정 공급자를 선택하세요." : ""}
+            </p>
+          )}
         </div>
       </form>
     </div>

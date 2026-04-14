@@ -29,9 +29,8 @@ data class CreateRequestRequest(
     @field:NotBlank
     @Schema(description = "Product category", example = "snack", required = true)
     val category: String,
-    @field:Min(1)
-    @field:Max(1_000_000_000)
-    @Schema(description = "Desired volume", example = "10000", required = true)
+    @field:NotBlank
+    @Schema(description = "Desired volume", example = "10,000개", required = true)
     val desiredVolume: String,
     @Schema(description = "Target price range")
     val targetPriceRange: CreateRequestPriceRange?,
