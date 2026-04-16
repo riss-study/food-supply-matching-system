@@ -22,8 +22,8 @@ data class SupplierSearchViewDocument(
     @Indexed
     val categories: List<String>,
     @Indexed
-    val monthlyCapacity: Int,
-    val moq: Int,
+    val monthlyCapacity: String,
+    val moq: String,
     @Indexed
     val oemAvailable: Boolean,
     @Indexed

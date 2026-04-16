@@ -124,7 +124,7 @@ export function RequestCreatePage() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="의뢰 제목을 입력하세요"
+                placeholder="의뢰 제목을 입력하세요 (5~200자)"
                 minLength={5}
                 maxLength={200}
                 required
@@ -188,7 +188,7 @@ export function RequestCreatePage() {
                   setTargetPriceMin(parts[0] || "")
                   setTargetPriceMax(parts[1] || "")
                 }}
-                placeholder="예: 5,000 ~ 8,000원/kg"
+                placeholder="예: 5,000 ~ 8,000원/kg (최소~최대)"
               />
             </div>
             <div className="input-field">
@@ -251,7 +251,7 @@ export function RequestCreatePage() {
               className="textarea"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="공급자에게 전달할 추가 메모나 요청사항을 작성하세요."
+              placeholder="공급자에게 전달할 추가 메모나 요청사항을 작성하세요. (최대 2,000자)"
               maxLength={2000}
               rows={4}
             />

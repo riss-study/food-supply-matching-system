@@ -10,12 +10,10 @@ import java.time.Instant
 
 @Schema(description = "Price range for a request")
 data class CreateRequestPriceRange(
-    @field:Min(1)
-    @Schema(description = "Minimum price", example = "500")
-    val min: Int?,
-    @field:Min(1)
-    @Schema(description = "Maximum price", example = "1000")
-    val max: Int?,
+    @Schema(description = "Minimum price", example = "500원/kg")
+    val min: String?,
+    @Schema(description = "Maximum price", example = "1000원/kg")
+    val max: String?,
 )
 
 @Schema(description = "Request to create a new request")

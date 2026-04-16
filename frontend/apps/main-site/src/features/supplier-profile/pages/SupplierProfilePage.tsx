@@ -100,8 +100,8 @@ function SupplierProfileForm({
       region,
       categories: selectedCategories,
       equipmentSummary: equipmentSummary || undefined,
-      monthlyCapacity: Number(monthlyCapacity),
-      moq: Number(moq),
+      monthlyCapacity: monthlyCapacity.trim(),
+      moq: moq.trim(),
       oemAvailable,
       odmAvailable,
       rawMaterialSupport,
@@ -121,11 +121,11 @@ function SupplierProfileForm({
         <div className="form-row">
           <div className="input-field">
             <label>회사명</label>
-            <input className="input" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="회사명" required disabled={contactOnly} />
+            <input className="input" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="회사명 (2~100자)" required disabled={contactOnly} />
           </div>
           <div className="input-field">
             <label>대표자명</label>
-            <input className="input" value={representativeName} onChange={(e) => setRepresentativeName(e.target.value)} placeholder="대표자명" required disabled={contactOnly} />
+            <input className="input" value={representativeName} onChange={(e) => setRepresentativeName(e.target.value)} placeholder="대표자명 (2~50자)" required disabled={contactOnly} />
           </div>
         </div>
         <div className="form-row">
@@ -181,16 +181,16 @@ function SupplierProfileForm({
       <div className="form-stack">
         <div className="input-field">
           <label>설비 요약</label>
-          <textarea className="textarea" value={equipmentSummary} onChange={(e) => setEquipmentSummary(e.target.value)} placeholder="설비 요약" disabled={contactOnly} />
+          <textarea className="textarea" value={equipmentSummary} onChange={(e) => setEquipmentSummary(e.target.value)} placeholder="보유 설비 요약 (최대 500자)" disabled={contactOnly} />
         </div>
         <div className="form-row">
           <div className="input-field">
             <label>월 생산량</label>
-            <input className="input" type="number" value={monthlyCapacity} onChange={(e) => setMonthlyCapacity(e.target.value)} placeholder="월 생산량" required disabled={contactOnly} />
+            <input className="input" type="text" value={monthlyCapacity} onChange={(e) => setMonthlyCapacity(e.target.value)} placeholder="예: 50,000개, 100톤" required disabled={contactOnly} />
           </div>
           <div className="input-field">
             <label>MOQ</label>
-            <input className="input" type="number" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="MOQ" required disabled={contactOnly} />
+            <input className="input" type="text" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="예: 1,000개, 500kg" required disabled={contactOnly} />
           </div>
         </div>
 
@@ -203,7 +203,7 @@ function SupplierProfileForm({
         </div>
         <div className="input-field">
           <label>소개</label>
-          <textarea className="textarea" value={introduction} onChange={(e) => setIntroduction(e.target.value)} placeholder="소개" disabled={contactOnly} />
+          <textarea className="textarea" value={introduction} onChange={(e) => setIntroduction(e.target.value)} placeholder="회사 소개 (최대 2,000자)" disabled={contactOnly} />
         </div>
         {/* 포트폴리오 이미지 */}
         <h2 className="section-title mt-16">포트폴리오 이미지</h2>

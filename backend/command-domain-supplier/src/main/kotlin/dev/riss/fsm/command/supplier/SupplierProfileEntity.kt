@@ -29,9 +29,9 @@ data class SupplierProfileEntity(
     @Column("equipment_summary")
     val equipmentSummary: String?,
     @Column("monthly_capacity")
-    val monthlyCapacity: Int,
+    val monthlyCapacity: String,
     @Column("moq")
-    val moq: Int,
+    val moq: String,
     @Column("oem_available")
     val oemAvailable: Boolean,
     @Column("odm_available")

@@ -15,21 +15,10 @@ export function QuoteCreatePage() {
   const [error, setError] = useState<string | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
 
-  const parsedUnitPriceEstimate = Number(unitPriceEstimate)
-  const parsedMoq = Number(moq)
-  const parsedLeadTime = Number(leadTime)
-  const parsedSampleCost = sampleCost ? Number(sampleCost) : undefined
-  const hasValidRequiredFields =
-    Number.isInteger(parsedUnitPriceEstimate) &&
-    parsedUnitPriceEstimate > 0 &&
-    Number.isInteger(parsedMoq) &&
-    parsedMoq > 0 &&
-    Number.isInteger(parsedLeadTime) &&
-    parsedLeadTime > 0
-  const hasValidSampleCost =
-    parsedSampleCost === undefined ||
-    (Number.isInteger(parsedSampleCost) && parsedSampleCost >= 0)
-  const canSubmit = hasValidRequiredFields && hasValidSampleCost
+  const canSubmit =
+    unitPriceEstimate.trim().length > 0 &&
+    moq.trim().length > 0 &&
+    leadTime.trim().length > 0
 
   const handlePreSubmit = () => {
     if (!requestId) {
@@ -50,10 +39,10 @@ export function QuoteCreatePage() {
       {
         requestId,
         request: {
-          unitPriceEstimate: parsedUnitPriceEstimate,
-          moq: parsedMoq,
-          leadTime: parsedLeadTime,
-          sampleCost: parsedSampleCost,
+          unitPriceEstimate: unitPriceEstimate.trim(),
+          moq: moq.trim(),
+          leadTime: leadTime.trim(),
+          sampleCost: sampleCost.trim() || undefined,
           note: note || undefined,
         },
       },
@@ -86,26 +75,26 @@ export function QuoteCreatePage() {
             <div className="form-row">
               <div className="input-field">
                 <label>예상 단가</label>
-                <input className="input" type="number" min="1" value={unitPriceEstimate} onChange={(e) => setUnitPriceEstimate(e.target.value)} placeholder="예상 단가" />
+                <input className="input" type="text" value={unitPriceEstimate} onChange={(e) => setUnitPriceEstimate(e.target.value)} placeholder="예: 950원/kg, 1,200원/개" />
               </div>
               <div className="input-field">
-                <label>MOQ</label>
-                <input className="input" type="number" min="1" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="MOQ" />
+                <label>MOQ (최소 주문량)</label>
+                <input className="input" type="text" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="예: 1,000개, 500kg, 2톤" />
               </div>
             </div>
             <div className="form-row">
               <div className="input-field">
-                <label>납기 (일)</label>
-                <input className="input" type="number" min="1" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} placeholder="납기 (일)" />
+                <label>납기</label>
+                <input className="input" type="text" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} placeholder="예: 30일, 3주, 2개월" />
               </div>
               <div className="input-field">
                 <label>샘플 비용 (선택)</label>
-                <input className="input" type="number" min="0" value={sampleCost} onChange={(e) => setSampleCost(e.target.value)} placeholder="샘플 비용 (선택)" />
+                <input className="input" type="text" value={sampleCost} onChange={(e) => setSampleCost(e.target.value)} placeholder="예: 50,000원 (선택)" />
               </div>
             </div>
             <div className="input-field">
               <label>비고 (선택)</label>
-              <textarea className="textarea" rows={5} value={note} onChange={(e) => setNote(e.target.value)} placeholder="비고 (선택)" />
+              <textarea className="textarea" rows={5} value={note} onChange={(e) => setNote(e.target.value)} placeholder="추가 참고사항을 입력하세요 (선택, 최대 1,000자)" maxLength={1000} />
             </div>
             {error && <p className="text-danger text-sm">{error}</p>}
             <button className="btn btn-primary" onClick={handlePreSubmit} disabled={!canSubmit}>
@@ -122,18 +111,18 @@ export function QuoteCreatePage() {
             </p>
             <dl className="detail-grid">
               <dt>예상 단가</dt>
-              <dd className="font-semibold">{parsedUnitPriceEstimate.toLocaleString()}원</dd>
+              <dd className="font-semibold">{unitPriceEstimate}</dd>
 
               <dt>MOQ</dt>
-              <dd className="font-semibold">{parsedMoq.toLocaleString()}개</dd>
+              <dd className="font-semibold">{moq}</dd>
 
               <dt>납기</dt>
-              <dd className="font-semibold">{leadTime}일</dd>
+              <dd className="font-semibold">{leadTime}</dd>
 
               {sampleCost && (
                 <>
                   <dt>샘플 비용</dt>
-                  <dd className="font-semibold">{parsedSampleCost?.toLocaleString()}원</dd>
+                  <dd className="font-semibold">{sampleCost}</dd>
                 </>
               )}
 

@@ -42,8 +42,8 @@ export function SupplierDetailPage() {
           <section className="surface">
             <h2 className="section-title mb-12">제조 역량</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-              <div><p className="text-muted text-sm">월 생산능력</p><p className="font-bold">{data.monthlyCapacity.toLocaleString()}톤</p></div>
-              <div><p className="text-muted text-sm">최소 주문량</p><p className="font-bold">{data.moq.toLocaleString()}kg</p></div>
+              <div><p className="text-muted text-sm">월 생산능력</p><p className="font-bold">{data.monthlyCapacity}</p></div>
+              <div><p className="text-muted text-sm">최소 주문량</p><p className="font-bold">{data.moq}</p></div>
               <div><p className="text-muted text-sm">원료 조달</p><p className="font-bold">{data.rawMaterialSupport ? "자체 조달 가능" : "지원 불가"}</p></div>
               <div><p className="text-muted text-sm">포장 지원</p><p className="font-bold">{data.packagingLabelingSupport ? "지원 가능" : "지원 불가"}</p></div>
             </div>

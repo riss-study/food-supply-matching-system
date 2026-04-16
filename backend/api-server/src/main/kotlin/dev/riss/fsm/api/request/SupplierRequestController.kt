@@ -30,8 +30,8 @@ data class SupplierRequestFeedItem(
 )
 
 data class PriceRangeDto(
-    val min: Int,
-    val max: Int,
+    val min: String,
+    val max: String,
 )
 
 data class SupplierRequestFeedPage(

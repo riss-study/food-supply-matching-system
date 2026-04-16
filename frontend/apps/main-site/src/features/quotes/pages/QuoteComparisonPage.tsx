@@ -146,10 +146,10 @@ export function QuoteComparisonPage() {
               <tr key={quote.quoteId} className={quote.state === "selected" ? "row-selected" : ""}>
                 <td className="font-semibold" data-label="공급자">{quote.companyName}</td>
                 <td className="text-muted" data-label="제출일">{new Date(quote.submittedAt).toLocaleDateString("ko-KR")}</td>
-                <td className="font-semibold" data-label="단가">{quote.unitPriceEstimate.toLocaleString()}원/kg</td>
-                <td data-label="MOQ">{quote.moq.toLocaleString()}</td>
+                <td className="font-semibold" data-label="단가">{quote.unitPriceEstimate}</td>
+                <td data-label="MOQ">{quote.moq}</td>
                 <td data-label="리드타임">{Math.ceil(quote.leadTime / 7)}주</td>
-                <td data-label="샘플비">{quote.sampleCost ? `${quote.sampleCost.toLocaleString()}원` : "무료"}</td>
+                <td data-label="샘플비">{quote.sampleCost ? quote.sampleCost : "무료"}</td>
                 <td data-label="상태"><QuoteStateBadge state={quote.state} /></td>
                 <td data-label="">
                   <div className="flex gap-6">
@@ -199,9 +199,9 @@ export function QuoteComparisonPage() {
         >
           <div className="flex flex-col gap-8">
             <p className="font-semibold">{selectedQuote.companyName}</p>
-            <p>단가 {selectedQuote.unitPriceEstimate.toLocaleString()}원 / MOQ {selectedQuote.moq.toLocaleString()} / 납기 {selectedQuote.leadTime}일</p>
+            <p>단가 {selectedQuote.unitPriceEstimate} / MOQ {selectedQuote.moq} / 납기 {selectedQuote.leadTime}</p>
             {selectedQuote.sampleCost && (
-              <p>샘플 비용: {selectedQuote.sampleCost.toLocaleString()}원</p>
+              <p>샘플 비용: {selectedQuote.sampleCost}</p>
             )}
             <p className="text-muted text-sm">제출일: {new Date(selectedQuote.submittedAt).toLocaleString("ko-KR")}</p>
           </div>
@@ -263,9 +263,9 @@ export function QuoteComparisonPage() {
               {selectConfirmTarget.companyName}의 견적을 선택하시겠습니까?
             </p>
             <div className="surface flex flex-col gap-6">
-              <p>단가: {selectConfirmTarget.unitPriceEstimate.toLocaleString()}원</p>
-              <p>MOQ: {selectConfirmTarget.moq.toLocaleString()}</p>
-              <p>납기: {selectConfirmTarget.leadTime}일</p>
+              <p>단가: {selectConfirmTarget.unitPriceEstimate}</p>
+              <p>MOQ: {selectConfirmTarget.moq}</p>
+              <p>납기: {selectConfirmTarget.leadTime}</p>
             </div>
             <p className="text-danger text-sm font-medium">
               견적을 선택하면 의뢰가 마감되고 다른 견적은 자동으로 거절 처리됩니다. 이 작업은 되돌릴 수 없습니다.

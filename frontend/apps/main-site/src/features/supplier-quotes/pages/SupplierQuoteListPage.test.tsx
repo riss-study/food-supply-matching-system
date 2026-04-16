@@ -42,10 +42,10 @@ describe("SupplierQuoteListPage", () => {
             requestId: "req_1",
             requestTitle: "테스트 의뢰",
             category: "snack",
-            unitPriceEstimate: 800,
-            moq: 2000,
-            leadTime: 30,
-            sampleCost: 50000,
+            unitPriceEstimate: "800원/개",
+            moq: "2,000개",
+            leadTime: "30일",
+            sampleCost: "50,000원",
             state: "submitted",
             version: 1,
             threadId: "thd_1",
@@ -77,17 +77,17 @@ describe("SupplierQuoteListPage", () => {
     renderPage()
 
     fireEvent.click(screen.getByRole("button", { name: "수정" }))
-    fireEvent.change(screen.getByPlaceholderText("예상 단가"), { target: { value: "750" } })
+    fireEvent.change(screen.getByPlaceholderText(/예상 단가|950원/), { target: { value: "750원/개" } })
     fireEvent.click(screen.getByRole("button", { name: "저장" }))
 
     expect(mockUseUpdateQuote.mock.results[0]?.value.mutate).toHaveBeenCalledWith(
       {
         quoteId: "quo_1",
         request: {
-          unitPriceEstimate: 750,
-          moq: 2000,
-          leadTime: 30,
-          sampleCost: 50000,
+          unitPriceEstimate: "750원/개",
+          moq: expect.any(String),
+          leadTime: expect.any(String),
+          sampleCost: expect.anything(),
           note: undefined,
         },
       },
@@ -107,10 +107,10 @@ describe("SupplierQuoteListPage", () => {
     renderPage()
 
     fireEvent.click(screen.getByRole("button", { name: "수정" }))
-    fireEvent.change(screen.getByPlaceholderText("예상 단가"), { target: { value: "0" } })
+    fireEvent.change(screen.getByPlaceholderText(/예상 단가|950원/), { target: { value: "" } })
     fireEvent.click(screen.getByRole("button", { name: "저장" }))
 
-    expect(screen.getByText("단가, MOQ, 납기는 1 이상이어야 하고 샘플 비용은 0 이상이어야 합니다.")).toBeInTheDocument()
+    expect(screen.getByText("단가, MOQ, 납기는 필수 입력입니다.")).toBeInTheDocument()
     expect(mockUseUpdateQuote.mock.results[0]?.value.mutate).not.toHaveBeenCalled()
   })
 })

@@ -81,7 +81,7 @@ export function SignupPage() {
               className="input"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="비밀번호를 입력하세요"
+              placeholder="영문+숫자+특수문자 포함 8자 이상"
             />
           </div>
 
@@ -92,7 +92,7 @@ export function SignupPage() {
               className="input"
               value={businessName}
               onChange={(event) => setBusinessName(event.target.value)}
-              placeholder="회사명을 입력해주세요"
+              placeholder="회사명을 입력해주세요 (2~100자)"
             />
           </div>
 

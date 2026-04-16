@@ -185,18 +185,18 @@ class QuoteCommandService(
 data class SubmitQuoteCommand(
     val requestId: String,
     val supplierProfileId: String,
-    val unitPriceEstimate: Int,
-    val moq: Int,
-    val leadTime: Int,
-    val sampleCost: Int?,
+    val unitPriceEstimate: String,
+    val moq: String,
+    val leadTime: String,
+    val sampleCost: String?,
     val note: String?,
 )
 
 data class UpdateQuoteCommand(
-    val unitPriceEstimate: Int? = null,
-    val moq: Int? = null,
-    val leadTime: Int? = null,
-    val sampleCost: Int? = null,
+    val unitPriceEstimate: String? = null,
+    val moq: String? = null,
+    val leadTime: String? = null,
+    val sampleCost: String? = null,
     val note: String? = null,
     val changedImmutableFields: Boolean = false,
 )

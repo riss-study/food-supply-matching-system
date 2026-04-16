@@ -23,9 +23,9 @@ data class RequestEntity(
     @Column("desired_volume")
     val desiredVolume: String,
     @Column("target_price_min")
-    val targetPriceMin: Int?,
+    val targetPriceMin: String?,
     @Column("target_price_max")
-    val targetPriceMax: Int?,
+    val targetPriceMax: String?,
     @Column("certification_requirement")
     val certificationRequirement: String?,
     @Column("raw_material_rule")

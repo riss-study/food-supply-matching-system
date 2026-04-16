@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import type { RequestState } from "@fsm/types"
 import { useRequestDetail } from "../hooks/useRequestDetail"
+import { usePublishRequest } from "../hooks/usePublishRequest"
 import { useCloseRequest } from "../hooks/useCloseRequest"
 import { useCancelRequest } from "../hooks/useCancelRequest"
 import { useUpdateRequest } from "../hooks/useUpdateRequest"
@@ -29,6 +30,7 @@ export function RequestDetailPage() {
   const { requestId } = useParams<{ requestId: string }>()
   const navigate = useNavigate()
   const { data: request, isLoading, error } = useRequestDetail(requestId ?? "")
+  const publishMutation = usePublishRequest()
   const closeMutation = useCloseRequest()
   const cancelMutation = useCancelRequest()
   const updateMutation = useUpdateRequest()
@@ -78,8 +80,17 @@ export function RequestDetailPage() {
   }
 
   const canEdit = request.state === "draft" || request.state === "open"
+  const canPublish = request.state === "draft"
   const canClose = request.state === "open"
   const canCancel = request.state === "draft" || request.state === "open"
+
+  const handlePublish = () => {
+    if (!window.confirm("의뢰를 게시하시겠습니까? 게시 후에는 공급자가 의뢰를 볼 수 있습니다.")) return
+    setActionError(null)
+    publishMutation.mutate(request.requestId, {
+      onError: () => setActionError("게시 처리에 실패했습니다."),
+    })
+  }
 
   const handleClose = () => {
     if (!window.confirm("의뢰를 마감하시겠습니까? 마감 후에는 더 이상 견적을 받을 수 없습니다.")) return
@@ -361,6 +372,16 @@ export function RequestDetailPage() {
               <p className="text-muted text-sm">아직 견적이 없습니다</p>
             )}
           </div>
+
+          {canPublish && (
+            <button
+              className="btn btn-primary w-full"
+              onClick={handlePublish}
+              disabled={publishMutation.isPending}
+            >
+              {publishMutation.isPending ? "게시 중..." : "의뢰 게시하기"}
+            </button>
+          )}
 
           {(canEdit || canClose) && (
             <div className="flex gap-8 justify-center">

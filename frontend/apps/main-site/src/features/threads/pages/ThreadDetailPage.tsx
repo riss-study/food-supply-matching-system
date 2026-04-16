@@ -63,6 +63,8 @@ export function ThreadDetailPage() {
   }, [threadId, thread, markReadMutation])
 
   const handleSendMessage = useCallback(() => {
+    if (sendMessageMutation.isPending) return
+
     const trimmedText = messageText.trim()
     const hasAttachments = pendingAttachments.length > 0
 
@@ -328,6 +330,7 @@ export function ThreadDetailPage() {
           placeholder="메시지를 입력하세요..."
         />
         <button
+          type="button"
           className={`btn ${canSend ? "btn-primary" : "btn-secondary"}`}
           onClick={handleSendMessage}
           disabled={!canSend}

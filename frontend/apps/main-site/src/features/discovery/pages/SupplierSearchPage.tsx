@@ -168,7 +168,7 @@ export function SupplierSearchPage() {
                   {item.odmAvailable && <span className="badge badge-blue">ODM</span>}
                 </div>
                 <p className="text-muted text-sm">
-                  월 {item.monthlyCapacity.toLocaleString()}톤 &nbsp;&nbsp; MOQ {item.moq.toLocaleString()}
+                  월 {item.monthlyCapacity} &nbsp;&nbsp; MOQ {item.moq}
                 </p>
               </Link>
             ))}

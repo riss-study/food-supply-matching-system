@@ -22,9 +22,7 @@ class RequestApplicationService(
         if (request.mode == "targeted" && request.targetSupplierIds.isNullOrEmpty()) {
             return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "targetSupplierIds are required for targeted mode"))
         }
-        if (request.targetPriceRange?.min != null && request.targetPriceRange.max != null && request.targetPriceRange.min > request.targetPriceRange.max) {
-            return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "targetPriceRange.min must be less than or equal to max"))
-        }
+        // targetPriceRange는 자유 텍스트이므로 min/max 대소 검증 불가
 
         return requesterApprovalGuard.requireApprovedRequester(principal)
             .then(
@@ -57,9 +55,7 @@ class RequestApplicationService(
     }
 
     fun update(principal: AuthenticatedUserPrincipal, requestId: String, request: UpdateRequestRequest): Mono<UpdateRequestResponse> {
-        if (request.targetPriceRange?.min != null && request.targetPriceRange.max != null && request.targetPriceRange.min > request.targetPriceRange.max) {
-            return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "targetPriceRange.min must be less than or equal to max"))
-        }
+        // targetPriceRange는 자유 텍스트이므로 min/max 대소 검증 불가
 
         return requestCommandService.update(
             requestId = requestId,

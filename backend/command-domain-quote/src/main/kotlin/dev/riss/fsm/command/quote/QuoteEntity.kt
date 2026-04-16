@@ -17,13 +17,13 @@ data class QuoteEntity(
     @Column("supplier_profile_id")
     val supplierProfileId: String,
     @Column("unit_price_estimate")
-    val unitPriceEstimate: Int,
+    val unitPriceEstimate: String,
     @Column("moq")
-    val moq: Int,
+    val moq: String,
     @Column("lead_time")
-    val leadTime: Int,
+    val leadTime: String,
     @Column("sample_cost")
-    val sampleCost: Int?,
+    val sampleCost: String?,
     @Column("note")
     val note: String?,
     @Column("state")

@@ -121,8 +121,8 @@ export interface SupplierProfile {
   region: string
   categories: string[]
   equipmentSummary?: string | null
-  monthlyCapacity: number
-  moq: number
+  monthlyCapacity: string
+  moq: string
   oemAvailable: boolean
   odmAvailable: boolean
   rawMaterialSupport: boolean
@@ -143,8 +143,8 @@ export interface CreateSupplierProfileRequest {
   region: string
   categories: string[]
   equipmentSummary?: string
-  monthlyCapacity: number
-  moq: number
+  monthlyCapacity: string
+  moq: string
   oemAvailable: boolean
   odmAvailable: boolean
   rawMaterialSupport: boolean
@@ -160,8 +160,8 @@ export interface UpdateSupplierProfileRequest {
   region?: string
   categories?: string[]
   equipmentSummary?: string
-  monthlyCapacity?: number
-  moq?: number
+  monthlyCapacity?: string
+  moq?: string
   oemAvailable?: boolean
   odmAvailable?: boolean
   rawMaterialSupport?: boolean
@@ -252,8 +252,8 @@ export interface SupplierSearchItemResponse {
   companyName: string
   region: string
   categories: string[]
-  monthlyCapacity: number
-  moq: number
+  monthlyCapacity: string
+  moq: string
   oemAvailable: boolean
   odmAvailable: boolean
   verificationState: string
@@ -279,8 +279,8 @@ export interface SupplierDetailResponse {
   region: string
   categories: string[]
   equipmentSummary?: string | null
-  monthlyCapacity: number
-  moq: number
+  monthlyCapacity: string
+  moq: string
   oemAvailable: boolean
   odmAvailable: boolean
   rawMaterialSupport: boolean
@@ -308,8 +308,8 @@ export type RawMaterialRule = "requester_provided" | "supplier_provided"
 export type PackagingRequirement = "private_label" | "bulk" | "none"
 
 export interface TargetPriceRange {
-  min?: number
-  max?: number
+  min?: string
+  max?: string
 }
 
 export interface TargetSupplier {
@@ -443,18 +443,18 @@ export interface SupplierRequestDetail {
 export type QuoteState = "submitted" | "selected" | "withdrawn" | "declined"
 
 export interface SubmitQuoteRequest {
-  unitPriceEstimate: number
-  moq: number
-  leadTime: number
-  sampleCost?: number
+  unitPriceEstimate: string
+  moq: string
+  leadTime: string
+  sampleCost?: string
   note?: string
 }
 
 export interface UpdateQuoteRequest {
-  unitPriceEstimate?: number
-  moq?: number
-  leadTime?: number
-  sampleCost?: number
+  unitPriceEstimate?: string
+  moq?: string
+  leadTime?: string
+  sampleCost?: string
   note?: string
 }
 
@@ -499,10 +499,10 @@ export interface RequestQuoteSummary {
   quoteId: string
   supplierId: string
   companyName: string
-  unitPriceEstimate: number
-  moq: number
-  leadTime: number
-  sampleCost?: number
+  unitPriceEstimate: string
+  moq: string
+  leadTime: string
+  sampleCost?: string
   state: QuoteState
   threadId: string
   submittedAt: string
@@ -513,10 +513,10 @@ export interface SupplierQuoteSummary {
   requestId: string
   requestTitle: string
   category: string
-  unitPriceEstimate: number
-  moq: number
-  leadTime: number
-  sampleCost?: number
+  unitPriceEstimate: string
+  moq: string
+  leadTime: string
+  sampleCost?: string
   state: QuoteState
   version: number
   threadId: string

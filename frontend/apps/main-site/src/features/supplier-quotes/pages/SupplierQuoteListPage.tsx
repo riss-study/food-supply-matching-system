@@ -18,39 +18,21 @@ export function SupplierQuoteListPage() {
   const { data, isLoading, error } = useSupplierQuotes({ page, size: 20 })
   const updateMutation = useUpdateQuote()
   const withdrawMutation = useWithdrawQuote()
-  const parsedUnitPriceEstimate = Number(unitPriceEstimate)
-  const parsedMoq = Number(moq)
-  const parsedLeadTime = Number(leadTime)
-  const parsedSampleCost = sampleCost ? Number(sampleCost) : undefined
-
   const openEdit = (quote: SupplierQuoteSummary) => {
     setEditing(quote)
     setEditError(null)
-    setUnitPriceEstimate(String(quote.unitPriceEstimate))
-    setMoq(String(quote.moq))
-    setLeadTime(String(quote.leadTime))
-    setSampleCost(quote.sampleCost ? String(quote.sampleCost) : "")
+    setUnitPriceEstimate(quote.unitPriceEstimate)
+    setMoq(quote.moq)
+    setLeadTime(quote.leadTime)
+    setSampleCost(quote.sampleCost ?? "")
     setNote("")
   }
 
   const handleSave = () => {
-    if (!editing) {
-      return
-    }
+    if (!editing) return
 
-    const hasValidRequiredFields =
-      Number.isInteger(parsedUnitPriceEstimate) &&
-      parsedUnitPriceEstimate > 0 &&
-      Number.isInteger(parsedMoq) &&
-      parsedMoq > 0 &&
-      Number.isInteger(parsedLeadTime) &&
-      parsedLeadTime > 0
-    const hasValidSampleCost =
-      parsedSampleCost === undefined ||
-      (Number.isInteger(parsedSampleCost) && parsedSampleCost >= 0)
-
-    if (!hasValidRequiredFields || !hasValidSampleCost) {
-      setEditError("단가, MOQ, 납기는 1 이상이어야 하고 샘플 비용은 0 이상이어야 합니다.")
+    if (!unitPriceEstimate.trim() || !moq.trim() || !leadTime.trim()) {
+      setEditError("단가, MOQ, 납기는 필수 입력입니다.")
       return
     }
 
@@ -59,10 +41,10 @@ export function SupplierQuoteListPage() {
       {
         quoteId: editing.quoteId,
         request: {
-          unitPriceEstimate: parsedUnitPriceEstimate,
-          moq: parsedMoq,
-          leadTime: parsedLeadTime,
-          sampleCost: parsedSampleCost,
+          unitPriceEstimate: unitPriceEstimate.trim(),
+          moq: moq.trim(),
+          leadTime: leadTime.trim(),
+          sampleCost: sampleCost.trim() || undefined,
           note: note || undefined,
         },
       },
@@ -139,9 +121,9 @@ export function SupplierQuoteListPage() {
               {filteredItems.map((quote) => (
                 <tr key={quote.quoteId}>
                   <td className="font-semibold" data-label="관련 의뢰">{quote.requestTitle}</td>
-                  <td data-label="예상 단가">{quote.unitPriceEstimate.toLocaleString()}원</td>
-                  <td data-label="MOQ">{quote.moq.toLocaleString()}</td>
-                  <td data-label="납기">{quote.leadTime}일</td>
+                  <td data-label="예상 단가">{quote.unitPriceEstimate}</td>
+                  <td data-label="MOQ">{quote.moq}</td>
+                  <td data-label="납기">{quote.leadTime}</td>
                   <td data-label="상태">
                     <span className={stateBadgeClass[quote.state] ?? "badge badge-gray"}>{stateLabels[quote.state] ?? quote.state}</span>
                   </td>
@@ -173,21 +155,21 @@ export function SupplierQuoteListPage() {
             <div className="form-row">
               <div className="input-field">
                 <label>예상 단가</label>
-                <input className="input" type="number" min="1" value={unitPriceEstimate} onChange={(e) => setUnitPriceEstimate(e.target.value)} placeholder="예상 단가" />
+                <input className="input" type="text" value={unitPriceEstimate} onChange={(e) => setUnitPriceEstimate(e.target.value)} placeholder="예: 950원/kg" />
               </div>
               <div className="input-field">
                 <label>MOQ</label>
-                <input className="input" type="number" min="1" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="MOQ" />
+                <input className="input" type="text" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="예: 1,000개, 500kg" />
               </div>
             </div>
             <div className="form-row">
               <div className="input-field">
                 <label>납기</label>
-                <input className="input" type="number" min="1" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} placeholder="납기" />
+                <input className="input" type="text" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} placeholder="예: 30일, 3주" />
               </div>
               <div className="input-field">
                 <label>샘플 비용</label>
-                <input className="input" type="number" min="0" value={sampleCost} onChange={(e) => setSampleCost(e.target.value)} placeholder="샘플 비용" />
+                <input className="input" type="text" value={sampleCost} onChange={(e) => setSampleCost(e.target.value)} placeholder="예: 50,000원" />
               </div>
             </div>
             <div className="input-field">

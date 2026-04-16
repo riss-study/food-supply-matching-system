@@ -55,8 +55,19 @@ class SupplierQueryService(
                     .filter { item -> query.region.isNullOrBlank() || item.region.contains(query.region, ignoreCase = true) }
                     .filter { item -> query.oem == null || item.oemAvailable == query.oem }
                     .filter { item -> query.odm == null || item.odmAvailable == query.odm }
-                    .filter { item -> query.minCapacity == null || item.monthlyCapacity >= query.minCapacity }
-                    .filter { item -> query.maxMoq == null || item.moq <= query.maxMoq }
+                    // 수량/단위가 자유 텍스트가 되면서 숫자 비교 불가 — 필터 비활성화
+                    .filter { item ->
+                        query.minCapacity == null || run {
+                            val n = item.monthlyCapacity.filter { it.isDigit() }.toIntOrNull() ?: 0
+                            n >= query.minCapacity!!
+                        }
+                    }
+                    .filter { item ->
+                        query.maxMoq == null || run {
+                            val n = item.moq.filter { it.isDigit() }.toIntOrNull() ?: Int.MAX_VALUE
+                            n <= query.maxMoq!!
+                        }
+                    }
                     .toList()
             }
             .map { items -> sortItems(items, query.sort, query.order) }

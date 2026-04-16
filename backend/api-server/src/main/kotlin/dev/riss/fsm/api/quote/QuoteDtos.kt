@@ -8,13 +8,13 @@ import java.time.Instant
 @Schema(description = "Submit quote request")
 data class SubmitQuoteRequest(
     @field:Min(1)
-    val unitPriceEstimate: Int,
+    val unitPriceEstimate: String,
     @field:Min(1)
-    val moq: Int,
+    val moq: String,
     @field:Min(1)
-    val leadTime: Int,
+    val leadTime: String,
     @field:Min(0)
-    val sampleCost: Int?,
+    val sampleCost: String?,
     @field:Size(max = 1000)
     val note: String?,
 )
@@ -22,13 +22,13 @@ data class SubmitQuoteRequest(
 @Schema(description = "Quote update request")
 data class UpdateQuoteRequest(
     @field:Min(1)
-    val unitPriceEstimate: Int?,
+    val unitPriceEstimate: String?,
     @field:Min(1)
-    val moq: Int?,
+    val moq: String?,
     @field:Min(1)
-    val leadTime: Int?,
+    val leadTime: String?,
     @field:Min(0)
-    val sampleCost: Int?,
+    val sampleCost: String?,
     @field:Size(max = 1000)
     val note: String?,
 )
@@ -75,10 +75,10 @@ data class RequestQuoteListItem(
     val quoteId: String,
     val supplierId: String,
     val companyName: String,
-    val unitPriceEstimate: Int,
-    val moq: Int,
-    val leadTime: Int,
-    val sampleCost: Int?,
+    val unitPriceEstimate: String,
+    val moq: String,
+    val leadTime: String,
+    val sampleCost: String?,
     val state: String,
     val threadId: String,
     val submittedAt: Instant,
@@ -89,10 +89,10 @@ data class SupplierQuoteListItem(
     val requestId: String,
     val requestTitle: String,
     val category: String,
-    val unitPriceEstimate: Int,
-    val moq: Int,
-    val leadTime: Int,
-    val sampleCost: Int?,
+    val unitPriceEstimate: String,
+    val moq: String,
+    val leadTime: String,
+    val sampleCost: String?,
     val state: String,
     val version: Int,
     val threadId: String,
