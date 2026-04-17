@@ -1,0 +1,91 @@
+Phase 2 Task 01 - E2E and CI Baseline
+Date: 2026-04-17
+Status: First green run captured locally; CI workflows committed but not yet executed in GitHub Actions.
+
+================================================================
+1. Playwright harness (SubTask 1.1, 1.2)
+================================================================
+
+Setup:
+- Added @playwright/test ^1.59.1 to @fsm/main-site
+- playwright install chromium (headless shell 147.0.7727.15)
+- Config: frontend/apps/main-site/playwright.config.ts
+  * testDir: ./e2e
+  * webServer: yarn dev (auto-start) with reuseExistingServer in non-CI
+  * baseURL: http://localhost:5173
+- Vitest exclude updated to skip e2e/** so unit tests do not pick them up
+- Scripts:
+  * frontend/apps/main-site: e2e, e2e:install
+  * frontend (root): e2e, e2e:install
+
+Tests written (frontend/apps/main-site/e2e/public-smoke.spec.ts):
+- notice list loads and selects detail (master-detail UI, no URL change)
+- supplier search loads and opens detail (URL transitions to /suppliers/:id)
+
+Local run:
+$ yarn e2e
+Running 2 tests using 2 workers
+  ✓  1 [chromium] › e2e/public-smoke.spec.ts:4:3 › Public smoke flows › notice list loads and selects detail (820ms)
+  ✓  2 [chromium] › e2e/public-smoke.spec.ts:27:3 › Public smoke flows › supplier search loads and opens detail (862ms)
+  2 passed (3.2s)
+
+Stack at time of run:
+- Colima VM: running
+- MariaDB 11.4 on :13306 (volume backend_mariadb-data, 5 notices, 8 supplier profiles)
+- MongoDB 4.4 on :27018 (volume backend_mongodb-data, seeded read views)
+- api-server (Spring Boot 4.0.2, Java 21) on :8080, health UP
+- Vite dev server auto-started by Playwright on :5173
+
+================================================================
+2. CI workflows (SubTask 1.3, 1.4)
+================================================================
+
+Files added (not yet executed remotely; will trigger on next push/PR):
+- .github/workflows/backend-ci.yml
+  * Trigger: push to main + PR with backend/** changes
+  * Java 21 (Temurin) via actions/setup-java@v4
+  * MariaDB 11.4 + Mongo 6 service containers (note: bumped from local 4.4 because Mongo 4.4 has no native amd64 image with healthcheck on GHA Ubuntu)
+  * Applies docker/mariadb/init/*.sql and docker/mongodb/init/*.js before build
+  * ./gradlew --no-daemon build (test included)
+  * Uploads test reports on failure
+
+- .github/workflows/frontend-ci.yml
+  * Trigger: push to main + PR with frontend/** changes
+  * Node 20 + corepack pin yarn@4.5.0
+  * Cache .yarn/cache and .yarn/install-state.gz keyed on yarn.lock
+  * yarn install --immutable
+  * yarn type-check (all workspaces)
+  * yarn workspace @fsm/{main-site,admin-site} test + build
+
+================================================================
+3. Compose + seed automation (SubTask 1.5)
+================================================================
+
+CI uses GHA service containers (no docker compose needed inside the runner).
+Seed scripts execute via `mariadb` and `mongosh` clients invoked directly against the service container ports (13306 / 27018).
+
+Local Compose (backend/compose.local.{mariadb,mongodb}.yml + scripts/local/*.sh) remains unchanged and continues to work for developers.
+
+================================================================
+4. PR guard policy (SubTask 1.6) - PARTIAL
+================================================================
+
+Workflows are defined but branch-protection rules in GitHub repo settings have not been changed (out of file-scope; needs admin in GH UI).
+Recommended next step: enable "Require status checks to pass before merging" with `backend-ci / build-test` and `frontend-ci / build-test` as required checks.
+e2e workflow intentionally not included as a required check yet (advisory until stable).
+
+================================================================
+5. Decision notes
+================================================================
+
+- Mongo image version differs between local (4.4) and CI (6). Local image was chosen at Phase 1 and should be revisited in Phase 2 Task 04 / 07 if migration risks emerge.
+- Playwright lives inside @fsm/main-site rather than a new e2e workspace because current smoke targets only the main-site routes. If admin-site coverage gets added later, extract to frontend/e2e package.
+- Node 20 is now required to run e2e locally (Playwright >= 1.59 needs Node 18.19+; chose 20 to align with CI).
+
+================================================================
+6. Outstanding for Task 01 closure
+================================================================
+
+- [ ] Push branch and confirm both CI workflows go green at least once.
+- [ ] Configure GitHub branch protection (admin action).
+- [ ] Decide whether to add a third smoke flow (signup → login → request) before closing Task 01 or defer to Task 02 cleanup.

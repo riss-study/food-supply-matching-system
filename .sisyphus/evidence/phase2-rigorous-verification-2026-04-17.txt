@@ -1,0 +1,186 @@
+Phase 2 Rigorous Verification Report
+Date: 2026-04-17
+Scope: API spec audit, e2e expansion, UX checks, repeated stability runs
+Status: PASS (no blockers found)
+
+================================================================
+0. Stack at time of verification
+================================================================
+
+- Colima VM: running (arm64, virtiofs)
+- MariaDB 11.4 on :13306 (volume backend_mariadb-data, healthy)
+  * user_account: 15, business_profile: present, supplier_profile: 8,
+    notice: 5, request_record: 8, quote: 6
+- MongoDB 4.4 on :27018 (volume backend_mongodb-data, healthy)
+  * 9 read views seeded
+- api-server (Spring Boot 4.0.2, Java 21) on :8080, /api/bootstrap/health 200
+- admin-server on :8081, /api/admin/bootstrap/health 200
+- Vite dev servers auto-managed by Playwright:
+  * main-site on :5173
+  * admin-site on :5174
+
+Seed credentials (all use password Test1234!):
+- ADMIN: admin@test.com, admin2@test.com
+- REQUESTER: buyer@test.com, buyer2..5@test.com
+- SUPPLIER: supplier@test.com, supplier2..8@test.com
+
+================================================================
+1. API Spec Audit (.sisyphus/drafts/api-spec.md)
+================================================================
+
+Method:
+- Independent agent walked all @RestController + @*Mapping in
+  backend/{api,admin}-server and produced an inventory.
+- Compared against documented endpoint sections in api-spec.md.
+- Cross-checked against runtime OpenAPI dump:
+  curl http://localhost:8080/v3/api-docs   (api-server: 41 endpoints)
+  curl http://localhost:8081/v3/api-docs   (admin-server: 14 endpoints)
+
+Diff found (in code, not in docs) - all now resolved:
+1. GET  /api/suppliers/categories            (SupplierDiscoveryController:135)
+2. GET  /api/suppliers/regions               (SupplierDiscoveryController:147)
+3. POST /api/requests/{requestId}/publish    (RequestController:99)
+4. GET  /api/supplier/requests               (SupplierRequestController:75)
+5. GET  /api/supplier/requests/{requestId}   (SupplierRequestController:110)
+6. GET  /api/supplier/quotes                 (SupplierQuoteController:24)
+7. POST /api/attachments                     (AttachmentController, generic upload)
+
+Schema clarifications:
+- GET /api/suppliers/{supplierId} response: added missing `logoUrl` field.
+
+Doc updated:
+- api-spec.md sections 3.4, 3.5, 3.6, new 3.10 (첨부파일).
+- Document History entry: version 1.4, dated 2026-04-17.
+
+In docs but not in code: NONE.
+Path/method mismatch: NONE.
+Path-by-path inventory cross-check: aligned with /v3/api-docs dump after edits.
+
+================================================================
+2. E2E Suite Expansion
+================================================================
+
+Playwright config: frontend/apps/main-site/playwright.config.ts
+- Two projects: main-site (baseURL :5173), admin-site (baseURL :5174)
+- testIgnore / testMatch split by `admin-` filename prefix
+- webServer entries auto-start both Vite dev servers (reuseExistingServer
+  outside CI; full timeout 120s)
+- retain-on-failure trace + screenshot
+
+Test files added (all under frontend/apps/main-site/e2e/):
+- public-smoke.spec.ts        (notice, supplier discovery)        -- 2 tests
+- auth-smoke.spec.ts          (login success/fail/logout)         -- 4 tests
+- nav-smoke.spec.ts           (top nav, brand link, public state) -- 3 tests
+- authed-nav-smoke.spec.ts    (requester + supplier role nav)     -- 5 tests
+- admin-smoke.spec.ts         (admin login, role guards)          -- 4 tests
+- ux-checks.spec.ts           (public-page console + 404 + guards) -- 16 tests
+- ux-authed-audit.spec.ts     (authed-page console + form rules)  -- 11 tests
+
+Total: 7 spec files, 45 tests across two projects.
+
+Coverage by user role:
+- Public:     notices, suppliers, login, signup, home, navigation
+- Requester:  login, dashboard, /requests, /threads, /business-profile
+- Supplier:   login, dashboard, /supplier/profile, /supplier/requests,
+              /supplier/quotes, /threads
+- Admin:      login (admin-server), /reviews queue redirect, role rejection
+
+Console-error sweep:
+- 5 public paths and 9 authenticated paths walked; 0 console errors,
+  0 page errors observed across all runs.
+
+================================================================
+3. UX Checks (codified into tests)
+================================================================
+
+Verified behaviors:
+- Login submit button stays disabled until both email + password are filled.
+- Login interceptor: 401 -> clearAuth + window.location.href = "/login"
+  -> page bounces back to /login with form visible (verified in both
+     main-site and admin-site).
+- Logout button on dashboard returns to public state (login link visible
+  again in header).
+- Protected routes (/dashboard, /requests, /threads) redirect unauthenticated
+  visits to /login.
+- Unknown route catches via `<Route path="*" element={<Navigate to="/" replace />} />`
+  in both apps.
+- Global header (잇다 brand) present on every public page.
+- Each major page has at least one h1/h2 heading.
+- Non-admin users cannot complete admin login (admin-server rejects).
+
+Known UX state observations (NOT failures, just current state):
+- Notice list page is master-detail (selecting an item updates the right
+  pane in place; URL does not change). Tests adjusted to this layout.
+- Dashboard text differs by role:
+  requester -> "공급자 탐색, 내 의뢰, 메시지 화면으로 이동..."
+  supplier  -> "의뢰 피드, 내 견적, 메시지 화면으로 이동..."
+- React Router future-flag warnings still appear in dev console; suppressed
+  in console collector. Will be cleaned by Phase 2 Task 02.
+
+================================================================
+4. Stability — Repeated Runs
+================================================================
+
+Single suite size: 45 tests (across two projects)
+
+Round 1: yarn e2e × 5 (full suite each run)
+  run 1: 45 passed (14.2s)
+  run 2: 45 passed (14.0s)
+  run 3: 45 passed (13.6s)
+  run 4: 45 passed (13.7s)
+  run 5: 45 passed (13.3s)
+  --> 225 / 225 passed, 0 flaky
+
+Round 2 (earlier): yarn playwright test --repeat-each=3
+  --> 54 / 54 passed (18 tests × 3 reps), 0 flaky
+
+Round 3 (earlier): yarn e2e × 5 with smaller suite (18 tests)
+  --> 90 / 90 passed, 0 flaky
+
+Total verified test executions in this session: 369 / 369 PASSED.
+
+================================================================
+5. Findings & Action Items
+================================================================
+
+✓ All discovered API spec gaps closed (api-spec.md v1.4).
+✓ E2E baseline now covers public + requester + supplier + admin entry flows.
+✓ No flaky tests across 5+ consecutive runs.
+✓ No console errors on any walked page (public or authenticated).
+
+Open items NOT touched in this verification round (deliberate scope):
+- Phase 2 Task 01 closure (CI workflow merge into GitHub + branch protection)
+- Phase 2 Task 02 (router future-flag warnings cleanup) — observed but parked.
+- Deeper end-to-end flows that mutate state (signup -> create request ->
+  submit quote -> open thread). Currently we exercise reachability of every
+  page but not full multi-actor business flows. Suggested for Phase 2 Wave 3.
+- admin-site UI tests beyond login (review queue interactions, notice
+  publish flow). Recommended once Task 03 history/audit work begins.
+
+================================================================
+6. Reproduce
+================================================================
+
+# Bring up infra (assumes Java 21 + Node 20 + Colima already installed)
+cd backend
+docker compose -f compose.local.mariadb.yml up -d
+docker compose -f compose.local.mongodb.yml up -d
+./scripts/local/init-mariadb.sh && ./scripts/local/seed-mariadb.sh
+./scripts/local/init-mongodb.sh && ./scripts/local/seed-mongodb.sh
+
+# Backend (two terminals)
+JAVA_HOME=~/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home \
+  ./gradlew :api-server:bootRun --args='--spring.profiles.active=local'
+JAVA_HOME=~/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home \
+  ./gradlew :admin-server:bootRun --args='--spring.profiles.active=local'
+
+# E2E (auto-starts Vite for both apps)
+cd frontend
+PATH="/opt/homebrew/opt/node@20/bin:$PATH" yarn e2e
+
+# Stability check
+for i in 1 2 3 4 5; do PATH="/opt/homebrew/opt/node@20/bin:$PATH" yarn e2e; done
+
+# OpenAPI dumps for spec re-check
+curl -s http://localhost:8080/v3/api-docs | jq '.paths | keys'
+curl -s http://localhost:8081/v3/api-docs | jq '.paths | keys'
