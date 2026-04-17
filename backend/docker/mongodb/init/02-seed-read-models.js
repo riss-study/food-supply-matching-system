@@ -106,14 +106,14 @@ reviewDetails.forEach(function(r) { db.admin_review_detail_view.updateOne({ _id:
 // 7. requester_request_summary_view (8건)
 // ============================================================
 var requests = [
-  { _id: 'req_seed_01', requestId: 'req_seed_01', title: '프로틴바 OEM 제조사 찾습니다',   category: 'snack',    state: 'open',      mode: 'public',   quoteCount: 2, createdAt: daysAgo(10) },
-  { _id: 'req_seed_02', requestId: 'req_seed_02', title: '과일주스 소량 생산 가능한 업체',  category: 'beverage', state: 'open',      mode: 'public',   quoteCount: 1, createdAt: daysAgo(8) },
-  { _id: 'req_seed_03', requestId: 'req_seed_03', title: '유기농 그래놀라 ODM 의뢰',        category: 'health',   state: 'open',      mode: 'public',   quoteCount: 1, createdAt: daysAgo(7) },
-  { _id: 'req_seed_04', requestId: 'req_seed_04', title: '냉동만두 대량생산 파트너 모집',    category: 'frozen',   state: 'open',      mode: 'targeted', quoteCount: 0, createdAt: daysAgo(5) },
-  { _id: 'req_seed_05', requestId: 'req_seed_05', title: 'PB 베이커리 제조 파트너',          category: 'bakery',   state: 'open',      mode: 'public',   quoteCount: 1, createdAt: daysAgo(3) },
-  { _id: 'req_seed_06', requestId: 'req_seed_06', title: '간장소스류 OEM 제조 완료건',       category: 'sauce',    state: 'closed',    mode: 'public',   quoteCount: 1, createdAt: daysAgo(30) },
-  { _id: 'req_seed_07', requestId: 'req_seed_07', title: '도시락 반찬류 냉동제품 (취소)',     category: 'frozen',   state: 'cancelled', mode: 'targeted', quoteCount: 0, createdAt: daysAgo(20) },
-  { _id: 'req_seed_08', requestId: 'req_seed_08', title: '건강음료 시제품 개발 (작성중)',     category: 'beverage', state: 'draft',     mode: 'public',   quoteCount: 0, createdAt: daysAgo(1) }
+  { _id: 'req_seed_01', requestId: 'req_seed_01', requesterUserId: 'usr_seed_buyer01', title: '프로틴바 OEM 제조사 찾습니다',   category: 'snack',    state: 'open',      mode: 'public',   quoteCount: 2, createdAt: daysAgo(10), updatedAt: now },
+  { _id: 'req_seed_02', requestId: 'req_seed_02', requesterUserId: 'usr_seed_buyer01', title: '과일주스 소량 생산 가능한 업체',  category: 'beverage', state: 'open',      mode: 'public',   quoteCount: 1, createdAt: daysAgo(8), updatedAt: now },
+  { _id: 'req_seed_03', requestId: 'req_seed_03', requesterUserId: 'usr_seed_buyer02', title: '유기농 그래놀라 ODM 의뢰',        category: 'health',   state: 'open',      mode: 'public',   quoteCount: 1, createdAt: daysAgo(7), updatedAt: now },
+  { _id: 'req_seed_04', requestId: 'req_seed_04', requesterUserId: 'usr_seed_buyer02', title: '냉동만두 대량생산 파트너 모집',    category: 'frozen',   state: 'open',      mode: 'targeted', quoteCount: 0, createdAt: daysAgo(5), updatedAt: now },
+  { _id: 'req_seed_05', requestId: 'req_seed_05', requesterUserId: 'usr_seed_buyer04', title: 'PB 베이커리 제조 파트너',          category: 'bakery',   state: 'open',      mode: 'public',   quoteCount: 1, createdAt: daysAgo(3), updatedAt: now },
+  { _id: 'req_seed_06', requestId: 'req_seed_06', requesterUserId: 'usr_seed_buyer01', title: '간장소스류 OEM 제조 완료건',       category: 'sauce',    state: 'closed',    mode: 'public',   quoteCount: 1, createdAt: daysAgo(30), updatedAt: now },
+  { _id: 'req_seed_07', requestId: 'req_seed_07', requesterUserId: 'usr_seed_buyer04', title: '도시락 반찬류 냉동제품 (취소)',     category: 'frozen',   state: 'cancelled', mode: 'targeted', quoteCount: 0, createdAt: daysAgo(20), updatedAt: now },
+  { _id: 'req_seed_08', requestId: 'req_seed_08', requesterUserId: 'usr_seed_buyer02', title: '건강음료 시제품 개발 (작성중)',     category: 'beverage', state: 'draft',     mode: 'public',   quoteCount: 0, createdAt: daysAgo(1), updatedAt: now }
 ];
 requests.forEach(function(r) { db.requester_request_summary_view.updateOne({ _id: r._id }, { $set: r }, { upsert: true }); });
 

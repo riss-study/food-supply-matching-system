@@ -565,8 +565,8 @@ Content-Type: application/json
   "region": "경기도 화성시",
   "categories": ["snack", "beverage"],
   "equipmentSummary": "자동 포장기 3대",
-  "monthlyCapacity": 50000,
-  "moq": 1000,
+  "monthlyCapacity": "50000",
+  "moq": "1000",
   "oemAvailable": true,
   "odmAvailable": false,
   "rawMaterialSupport": true,
@@ -584,8 +584,8 @@ Content-Type: application/json
 | region | string | O | 지역 문자열 |
 | categories | array | O | 최소 1개, 카테고리 코드 |
 | equipmentSummary | string | X | 0-500자 |
-| monthlyCapacity | integer | O | 양수 |
-| moq | integer | O | 양수 |
+| monthlyCapacity | string | O | 숫자 문자열 (예: "50000") |
+| moq | string | O | 숫자 문자열 (예: "1000") |
 | oemAvailable | boolean | O | - |
 | odmAvailable | boolean | O | - |
 | rawMaterialSupport | boolean | X | - |
@@ -648,8 +648,8 @@ Authorization: Bearer <JWT>
     "region": "경기도 화성시",
     "categories": ["snack", "beverage"],
     "equipmentSummary": "자동 포장기 3대",
-    "monthlyCapacity": 50000,
-    "moq": 1000,
+    "monthlyCapacity": "50000",
+    "moq": "1000",
     "oemAvailable": true,
     "odmAvailable": false,
     "rawMaterialSupport": true,
@@ -674,8 +674,8 @@ Authorization: Bearer <JWT>
 | region | string | 지역 |
 | categories | array | 카테고리 코드 목록 |
 | equipmentSummary | string | 보유 설비 요약 |
-| monthlyCapacity | integer | 월 생산 가능량 |
-| moq | integer | 최소 주문 수량 |
+| monthlyCapacity | string | 월 생산 가능량 |
+| moq | string | 최소 주문 수량 |
 | oemAvailable | boolean | OEM 가능 여부 |
 | odmAvailable | boolean | ODM 가능 여부 |
 | rawMaterialSupport | boolean | 원재료 제공 가능 여부 |
@@ -705,7 +705,7 @@ Content-Type: application/json
 ```json
 {
   "equipmentSummary": "자동 포장기 5대",
-  "monthlyCapacity": 80000
+  "monthlyCapacity": "80000"
 }
 ```
 
@@ -718,8 +718,8 @@ Content-Type: application/json
 | region | string | X | 지역 문자열 |
 | categories | array | X | 최소 1개 |
 | equipmentSummary | string | X | 0-500자 |
-| monthlyCapacity | integer | X | 양수 |
-| moq | integer | X | 양수 |
+| monthlyCapacity | string | X | 숫자 문자열 |
+| moq | string | X | 숫자 문자열 |
 | oemAvailable | boolean | X | - |
 | odmAvailable | boolean | X | - |
 | rawMaterialSupport | boolean | X | - |
@@ -904,8 +904,8 @@ Authorization: Bearer <JWT>  (선택)
       "companyName": "예시 식품",
       "region": "경기도 화성시",
       "categories": ["snack"],
-      "monthlyCapacity": 50000,
-      "moq": 1000,
+      "monthlyCapacity": "50000",
+      "moq": "1000",
       "oemAvailable": true,
       "odmAvailable": false,
       "verificationState": "approved",
@@ -931,8 +931,8 @@ Authorization: Bearer <JWT>  (선택)
 | companyName | string | 회사명 |
 | region | string | 지역 |
 | categories | array | 카테고리 코드 목록 |
-| monthlyCapacity | integer | 월 생산 가능량 |
-| moq | integer | 최소 주문 수량 |
+| monthlyCapacity | string | 월 생산 가능량 |
+| moq | string | 최소 주문 수량 |
 | oemAvailable | boolean | OEM 가능 여부 |
 | odmAvailable | boolean | ODM 가능 여부 |
 | verificationState | string | `approved` (목록에는 승인된 공급자만) |
@@ -975,8 +975,8 @@ Authorization: Bearer <JWT>  (선택)
     "region": "경기도 화성시",
     "categories": ["snack", "beverage"],
     "equipmentSummary": "자동 포장기 3대",
-    "monthlyCapacity": 50000,
-    "moq": 1000,
+    "monthlyCapacity": "50000",
+    "moq": "1000",
     "oemAvailable": true,
     "odmAvailable": false,
     "rawMaterialSupport": true,
@@ -1003,8 +1003,8 @@ Authorization: Bearer <JWT>  (선택)
 | region | string | 지역 |
 | categories | array | 카테고리 코드 목록 |
 | equipmentSummary | string | 보유 설비 요약 |
-| monthlyCapacity | integer | 월 생산 가능량 |
-| moq | integer | 최소 주문 수량 |
+| monthlyCapacity | string | 월 생산 가능량 |
+| moq | string | 최소 주문 수량 |
 | oemAvailable | boolean | OEM 가능 여부 |
 | odmAvailable | boolean | ODM 가능 여부 |
 | rawMaterialSupport | boolean | 원재료 제공 가능 여부 |
@@ -1047,8 +1047,8 @@ Content-Type: application/json
   "mode": "public",
   "title": "수제 과자 제조 의뢰",
   "category": "snack",
-  "desiredVolume": 10000,
-  "targetPriceRange": { "min": 500, "max": 1000 },
+  "desiredVolume": "10,000개",
+  "targetPriceRange": { "min": "500원/kg", "max": "1000원/kg" },
   "certificationRequirement": ["HACCP"],
   "rawMaterialRule": "supplier_provided",
   "packagingRequirement": "private_label",
@@ -1064,10 +1064,10 @@ Content-Type: application/json
 | mode | string | O | `public` or `targeted` |
 | title | string | O | 5-200자 |
 | category | string | O | 카테고리 코드 |
-| desiredVolume | integer | O | 양수 |
+| desiredVolume | string | O | 자유 텍스트 (예: "10,000개") |
 | targetPriceRange | object | X | {min, max} |
-| targetPriceRange.min | integer | X | 양수 |
-| targetPriceRange.max | integer | X | 양수, min보다 크거나 같아야 함 |
+| targetPriceRange.min | string | X | 자유 텍스트 (예: "500원/kg") |
+| targetPriceRange.max | string | X | 자유 텍스트 (예: "1000원/kg") |
 | certificationRequirement | array | X | 인증 코드 목록 |
 | rawMaterialRule | string | X | `requester_provided` or `supplier_provided` |
 | packagingRequirement | string | X | `private_label`, `bulk`, `none` |
@@ -1190,8 +1190,8 @@ Authorization: Bearer <JWT>
     "mode": "public",
     "title": "수제 과자 제조 의뢰",
     "category": "snack",
-    "desiredVolume": 10000,
-    "targetPriceRange": { "min": 500, "max": 1000 },
+    "desiredVolume": "10,000개",
+    "targetPriceRange": { "min": "500원/kg", "max": "1000원/kg" },
     "certificationRequirement": ["HACCP"],
     "rawMaterialRule": "supplier_provided",
     "packagingRequirement": "private_label",
@@ -1216,10 +1216,10 @@ Authorization: Bearer <JWT>
 | mode | string | `public` or `targeted` |
 | title | string | 의뢰 제목 |
 | category | string | 카테고리 코드 |
-| desiredVolume | integer | 희망 생산량 |
+| desiredVolume | string | 희망 생산량 |
 | targetPriceRange | object | 희망 단가 범위 |
-| targetPriceRange.min | integer | 최소 단가 |
-| targetPriceRange.max | integer | 최대 단가 |
+| targetPriceRange.min | string | 최소 단가 |
+| targetPriceRange.max | string | 최대 단가 |
 | certificationRequirement | array | 요구 인증 목록 |
 | rawMaterialRule | string | 원재료 규칙 |
 | packagingRequirement | string | 포장/라벨링 요구 |
@@ -1262,7 +1262,7 @@ Content-Type: application/json
 **Request Body:** (일부 필드만 포함 가능)
 ```json
 {
-  "desiredVolume": 15000,
+  "desiredVolume": "15,000개",
   "notes": "수정된 비고 내용"
 }
 ```
@@ -1272,7 +1272,7 @@ Content-Type: application/json
 | 필드 | 타입 | 필수 | 제약 |
 |------|------|------|------|
 | title | string | X | 5-200자 |
-| desiredVolume | integer | X | 양수 |
+| desiredVolume | string | X | 자유 텍스트 |
 | targetPriceRange | object | X | {min, max} |
 | certificationRequirement | array | X | 인증 코드 목록 |
 | rawMaterialRule | string | X | `requester_provided` or `supplier_provided` |
@@ -1486,10 +1486,10 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "unitPriceEstimate": 800,
-  "moq": 2000,
-  "leadTime": 30,
-  "sampleCost": 50000,
+  "unitPriceEstimate": "800",
+  "moq": "2000",
+  "leadTime": "30",
+  "sampleCost": "50000",
   "note": "대량 주문 시 추가 할인 가능"
 }
 ```
@@ -1498,10 +1498,10 @@ Content-Type: application/json
 
 | 필드 | 타입 | 필수 | 제약 |
 |------|------|------|------|
-| unitPriceEstimate | integer | O | 양수 (원 단위) |
-| moq | integer | O | 양수 |
-| leadTime | integer | O | 양수 (일) |
-| sampleCost | integer | X | 0 이상 |
+| unitPriceEstimate | string | O | 숫자 문자열, 양수 (원 단위) |
+| moq | string | O | 숫자 문자열, 양수 |
+| leadTime | string | O | 숫자 문자열, 양수 (일) |
+| sampleCost | string | X | 숫자 문자열, 0 이상 |
 | note | string | X | 0-1000자 |
 
 **Success Response (201):**
@@ -1573,10 +1573,10 @@ Authorization: Bearer <JWT>
       "quoteId": "quo_01HQX...",
       "supplierId": "sprof_01",
       "companyName": "예시 식품",
-      "unitPriceEstimate": 800,
-      "moq": 2000,
-      "leadTime": 30,
-      "sampleCost": 50000,
+      "unitPriceEstimate": "800",
+      "moq": "2000",
+      "leadTime": "30",
+      "sampleCost": "50000",
       "state": "submitted",
       "submittedAt": "2026-03-12T11:00:00Z"
     }
@@ -1599,10 +1599,10 @@ Authorization: Bearer <JWT>
 | quoteId | string | 견적 ID |
 | supplierId | string | 공급자 프로필 ID |
 | companyName | string | 회사명 |
-| unitPriceEstimate | integer | 예상 단가 (원) |
-| moq | integer | 최소 주문 수량 |
-| leadTime | integer | 납기 (일) |
-| sampleCost | integer | 샘플 비용 (원) |
+| unitPriceEstimate | string | 예상 단가 (숫자 문자열, 원 단위) |
+| moq | string | 최소 주문 수량 (숫자 문자열) |
+| leadTime | string | 납기 (숫자 문자열, 일) |
+| sampleCost | string | 샘플 비용 (숫자 문자열, 원 단위) |
 | state | string | 견적 상태 |
 | submittedAt | string | 제출 시각 (ISO 8601) |
 
@@ -1629,10 +1629,10 @@ Content-Type: application/json
 **Request Body:** (수정 가능 필드만)
 ```json
 {
-  "unitPriceEstimate": 750,
-  "moq": 1500,
-  "leadTime": 25,
-  "sampleCost": 40000,
+  "unitPriceEstimate": "750",
+  "moq": "1500",
+  "leadTime": "25",
+  "sampleCost": "40000",
   "note": "조건 수정"
 }
 ```
@@ -1641,10 +1641,10 @@ Content-Type: application/json
 
 | 필드 | 타입 | 필수 | 제약 |
 |------|------|------|------|
-| unitPriceEstimate | integer | X | 양수 |
-| moq | integer | X | 양수 |
-| leadTime | integer | X | 양수 (일) |
-| sampleCost | integer | X | 0 이상 |
+| unitPriceEstimate | string | X | 숫자 문자열, 양수 |
+| moq | string | X | 숫자 문자열, 양수 |
+| leadTime | string | X | 숫자 문자열, 양수 (일) |
+| sampleCost | string | X | 숫자 문자열, 0 이상 |
 | note | string | X | 0-1000자 |
 
 **Success Response (200):**
@@ -2453,6 +2453,73 @@ Authorization: Bearer <JWT>
 
 ## 4. admin-server Endpoints
 
+### 4.0 관리자 인증
+
+#### POST /api/admin/auth/login
+
+**설명:** 관리자 전용 로그인 (admin 역할만 허용)
+
+**인증:** 불필요
+
+**Request Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "email": "admin@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Request Body Fields:**
+
+| 필드 | 타입 | 필수 | 제약 |
+|------|------|------|------|
+| email | string | O | 이메일 형식 |
+| password | string | O | 8-100자 |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Login successful",
+  "data": {
+    "accessToken": "eyJhbG...",
+    "refreshToken": "eyJhbG...",
+    "expiresIn": 3600,
+    "user": {
+      "userId": "usr_admin01",
+      "email": "admin@example.com",
+      "role": "admin"
+    }
+  }
+}
+```
+
+**Success Response Fields:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| accessToken | string | API 호출용 JWT 토큰 |
+| refreshToken | string | 토큰 갱신용 |
+| expiresIn | integer | 토큰 만료 시간 (초) |
+| user | object | 사용자 정보 |
+| user.userId | string | 사용자 ID |
+| user.email | string | 이메일 |
+| user.role | string | `admin` |
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 401 | 4011 | 잘못된 이메일 또는 비밀번호 |
+| 403 | 4030 | 관리자 계정이 아닌 사용자 로그인 시도 |
+
+---
+
 ### 4.1 관리자 검수
 
 #### GET /api/admin/reviews
@@ -2550,8 +2617,8 @@ Authorization: Bearer <JWT>
       "representativeName": "김공급",
       "region": "경기도 화성시",
       "categories": ["snack"],
-      "monthlyCapacity": 50000,
-      "moq": 1000,
+      "monthlyCapacity": "50000",
+      "moq": "1000",
       "oemAvailable": true,
       "odmAvailable": false
     },
@@ -2590,8 +2657,8 @@ Authorization: Bearer <JWT>
 | supplier.representativeName | string | 대표자명 |
 | supplier.region | string | 지역 |
 | supplier.categories | array | 카테고리 목록 |
-| supplier.monthlyCapacity | integer | 생산능력 |
-| supplier.moq | integer | 최소 주문 수량 |
+| supplier.monthlyCapacity | string | 생산능력 |
+| supplier.moq | string | 최소 주문 수량 |
 | supplier.oemAvailable | boolean | OEM 가능 여부 |
 | supplier.odmAvailable | boolean | ODM 가능 여부 |
 | state | string | 검수 상태 |
@@ -3230,8 +3297,8 @@ Authorization: Bearer <JWT>
 | email | string | RFC 5322 기본 형식 |
 | phone | string | 한국 전화번호 형식 |
 | timestamp | string | ISO 8601 (YYYY-MM-DDTHH:mm:ssZ) |
-| price | integer | 양수, 원 단위 |
-| quantity | integer | 양수 |
+| price | string | 숫자 문자열, 양수 |
+| quantity | string | 숫자 문자열, 양수 |
 | date | string | YYYY-MM-DD 형식 |
 
 ---
@@ -3244,6 +3311,7 @@ Authorization: Bearer <JWT>
 | 1.1 | 2026-03-12 | Field-schema-level consistency 적용 |
 | 1.2 | 2026-03-16 | Terminology consistency pass: ID rule clarity, state/action naming alignment, typo fix (server-side validation wording) |
 | 1.3 | 2026-04-02 | Public notice attachment: fileSize 필드 추가, 다운로드 엔드포인트 추가. Admin notice attachment download 엔드포인트 추가. Notice 상태 전이 규칙 명시 (archived -> published 포함). |
+| 1.4 | 2026-04-16 | 타입 일관성 패스: desiredVolume, targetPriceRange.min/max를 string으로 변경. 견적 필드(unitPriceEstimate, moq, leadTime, sampleCost)를 string으로 변경. 공급자 프로필 monthlyCapacity, moq를 string으로 변경. POST /api/admin/auth/login 엔드포인트 추가. Data Type Reference price/quantity 타입 string으로 변경. |
 
 ---
 

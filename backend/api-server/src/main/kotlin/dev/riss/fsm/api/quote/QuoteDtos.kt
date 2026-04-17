@@ -1,19 +1,22 @@
 package dev.riss.fsm.api.quote
 
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import java.time.Instant
 
 @Schema(description = "Submit quote request")
 data class SubmitQuoteRequest(
-    @field:Min(1)
+    @field:NotBlank
+    @Schema(description = "예상 단가", example = "950원/개")
     val unitPriceEstimate: String,
-    @field:Min(1)
+    @field:NotBlank
+    @Schema(description = "최소 주문량", example = "2,000개")
     val moq: String,
-    @field:Min(1)
+    @field:NotBlank
+    @Schema(description = "납기", example = "21일")
     val leadTime: String,
-    @field:Min(0)
+    @Schema(description = "샘플 비용", example = "50,000원")
     val sampleCost: String?,
     @field:Size(max = 1000)
     val note: String?,
@@ -21,13 +24,13 @@ data class SubmitQuoteRequest(
 
 @Schema(description = "Quote update request")
 data class UpdateQuoteRequest(
-    @field:Min(1)
+    @Schema(description = "예상 단가", example = "950원/개")
     val unitPriceEstimate: String?,
-    @field:Min(1)
+    @Schema(description = "최소 주문량", example = "2,000개")
     val moq: String?,
-    @field:Min(1)
+    @Schema(description = "납기", example = "21일")
     val leadTime: String?,
-    @field:Min(0)
+    @Schema(description = "샘플 비용", example = "50,000원")
     val sampleCost: String?,
     @field:Size(max = 1000)
     val note: String?,
