@@ -1,0 +1,90 @@
+name: backend-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Gradle build + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: fsm_command
+          MARIADB_USER: fsm
+          MARIADB_PASSWORD: fsm
+        ports:
+          - 13306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -u root -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27018:27017
+        options: >-
+          --health-cmd="mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: Apply MariaDB schema and mock data
+        working-directory: backend
+        run: |
+          mariadb -h 127.0.0.1 -P 13306 -uroot -proot fsm_command < docker/mariadb/init/01-schema.sql
+          mariadb -h 127.0.0.1 -P 13306 -uroot -proot fsm_command < docker/mariadb/init/02-mock-data.sql
+
+      - name: Apply MongoDB read store init and seed
+        working-directory: backend
+        run: |
+          mongosh --host 127.0.0.1 --port 27018 < docker/mongodb/init/01-init-read-store.js
+          mongosh --host 127.0.0.1 --port 27018 < docker/mongodb/init/02-seed-read-models.js
+
+      - name: Gradle build (test included)
+        working-directory: backend
+        env:
+          SPRING_PROFILES_ACTIVE: local
+        run: ./gradlew --no-daemon build
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            backend/**/build/reports/tests
+            backend/**/build/test-results
+          retention-days: 7
