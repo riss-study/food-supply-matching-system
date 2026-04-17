@@ -11,7 +11,9 @@
     "dev:admin-site": "yarn workspace @fsm/admin-site dev",
     "build": "yarn workspaces foreach -A -t run build",
     "test": "yarn workspaces foreach -A -t run test",
-    "type-check": "yarn workspaces foreach -A -t run type-check"
+    "type-check": "yarn workspaces foreach -A -t run type-check",
+    "e2e": "yarn workspace @fsm/main-site e2e",
+    "e2e:install": "yarn workspace @fsm/main-site e2e:install"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

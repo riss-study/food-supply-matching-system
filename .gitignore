@@ -12,6 +12,10 @@ frontend/apps/*/dist/
 frontend/packages/*/dist/
 frontend/apps/*/tsconfig.tsbuildinfo
 frontend/packages/*/tsconfig.tsbuildinfo
+frontend/apps/*/test-results/
+frontend/apps/*/playwright-report/
+frontend/**/.env.local
+frontend/**/.env.*.local
 
 # Backend
 backend/.gradle/
