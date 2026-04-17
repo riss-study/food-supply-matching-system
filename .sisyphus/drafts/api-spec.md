@@ -1018,12 +1018,67 @@ Authorization: Bearer <JWT>  (선택)
 | portfolioImages | array | 포트폴리오 이미지 목록 |
 | portfolioImages[].imageId | string | 이미지 ID |
 | portfolioImages[].url | string | 이미지 URL |
+| logoUrl | string | 로고 이미지 URL (있는 경우) |
 
 **Error Responses:**
 
 | HTTP | 상황 |
 |------|------|
 | 404 | 공급자 없음 또는 승인되지 않음 |
+
+---
+
+#### GET /api/suppliers/categories
+
+**설명:** 탐색 화면에서 사용할 공급자 카테고리 목록과 각 카테고리에 매칭되는 승인된 공급자 수를 반환
+
+**인증:** 선택적
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Success",
+  "data": [
+    { "category": "snack", "supplierCount": 12 },
+    { "category": "beverage", "supplierCount": 5 }
+  ]
+}
+```
+
+**Success Response Fields (data[] items):**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| category | string | 카테고리 코드 |
+| supplierCount | integer | 해당 카테고리에 노출되는 승인 공급자 수 |
+
+---
+
+#### GET /api/suppliers/regions
+
+**설명:** 탐색 화면에서 사용할 공급자 지역 목록과 각 지역에 매칭되는 승인된 공급자 수를 반환
+
+**인증:** 선택적
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Success",
+  "data": [
+    { "region": "경기 화성", "supplierCount": 8 },
+    { "region": "서울 강남", "supplierCount": 3 }
+  ]
+}
+```
+
+**Success Response Fields (data[] items):**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| region | string | 지역명 |
+| supplierCount | integer | 해당 지역의 승인 공급자 수 |
 
 ---
 
@@ -1310,6 +1365,56 @@ Content-Type: application/json
 
 ---
 
+#### POST /api/requests/{requestId}/publish
+
+**설명:** draft 상태의 의뢰를 공개(open)하여 공급자 피드에 노출
+
+**인증:** 필요 (의뢰 소유자)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| requestId | string | 의뢰 ID |
+
+**Request Headers:**
+```
+Authorization: Bearer <JWT>
+```
+
+**Request Body:** 없음
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Request published",
+  "data": {
+    "requestId": "req_01HQX...",
+    "state": "open",
+    "publishedAt": "2026-04-17T02:00:00Z"
+  }
+}
+```
+
+**Success Response Fields:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| requestId | string | 의뢰 ID |
+| state | string | `open` |
+| publishedAt | string | 공개 시각 (ISO 8601) |
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 403 | 4035 | 소유자 아님 |
+| 404 | 4040 | 의뢰 없음 |
+| 422 | 4222 | draft가 아닌 상태 (이미 공개/종료/취소됨) |
+
+---
+
 #### POST /api/requests/{requestId}/close
 
 **설명:** 의뢰 종료 (마감)
@@ -1460,6 +1565,139 @@ Content-Type: application/json
 | 400 | 4003 | 이미 존재하는 스레드 (동일 조합) |
 | 403 | 4036 | 승인되지 않은 공급자 대상 |
 | 409 | 4094 | 이미 스레드 존재 시 기존 스레드 ID 반환 |
+
+---
+
+#### GET /api/supplier/requests
+
+**설명:** 공급자에게 보이는 의뢰 피드 (공개 의뢰 + 자신이 타겟으로 지정된 의뢰)
+
+**인증:** 필요 (role=supplier, 승인된 공급자)
+
+**Query Parameters:**
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| category | string | X | 카테고리 필터 |
+| page | integer | X | 페이지 (기본 1) |
+| size | integer | X | 페이지 크기 (기본 20) |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Success",
+  "data": [
+    {
+      "requestId": "req_01HQX...",
+      "requesterBusinessName": "주식회사 예시",
+      "title": "수제 과자 제조 의뢰",
+      "category": "snack",
+      "desiredVolume": 10000,
+      "targetPriceRange": { "min": 500, "max": 1000 },
+      "certificationRequirement": ["HACCP"],
+      "mode": "public",
+      "hasQuoted": false,
+      "createdAt": "2026-03-12T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "size": 20,
+    "totalElements": 12,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+**Success Response Fields (data[] items):**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| requestId | string | 의뢰 ID |
+| requesterBusinessName | string | 요청자 상호 |
+| title | string | 의뢰 제목 |
+| category | string | 카테고리 코드 |
+| desiredVolume | integer | 희망 생산량 |
+| targetPriceRange | object | 희망 단가 범위 (min/max) |
+| certificationRequirement | array | 요구 인증 목록 |
+| mode | string | `public` or `targeted` |
+| hasQuoted | boolean | 본인이 이미 견적 제출했는지 여부 |
+| createdAt | string | 생성 시각 (ISO 8601) |
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 403 | 4036 | 승인되지 않은 공급자 |
+
+---
+
+#### GET /api/supplier/requests/{requestId}
+
+**설명:** 공급자가 접근 가능한 의뢰 상세 (공개 의뢰 또는 자신이 타겟인 경우)
+
+**인증:** 필요 (role=supplier)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| requestId | string | 의뢰 ID |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Success",
+  "data": {
+    "requestId": "req_01HQX...",
+    "mode": "public",
+    "title": "수제 과자 제조 의뢰",
+    "category": "snack",
+    "desiredVolume": 10000,
+    "targetPriceRange": { "min": 500, "max": 1000 },
+    "certificationRequirement": ["HACCP"],
+    "rawMaterialRule": "supplier_provided",
+    "packagingRequirement": "private_label",
+    "deliveryRequirement": "2026-06-01",
+    "notes": "유기농 원재료 사용 필수",
+    "state": "open",
+    "requesterBusinessName": "주식회사 예시",
+    "hasQuoted": false,
+    "createdAt": "2026-03-12T10:00:00Z"
+  }
+}
+```
+
+**Success Response Fields:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| requestId | string | 의뢰 ID |
+| mode | string | `public` or `targeted` |
+| title | string | 의뢰 제목 |
+| category | string | 카테고리 코드 |
+| desiredVolume | integer | 희망 생산량 |
+| targetPriceRange | object | 희망 단가 범위 |
+| certificationRequirement | array | 요구 인증 목록 |
+| rawMaterialRule | string | 원재료 규칙 |
+| packagingRequirement | string | 포장/라벨링 요구 |
+| deliveryRequirement | string | 납기 요구 |
+| notes | string | 비고 |
+| state | string | 의뢰 상태 |
+| requesterBusinessName | string | 요청자 상호 |
+| hasQuoted | boolean | 본인이 이미 견적 제출했는지 여부 |
+| createdAt | string | 생성 시각 |
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 403 | 4035 | 비공개 의뢰의 비대상 공급자 접근 |
+| 404 | 4040 | 의뢰 없음 |
 
 ---
 
@@ -1802,6 +2040,66 @@ Content-Type: application/json
 | quoteId | string | 견적 ID |
 | state | string | `declined` |
 | declinedAt | string | 거절 시각 (ISO 8601) |
+
+---
+
+#### GET /api/supplier/quotes
+
+**설명:** 현재 공급자가 제출한 견적 목록 조회
+
+**인증:** 필요 (role=supplier, 승인된 공급자)
+
+**Query Parameters:**
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| page | integer | X | 페이지 (기본 1) |
+| size | integer | X | 페이지 크기 (기본 20) |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Success",
+  "data": [
+    {
+      "quoteId": "qte_01HQX...",
+      "requestId": "req_01HQX...",
+      "requestTitle": "수제 과자 제조 의뢰",
+      "unitPrice": 800,
+      "leadTimeDays": 30,
+      "state": "submitted",
+      "submittedAt": "2026-03-13T09:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "size": 20,
+    "totalElements": 4,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+**Success Response Fields (data[] items):**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| quoteId | string | 견적 ID |
+| requestId | string | 연결된 의뢰 ID |
+| requestTitle | string | 의뢰 제목 (sample) |
+| unitPrice | integer | 제출한 단가 |
+| leadTimeDays | integer | 제시한 납기 (일) |
+| state | string | `submitted`, `withdrawn`, `selected`, `declined` |
+| submittedAt | string | 제출 시각 (ISO 8601) |
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 403 | 4036 | 승인되지 않은 공급자 |
 
 ---
 
@@ -2448,6 +2746,69 @@ Authorization: Bearer <JWT>
 | HTTP | code | 상황 |
 |------|------|------|
 | 404 | 4040 | 공지 또는 첨부파일을 찾을 수 없음 |
+
+---
+
+### 3.10 첨부파일
+
+#### POST /api/attachments
+
+**설명:** 공통(generic) 첨부파일 업로드. 도메인별 전용 업로드 엔드포인트가 아닌, 임의 owner type/id에 대한 파일 업로드용.
+
+**인증:** 필요
+
+**Request Headers:**
+```
+Authorization: Bearer <JWT>
+Content-Type: multipart/form-data
+```
+
+**Request Parts:**
+
+| 파트 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| ownerType | string | O | 첨부 대상 타입 (예: `supplier_profile`, `notice`, `request`) |
+| ownerId | string | O | 첨부 대상 ID |
+| file | file | O | 업로드 파일 |
+
+**Success Response (201):**
+```json
+{
+  "code": 100,
+  "message": "Attachment uploaded",
+  "data": {
+    "attachmentId": "att_01HQX...",
+    "ownerType": "supplier_profile",
+    "ownerId": "sprof_01HQX...",
+    "fileName": "haccp.pdf",
+    "contentType": "application/pdf",
+    "fileSize": 102400,
+    "storageKey": "attachments/2026/04/att_01HQX...",
+    "createdAt": "2026-04-17T02:00:00Z"
+  }
+}
+```
+
+**Success Response Fields:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| attachmentId | string | 첨부파일 ID |
+| ownerType | string | 요청 시 전달한 owner type |
+| ownerId | string | 요청 시 전달한 owner id |
+| fileName | string | 원본 파일명 |
+| contentType | string | MIME 타입 |
+| fileSize | integer | 파일 크기 (bytes) |
+| storageKey | string | 저장소 내부 키 |
+| createdAt | string | 업로드 시각 (ISO 8601) |
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 400 | 4001 | 파일 누락 또는 ownerType/ownerId 형식 오류 |
+| 413 | 4131 | 허용 용량 초과 |
+| 415 | 4151 | 허용되지 않는 MIME 타입 |
 
 ---
 
@@ -3312,6 +3673,7 @@ Authorization: Bearer <JWT>
 | 1.2 | 2026-03-16 | Terminology consistency pass: ID rule clarity, state/action naming alignment, typo fix (server-side validation wording) |
 | 1.3 | 2026-04-02 | Public notice attachment: fileSize 필드 추가, 다운로드 엔드포인트 추가. Admin notice attachment download 엔드포인트 추가. Notice 상태 전이 규칙 명시 (archived -> published 포함). |
 | 1.4 | 2026-04-16 | 타입 일관성 패스: desiredVolume, targetPriceRange.min/max를 string으로 변경. 견적 필드(unitPriceEstimate, moq, leadTime, sampleCost)를 string으로 변경. 공급자 프로필 monthlyCapacity, moq를 string으로 변경. POST /api/admin/auth/login 엔드포인트 추가. Data Type Reference price/quantity 타입 string으로 변경. |
+| 1.5 | 2026-04-17 | 코드-문서 audit 보강: GET /api/suppliers/categories, /api/suppliers/regions, POST /api/requests/{id}/publish, GET /api/supplier/requests, GET /api/supplier/requests/{id}, GET /api/supplier/quotes 신규 섹션 추가. 3.10 첨부파일 섹션 추가 (POST /api/attachments). GET /api/suppliers/{id} 응답에 logoUrl 명시. |
 
 ---
 
