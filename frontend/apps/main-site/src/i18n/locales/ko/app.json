@@ -1,0 +1,53 @@
+{
+  "brand": "잇다",
+  "home": {
+    "heroLabel": "B2B 식품 제조 매칭 플랫폼",
+    "heroTitleLine1": "믿을 수 있는 식품 제조 파트너를",
+    "heroTitleLine2": "지금 만나보세요",
+    "heroDescLine1": "HACCP, ISO 인증 제조사부터 OEM/ODM 전문 업체까지.",
+    "heroDescLine2": "검증된 공급자 네트워크에서 최적의 파트너를 찾으세요.",
+    "ctaExplore": "공급자 탐색",
+    "ctaCreateRequest": "의뢰 등록",
+    "featureSectionTitle": "핵심 기능",
+    "featureDiscoveryTitle": "공급자 탐색",
+    "featureDiscoveryDesc": "카테고리, 지역, 생산능력 등 다양한 조건으로 검증된 식품 제조사를 검색하세요.",
+    "featureRequestTitle": "의뢰 관리",
+    "featureRequestDesc": "식품 제조 의뢰를 등록하고 견적을 비교하여 최적의 파트너를 선택하세요.",
+    "featureCommunicationTitle": "실시간 소통",
+    "featureCommunicationDesc": "공급자와 직접 메시지를 주고받으며 상세 조건을 조율할 수 있습니다.",
+    "shortcutSectionTitle": "바로가기",
+    "shortcutExploreTitle": "공급자 탐색",
+    "shortcutExploreDesc": "검증된 식품 제조사 검색",
+    "shortcutExploreAction": "탐색하기 →",
+    "shortcutCreateRequestTitle": "의뢰 등록",
+    "shortcutCreateRequestDesc": "새로운 제조 의뢰 작성",
+    "shortcutCreateRequestAction": "등록하기 →",
+    "shortcutMyRequestsTitle": "내 의뢰",
+    "shortcutMyRequestsDesc": "의뢰 현황과 견적 관리",
+    "shortcutMyRequestsAction": "확인하기 →"
+  },
+  "dashboard": {
+    "titleSuffix": "시작 화면",
+    "loggedInAs": "{{email}} 계정으로 로그인되어 있습니다.",
+    "noUserInfo": "사용자 정보를 불러오지 못했습니다.",
+    "guideSupplier": "의뢰 피드, 내 견적, 메시지 화면으로 이동해 다음 작업을 이어가세요.",
+    "guideRequester": "공급자 탐색, 내 의뢰, 메시지 화면으로 이동해 다음 작업을 이어가세요."
+  },
+  "role": {
+    "supplier": "공급자",
+    "requester": "요청자",
+    "default": "사용자"
+  },
+  "nav": {
+    "home": "홈",
+    "supplierSearch": "공급자 탐색",
+    "notices": "공지사항",
+    "myRequests": "내 의뢰",
+    "messages": "메시지",
+    "supplierRequestFeed": "의뢰 피드",
+    "supplierQuotes": "내 견적",
+    "login": "로그인",
+    "signup": "회원가입",
+    "defaultUser": "사용자"
+  }
+}

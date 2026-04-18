@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 
 import { useAdminAuthStore } from "./features/auth/store/admin-auth-store"
 import { LoginPage } from "./features/auth/pages/LoginPage"
@@ -17,11 +18,12 @@ import { uploadNoticeAttachment, deleteNoticeAttachment } from "./features/notic
 import type { CreateNoticeRequest, UpdateNoticeRequest } from "@fsm/types"
 
 function HomePage() {
+  const { t } = useTranslation("app")
   return (
     <div className="page">
       <div className="page-header">
-        <h1>운영 작업 공간</h1>
-        <p>검수, 공지, 통계를 빠르게 확인하고 운영 판단을 내리는 내부 작업 공간입니다.</p>
+        <h1>{t("homeTitle")}</h1>
+        <p>{t("homeDescription")}</p>
       </div>
     </div>
   )
@@ -132,12 +134,13 @@ function NoticeManagementPage() {
 }
 
 const navItems = [
-  { to: "/reviews", label: "업체 검수", icon: "☑" },
-  { to: "/notices", label: "공지 관리", icon: "☰" },
-  { to: "/stats", label: "통계", icon: "≡" },
+  { to: "/reviews", labelKey: "nav.reviews", icon: "☑" },
+  { to: "/notices", labelKey: "nav.notices", icon: "☰" },
+  { to: "/stats", labelKey: "nav.stats", icon: "≡" },
 ]
 
 export default function App() {
+  const { t } = useTranslation("app")
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -173,7 +176,7 @@ export default function App() {
       <button
         className="admin-sidebar-toggle"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        aria-label="메뉴 열기"
+        aria-label={t("common:openMenu")}
       >
         {sidebarOpen ? "✕" : "☰"}
       </button>
@@ -184,7 +187,7 @@ export default function App() {
       />
 
       <aside className={`admin-sidebar${sidebarOpen ? " open" : ""}`}>
-        <div className="admin-sidebar-brand">잇다 <small>Admin</small></div>
+        <div className="admin-sidebar-brand">{t("brand")} <small>{t("brandSuffix")}</small></div>
         <nav className="admin-sidebar-nav">
           {navItems.map((item) => (
             <Link
@@ -194,20 +197,20 @@ export default function App() {
               onClick={closeSidebar}
             >
               <span className="nav-icon">{item.icon}</span>
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
         </nav>
         <div className="admin-sidebar-footer">
           <div className="admin-sidebar-user">
-            <span>{adminUser.email?.split("@")[0] ?? "관리자"}</span>
+            <span>{adminUser.email?.split("@")[0] ?? t("common:admin")}</span>
           </div>
           <button
             type="button"
             className="btn btn-ghost btn-sm w-full"
             onClick={() => { clearAdminAuth(); closeSidebar(); }}
           >
-            로그아웃
+            {t("common:logout")}
           </button>
         </div>
       </aside>
@@ -218,13 +221,13 @@ export default function App() {
           <div className="admin-topbar-user-wrap" ref={userMenuRef}>
             <div className="admin-topbar-user" onClick={() => setUserMenuOpen(!userMenuOpen)}>
               <div className="admin-topbar-avatar" />
-              <span className="admin-topbar-username">{adminUser.email?.split("@")[0] ?? "관리자"}</span>
+              <span className="admin-topbar-username">{adminUser.email?.split("@")[0] ?? t("common:admin")}</span>
               <span className="admin-topbar-chevron">&#x2304;</span>
             </div>
             {userMenuOpen && (
               <div className="admin-user-dropdown">
                 <button type="button" className="admin-user-dropdown-item" onClick={() => { clearAdminAuth(); setUserMenuOpen(false); }}>
-                  로그아웃
+                  {t("common:logout")}
                 </button>
               </div>
             )}

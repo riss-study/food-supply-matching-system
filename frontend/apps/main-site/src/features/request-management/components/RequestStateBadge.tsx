@@ -1,11 +1,5 @@
+import { useTranslation } from "react-i18next"
 import type { RequestState } from "@fsm/types"
-
-const stateLabels: Record<RequestState, string> = {
-  draft: "작성 중",
-  open: "진행 중",
-  closed: "마감",
-  cancelled: "취소됨",
-}
 
 const stateBadgeClass: Record<RequestState, string> = {
   draft: "badge badge-gray",
@@ -15,5 +9,6 @@ const stateBadgeClass: Record<RequestState, string> = {
 }
 
 export function RequestStateBadge({ state }: { state: RequestState }) {
-  return <span className={stateBadgeClass[state]}>{stateLabels[state]}</span>
+  const { t } = useTranslation("request-management")
+  return <span className={stateBadgeClass[state]}>{t(`state.${state}`)}</span>
 }

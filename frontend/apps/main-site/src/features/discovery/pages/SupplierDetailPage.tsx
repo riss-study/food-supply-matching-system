@@ -1,14 +1,16 @@
 import { Link, useParams } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useMe } from "../../auth/hooks/useMe"
 import { useSupplierDetail } from "../hooks/useSupplierDetail"
 
 export function SupplierDetailPage() {
+  const { t } = useTranslation("discovery")
   const { supplierId = "" } = useParams()
   const { data, isLoading } = useSupplierDetail(supplierId)
   const { data: me } = useMe()
 
   if (isLoading || !data) {
-    return <div className="page"><h1>공급자 상세</h1><p className="text-muted">로딩 중...</p></div>
+    return <div className="page"><h1>{t("detail.title")}</h1><p className="text-muted">{t("common:loading")}</p></div>
   }
 
   const canRequest = me?.role === "requester" && me.businessApprovalState === "approved"
@@ -21,7 +23,7 @@ export function SupplierDetailPage() {
       <div className="supplier-hero">
         <div className="flex items-center gap-12">
           <h1 className="font-bold" style={{ fontSize: 28 }}>{data.companyName}</h1>
-          <span className="badge badge-green">인증 완료</span>
+          <span className="badge badge-green">{t("detail.certifiedBadge")}</span>
         </div>
         <div className="flex items-center gap-16 text-muted text-sm">
           <span>{data.region}</span>
@@ -40,19 +42,19 @@ export function SupplierDetailPage() {
         <div className="flex flex-col gap-20" >
           {/* 제조 역량 */}
           <section className="surface">
-            <h2 className="section-title mb-12">제조 역량</h2>
+            <h2 className="section-title mb-12">{t("detail.manufacturingCapabilityTitle")}</h2>
             <div className="grid gap-16" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-              <div><p className="text-muted text-sm">월 생산능력</p><p className="font-bold">{data.monthlyCapacity}</p></div>
-              <div><p className="text-muted text-sm">최소 주문량</p><p className="font-bold">{data.moq}</p></div>
-              <div><p className="text-muted text-sm">원료 조달</p><p className="font-bold">{data.rawMaterialSupport ? "자체 조달 가능" : "지원 불가"}</p></div>
-              <div><p className="text-muted text-sm">포장 지원</p><p className="font-bold">{data.packagingLabelingSupport ? "지원 가능" : "지원 불가"}</p></div>
+              <div><p className="text-muted text-sm">{t("detail.monthlyCapacityLabel")}</p><p className="font-bold">{data.monthlyCapacity}</p></div>
+              <div><p className="text-muted text-sm">{t("detail.moqLabel")}</p><p className="font-bold">{data.moq}</p></div>
+              <div><p className="text-muted text-sm">{t("detail.rawMaterialLabel")}</p><p className="font-bold">{data.rawMaterialSupport ? t("detail.rawMaterialYes") : t("detail.rawMaterialNo")}</p></div>
+              <div><p className="text-muted text-sm">{t("detail.packagingLabel")}</p><p className="font-bold">{data.packagingLabelingSupport ? t("detail.packagingYes") : t("detail.packagingNo")}</p></div>
             </div>
           </section>
 
           {/* 인증 */}
           {data.certifications.length > 0 && (
             <section className="surface">
-              <h2 className="section-title mb-12">인증 현황</h2>
+              <h2 className="section-title mb-12">{t("detail.certificationsTitle")}</h2>
               <div className="flex gap-8 flex-wrap">
                 {data.certifications.map((cert) => (
                   <span
@@ -69,7 +71,7 @@ export function SupplierDetailPage() {
           {/* 회사 소개 */}
           {data.introduction && (
             <section className="surface">
-              <h2 className="section-title mb-8">회사 소개</h2>
+              <h2 className="section-title mb-8">{t("detail.introductionTitle")}</h2>
               <p className="text-muted" >{data.introduction}</p>
             </section>
           )}
@@ -77,7 +79,7 @@ export function SupplierDetailPage() {
           {/* 설비 */}
           {data.equipmentSummary && (
             <section className="surface">
-              <h2 className="section-title mb-8">보유 설비</h2>
+              <h2 className="section-title mb-8">{t("detail.equipmentTitle")}</h2>
               <p className="text-muted">{data.equipmentSummary}</p>
             </section>
           )}
@@ -85,7 +87,7 @@ export function SupplierDetailPage() {
           {/* 포트폴리오 */}
           {data.portfolioImages.length > 0 && (
             <section className="surface">
-              <h2 className="section-title mb-12">포트폴리오</h2>
+              <h2 className="section-title mb-12">{t("detail.portfolioTitle")}</h2>
               <div className="card-grid">
                 {data.portfolioImages.map((image) => (
                   <a
@@ -97,7 +99,7 @@ export function SupplierDetailPage() {
                   >
                     <img
                       src={image.url}
-                      alt={`포트폴리오 ${image.imageId}`}
+                      alt={t("detail.portfolioAlt", { id: image.imageId })}
                       loading="lazy"
                     />
                   </a>
@@ -110,21 +112,21 @@ export function SupplierDetailPage() {
         {/* Right sidebar */}
         <aside className="flex flex-col gap-16">
           <div className="surface flex flex-col gap-12 text-center">
-            <h3 className="font-semibold">이 공급자에게<br />의뢰하기</h3>
-            <p className="text-sm text-muted">원하는 조건으로 제조 의뢰를<br />보내보세요.</p>
+            <h3 className="font-semibold">{t("detail.requestTitle")}<br />{t("detail.requestTitleLine2")}</h3>
+            <p className="text-sm text-muted">{t("detail.requestSubtitleLine1")}<br />{t("detail.requestSubtitleLine2")}</p>
             {canRequest ? (
               <>
                 <Link to={requestUrl} className="btn btn-primary w-full">
-                  의뢰하기
+                  {t("detail.requestCta")}
                 </Link>
                 <Link to={requestUrl} className="btn btn-secondary w-full">
-                  메시지 보내기
+                  {t("detail.messageCta")}
                 </Link>
-                <p className="text-muted text-sm" style={{ fontSize: 11 }}>의뢰 등록 후 메시지를 보낼 수 있습니다</p>
+                <p className="text-muted text-sm" style={{ fontSize: 11 }}>{t("detail.messageHint")}</p>
               </>
             ) : (
               <p className="text-muted text-sm">
-                {me ? "사업자 승인 후 의뢰할 수 있습니다." : "로그인 후 이용할 수 있습니다."}
+                {me ? t("detail.needApproval") : t("detail.needLogin")}
               </p>
             )}
           </div>

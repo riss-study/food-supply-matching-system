@@ -1,8 +1,10 @@
 import { useSearchParams, Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useSupplierCategories, useSupplierRegions } from "../hooks/useDiscoveryLookups"
 import { useSupplierList } from "../hooks/useSupplierList"
 
 export function SupplierSearchPage() {
+  const { t } = useTranslation("discovery")
   const [searchParams, setSearchParams] = useSearchParams()
   const keyword = searchParams.get("keyword") ?? ""
   const category = searchParams.get("category") ?? ""
@@ -55,67 +57,67 @@ export function SupplierSearchPage() {
       <div className="supplier-search-body">
         {/* LEFT: Filter sidebar */}
         <aside className="supplier-filter-panel">
-          <h2 className="text-lg font-bold">필터</h2>
+          <h2 className="text-lg font-bold">{t("search.filterTitle")}</h2>
 
           <div className="input-field">
             <input
               className="input"
               value={keyword}
               onChange={(e) => updateSearchParams({ keyword: e.target.value })}
-              placeholder="🔍 업체명 검색"
+              placeholder={t("search.keywordPlaceholder")}
             />
           </div>
 
           <div className="input-field">
-            <label>카테고리</label>
+            <label>{t("search.categoryLabel")}</label>
             <select
               className="select"
               value={category}
               onChange={(e) => updateSearchParams({ category: e.target.value })}
             >
-              <option value="">전체</option>
+              <option value="">{t("common:all")}</option>
               {categories?.map((item) => <option key={item.category} value={item.category}>{item.category}</option>)}
             </select>
           </div>
 
           <div className="input-field">
-            <label>지역</label>
+            <label>{t("search.regionLabel")}</label>
             <select
               className="select"
               value={region}
               onChange={(e) => updateSearchParams({ region: e.target.value })}
             >
-              <option value="">전체</option>
+              <option value="">{t("common:all")}</option>
               {regions?.map((item) => <option key={item.region} value={item.region}>{item.region}</option>)}
             </select>
           </div>
 
           <div className="input-field">
-            <label>월 생산능력 (톤)</label>
+            <label>{t("search.monthlyCapacityLabel")}</label>
             <input
               className="input"
               type="number"
               value={minCapacity}
               onChange={(e) => updateSearchParams({ minCapacity: e.target.value })}
-              placeholder="최소값"
+              placeholder={t("search.monthlyCapacityPlaceholder")}
               min={0}
             />
           </div>
 
           <div className="input-field">
-            <label>최소 주문량 (MOQ)</label>
+            <label>{t("search.moqLabel")}</label>
             <input
               className="input"
               type="number"
               value={maxMoq}
               onChange={(e) => updateSearchParams({ maxMoq: e.target.value })}
-              placeholder="최대값"
+              placeholder={t("search.moqPlaceholder")}
               min={0}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-8 block">제조 방식</label>
+            <label className="text-sm font-medium mb-8 block">{t("search.manufacturingModeLabel")}</label>
             <div className="flex gap-8">
               <button
                 type="button"
@@ -138,7 +140,7 @@ export function SupplierSearchPage() {
             className="btn btn-primary w-full"
             onClick={() => updateSearchParams({})}
           >
-            필터 적용
+            {t("search.applyFilter")}
           </button>
         </aside>
 
@@ -148,9 +150,9 @@ export function SupplierSearchPage() {
             <>
             <div className="flex items-center gap-8">
               <h1 className="font-bold" style={{ fontSize: 18 }}>
-                검색 결과
+                {t("search.resultTitle")}
               </h1>
-              <span className="text-muted text-base">· {data.meta.totalElements}개 업체</span>
+              <span className="text-muted text-base">{t("search.resultCountSuffix", { count: data.meta.totalElements })}</span>
             </div>
 
           <div className="grid gap-16" style={{ gridTemplateColumns: "1fr 1fr" }}>
@@ -158,7 +160,7 @@ export function SupplierSearchPage() {
               <Link to={`/suppliers/${item.profileId}`} className="supplier-card" key={item.profileId}>
                 <div className="flex items-center gap-8">
                   <h2 className="font-bold text-base">{item.companyName}</h2>
-                  <span className="badge badge-green">인증</span>
+                  <span className="badge badge-green">{t("search.certifiedBadge")}</span>
                 </div>
                 <p className="text-muted text-sm">
                   {item.region} · {item.categories.join(", ")}
@@ -168,7 +170,7 @@ export function SupplierSearchPage() {
                   {item.odmAvailable && <span className="badge badge-blue">ODM</span>}
                 </div>
                 <p className="text-muted text-sm">
-                  월 {item.monthlyCapacity} &nbsp;&nbsp; MOQ {item.moq}
+                  {t("search.capacityPrefix", { capacity: item.monthlyCapacity })} &nbsp;&nbsp; {t("search.moqPrefix", { moq: item.moq })}
                 </p>
               </Link>
             ))}
@@ -202,7 +204,7 @@ export function SupplierSearchPage() {
           </>
           ) : (
             <div className="empty-state">
-              <p>조건에 맞는 공급자가 없습니다.</p>
+              <p>{t("search.emptyMessage")}</p>
             </div>
           )}
         </div>

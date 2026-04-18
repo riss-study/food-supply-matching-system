@@ -1,13 +1,7 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import type { RequestState } from "@fsm/types"
 import { useRequestList } from "../hooks/useRequestList"
-
-const stateLabels: Record<RequestState, string> = {
-  draft: "작성 중",
-  open: "진행 중",
-  closed: "마감",
-  cancelled: "취소됨",
-}
 
 const stateBadgeClass: Record<RequestState, string> = {
   draft: "badge badge-gray",
@@ -17,10 +11,12 @@ const stateBadgeClass: Record<RequestState, string> = {
 }
 
 function StateBadge({ state }: { state: RequestState }) {
-  return <span className={stateBadgeClass[state]}>{stateLabels[state]}</span>
+  const { t } = useTranslation("request-management")
+  return <span className={stateBadgeClass[state]}>{t(`state.${state}`)}</span>
 }
 
 export function RequestListPage() {
+  const { t } = useTranslation("request-management")
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const stateFilter = (searchParams.get("state") as RequestState | null) ?? ""
@@ -28,22 +24,22 @@ export function RequestListPage() {
   const { data, isLoading } = useRequestList({ state: stateFilter || undefined, page, size: 20 })
 
   const tabs: { value: string; label: string }[] = [
-    { value: "", label: "전체" },
-    { value: "draft", label: "작성 중" },
-    { value: "open", label: "진행 중" },
-    { value: "closed", label: "마감" },
-    { value: "cancelled", label: "취소" },
+    { value: "", label: t("list.tabAll") },
+    { value: "draft", label: t("stateTab.draft") },
+    { value: "open", label: t("stateTab.open") },
+    { value: "closed", label: t("stateTab.closed") },
+    { value: "cancelled", label: t("stateTab.cancelled") },
   ]
 
   return (
     <div className="page">
       <div className="page-header">
         <div className="page-header-text">
-          <h1>내 의뢰 목록</h1>
+          <h1>{t("list.title")}</h1>
         </div>
         <div className="page-header-actions">
           <Link to="/requests/new" className="btn btn-primary">
-            + 새 의뢰
+            {t("list.createButton")}
           </Link>
         </div>
       </div>
@@ -61,12 +57,12 @@ export function RequestListPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted">로딩 중...</p>
+        <p className="text-muted">{t("common:loading")}</p>
       ) : data?.items.length === 0 ? (
         <div className="empty-state">
-          <p>등록된 의뢰가 없습니다.</p>
+          <p>{t("list.emptyMessage")}</p>
           <Link to="/requests/new" className="btn btn-primary btn-sm">
-            첫 의뢰를 등록해 보세요
+            {t("list.emptyCta")}
           </Link>
         </div>
       ) : (
@@ -75,25 +71,25 @@ export function RequestListPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>제목</th>
-                  <th>카테고리</th>
-                  <th>방식</th>
-                  <th>상태</th>
-                  <th>등록일</th>
-                  <th>견적</th>
+                  <th>{t("list.headers.title")}</th>
+                  <th>{t("list.headers.category")}</th>
+                  <th>{t("list.headers.mode")}</th>
+                  <th>{t("list.headers.state")}</th>
+                  <th>{t("list.headers.createdAt")}</th>
+                  <th>{t("list.headers.quote")}</th>
                 </tr>
               </thead>
               <tbody>
                 {data?.items.map((request) => (
                   <tr key={request.requestId} onClick={() => navigate(`/requests/${request.requestId}`)} className="cursor-pointer">
-                    <td className="font-semibold" data-label="제목">{request.title}</td>
-                    <td className="text-muted" data-label="카테고리">{request.category}</td>
-                    <td className="text-muted" data-label="방식">
-                      {request.mode === "public" ? "공개" : "지정"}
+                    <td className="font-semibold" data-label={t("list.headers.title")}>{request.title}</td>
+                    <td className="text-muted" data-label={t("list.headers.category")}>{request.category}</td>
+                    <td className="text-muted" data-label={t("list.headers.mode")}>
+                      {request.mode === "public" ? t("list.modePublic") : t("list.modeTargeted")}
                     </td>
-                    <td data-label="상태"><StateBadge state={request.state} /></td>
-                    <td className="text-muted text-sm" data-label="등록일">{new Date(request.createdAt).toLocaleDateString("ko-KR")}</td>
-                    <td data-label="견적">{request.quoteCount > 0 ? `${request.quoteCount}건` : "—"}</td>
+                    <td data-label={t("list.headers.state")}><StateBadge state={request.state} /></td>
+                    <td className="text-muted text-sm" data-label={t("list.headers.createdAt")}>{new Date(request.createdAt).toLocaleDateString("ko-KR")}</td>
+                    <td data-label={t("list.headers.quote")}>{request.quoteCount > 0 ? t("list.quoteCount", { count: request.quoteCount }) : t("list.quoteNone")}</td>
                   </tr>
                 ))}
               </tbody>

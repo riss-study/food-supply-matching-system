@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { getApiBaseUrl } from "@fsm/utils"
 import { usePublicNotices } from "../hooks/usePublicNotices"
 import { usePublicNoticeDetail } from "../hooks/usePublicNoticeDetail"
 import type { PaginationMeta } from "@fsm/types"
 
 export function NoticeListDetailPage() {
+  const { t } = useTranslation("notices")
   const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const { data, isLoading, error } = usePublicNotices({ page, size: 20 })
@@ -19,14 +21,14 @@ export function NoticeListDetailPage() {
 
   return (
     <div className="page h-full" style={{ gap: 0 }}>
-      <h1 className="text-2xl font-bold" style={{ letterSpacing: -0.5, paddingBottom: 24 }}>공지사항</h1>
+      <h1 className="text-2xl font-bold" style={{ letterSpacing: -0.5, paddingBottom: 24 }}>{t("listDetail.title")}</h1>
 
-      {isLoading && <p className="text-muted">로딩 중...</p>}
-      {error && <p className="text-danger">공지사항을 불러오지 못했습니다.</p>}
+      {isLoading && <p className="text-muted">{t("common:loading")}</p>}
+      {error && <p className="text-danger">{t("listDetail.loadError")}</p>}
 
       {!isLoading && !error && data?.items.length === 0 && (
         <div className="empty-state">
-          <p>등록된 공지사항이 없습니다.</p>
+          <p>{t("listDetail.emptyMessage")}</p>
         </div>
       )}
 
@@ -89,7 +91,7 @@ export function NoticeListDetailPage() {
                       day: "numeric",
                     })}
                   </span>
-                  <span>조회수: {detail.viewCount?.toLocaleString()}</span>
+                  <span>{t("listDetail.viewCount", { value: detail.viewCount?.toLocaleString() })}</span>
                 </div>
                 <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: 0 }} />
                 <article className="text-base" style={{ lineHeight: 1.7, color: "var(--ink)", whiteSpace: "pre-wrap" }}>
@@ -98,7 +100,7 @@ export function NoticeListDetailPage() {
 
                 {detail.attachments?.length > 0 && (
                   <div className="flex flex-col gap-8">
-                    <h3 className="section-title">첨부 파일</h3>
+                    <h3 className="section-title">{t("listDetail.attachmentsTitle")}</h3>
                     {detail.attachments.map((attachment) => (
                       <div key={attachment.attachmentId} className="flex items-center gap-8 text-sm">
                         <a href={`${getApiBaseUrl()}${attachment.url}`} download={attachment.fileName} className="text-accent">
@@ -112,7 +114,7 @@ export function NoticeListDetailPage() {
               </>
             ) : (
               <p className="text-muted text-center" style={{ padding: 40 }}>
-                공지사항을 선택하세요
+                {t("listDetail.selectPrompt")}
               </p>
             )}
           </div>

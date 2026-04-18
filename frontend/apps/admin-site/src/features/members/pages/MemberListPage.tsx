@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 type Role = "requester" | "supplier" | "admin"
 type MemberStatus = "active" | "suspended"
@@ -12,27 +13,16 @@ interface Member {
 }
 
 const roleTabs = [
-  { value: "", label: "전체" },
-  { value: "requester", label: "요청자" },
-  { value: "supplier", label: "공급자" },
-  { value: "admin", label: "관리자" },
+  { value: "", labelKey: "tabs.all" },
+  { value: "requester", labelKey: "tabs.requester" },
+  { value: "supplier", labelKey: "tabs.supplier" },
+  { value: "admin", labelKey: "tabs.admin" },
 ] as const
-
-const roleLabel: Record<Role, string> = {
-  requester: "요청자",
-  supplier: "공급자",
-  admin: "관리자",
-}
 
 const roleBadge: Record<Role, string> = {
   requester: "badge badge-blue",
   supplier: "badge badge-green",
   admin: "badge badge-gray",
-}
-
-const statusLabel: Record<MemberStatus, string> = {
-  active: "활성",
-  suspended: "정지",
 }
 
 const statusBadge: Record<MemberStatus, string> = {
@@ -54,6 +44,7 @@ const MOCK_MEMBERS: Member[] = [
 const PAGE_SIZE = 20
 
 export function MemberListPage() {
+  const { t } = useTranslation("members")
   const [roleFilter, setRoleFilter] = useState("")
   const [page, setPage] = useState(1)
 
@@ -67,7 +58,7 @@ export function MemberListPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>회원 목록</h1>
+        <h1>{t("title")}</h1>
       </div>
 
       <div className="tab-filters">
@@ -77,7 +68,7 @@ export function MemberListPage() {
             className={`btn btn-ghost btn-sm${roleFilter === tab.value ? " active" : ""}`}
             onClick={() => { setRoleFilter(tab.value); setPage(1) }}
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>
@@ -86,32 +77,32 @@ export function MemberListPage() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>이메일</th>
-              <th>역할</th>
-              <th>가입일</th>
-              <th>상태</th>
+              <th>{t("columns.email")}</th>
+              <th>{t("columns.role")}</th>
+              <th>{t("columns.joinedAt")}</th>
+              <th>{t("columns.status")}</th>
             </tr>
           </thead>
           <tbody>
             {paged.length === 0 ? (
               <tr>
                 <td colSpan={4} className="text-center">
-                  회원이 없습니다.
+                  {t("empty")}
                 </td>
               </tr>
             ) : (
               paged.map((member) => (
                 <tr key={member.memberId}>
-                  <td data-label="이메일">{member.email}</td>
-                  <td data-label="역할">
+                  <td data-label={t("columns.email")}>{member.email}</td>
+                  <td data-label={t("columns.role")}>
                     <span className={roleBadge[member.role]}>
-                      {roleLabel[member.role]}
+                      {t(`role.${member.role}`)}
                     </span>
                   </td>
-                  <td data-label="가입일">{new Date(member.joinedAt).toLocaleDateString("ko-KR")}</td>
-                  <td data-label="상태">
+                  <td data-label={t("columns.joinedAt")}>{new Date(member.joinedAt).toLocaleDateString("ko-KR")}</td>
+                  <td data-label={t("columns.status")}>
                     <span className={statusBadge[member.status]}>
-                      {statusLabel[member.status]}
+                      {t(`status.${member.status}`)}
                     </span>
                   </td>
                 </tr>

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { CreateSupplierProfileRequest } from "@fsm/types"
 import { useSupplierCategories, useSupplierRegions } from "../../discovery/hooks/useDiscoveryLookups"
 
@@ -22,6 +23,7 @@ export function SupplierProfileForm({
   contactOnly = false,
   existingPortfolioImages = [],
 }: Props) {
+  const { t } = useTranslation("supplier-profile")
   const { data: availableCategories = [], isLoading: categoriesLoading } = useSupplierCategories()
   const { data: availableRegions = [], isLoading: regionsLoading } = useSupplierRegions()
 
@@ -106,38 +108,38 @@ export function SupplierProfileForm({
   }
 
   if (categoriesLoading || regionsLoading) {
-    return <p>옵션 로딩 중...</p>
+    return <p>{t("form.optionsLoading")}</p>
   }
 
   return (
     <form className="surface" onSubmit={handleSubmit}>
-      <h2 className="section-title mb-16">기본 회사 정보</h2>
+      <h2 className="section-title mb-16">{t("form.basicInfoTitle")}</h2>
       <div className="form-stack">
         <div className="form-row">
           <div className="input-field">
-            <label>회사명</label>
-            <input className="input" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="회사명 (2~100자)" required disabled={contactOnly} />
+            <label>{t("form.companyNameLabel")}</label>
+            <input className="input" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder={t("form.companyNamePlaceholder")} required disabled={contactOnly} />
           </div>
           <div className="input-field">
-            <label>대표자명</label>
-            <input className="input" value={representativeName} onChange={(e) => setRepresentativeName(e.target.value)} placeholder="대표자명 (2~50자)" required disabled={contactOnly} />
+            <label>{t("form.representativeLabel")}</label>
+            <input className="input" value={representativeName} onChange={(e) => setRepresentativeName(e.target.value)} placeholder={t("form.representativePlaceholder")} required disabled={contactOnly} />
           </div>
         </div>
         <div className="form-row">
           <div className="input-field">
-            <label>연락처 전화번호</label>
-            <input className="input" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="연락처 전화번호" />
+            <label>{t("form.contactPhoneLabel")}</label>
+            <input className="input" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder={t("form.contactPhonePlaceholder")} />
           </div>
           <div className="input-field">
-            <label>연락처 이메일</label>
-            <input className="input" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="연락처 이메일" type="email" />
+            <label>{t("form.contactEmailLabel")}</label>
+            <input className="input" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder={t("form.contactEmailPlaceholder")} type="email" />
           </div>
         </div>
 
         <div className="input-field">
-          <label>지역</label>
+          <label>{t("form.regionLabel")}</label>
           <select className="select" value={region} onChange={(e) => setRegion(e.target.value)} required disabled={contactOnly}>
-            <option value="">지역 선택</option>
+            <option value="">{t("form.regionSelect")}</option>
             {availableRegions.map((r) => (
               <option key={r.region} value={r.region}>
                 {r.region} ({r.supplierCount})
@@ -147,7 +149,7 @@ export function SupplierProfileForm({
         </div>
 
         <fieldset className="fieldset">
-          <legend className="fieldset-legend">카테고리 (복수 선택)</legend>
+          <legend className="fieldset-legend">{t("form.categoryLegend")}</legend>
           <div className="chip-group">
             {availableCategories.map((c) => (
               <label
@@ -167,42 +169,42 @@ export function SupplierProfileForm({
             ))}
           </div>
           {selectedCategories.length === 0 && (
-            <p className="text-danger text-sm mt-8">최소 하나의 카테고리를 선택해주세요.</p>
+            <p className="text-danger text-sm mt-8">{t("form.categoryRequired")}</p>
           )}
         </fieldset>
       </div>
 
-      <h2 className="section-title mt-24">제조 역량</h2>
+      <h2 className="section-title mt-24">{t("form.manufacturingCapabilityTitle")}</h2>
       <div className="form-stack">
         <div className="input-field">
-          <label>설비 요약</label>
-          <textarea className="textarea" value={equipmentSummary} onChange={(e) => setEquipmentSummary(e.target.value)} placeholder="보유 설비 요약 (최대 500자)" disabled={contactOnly} />
+          <label>{t("form.equipmentLabel")}</label>
+          <textarea className="textarea" value={equipmentSummary} onChange={(e) => setEquipmentSummary(e.target.value)} placeholder={t("form.equipmentPlaceholder")} disabled={contactOnly} />
         </div>
         <div className="form-row">
           <div className="input-field">
-            <label>월 생산량</label>
-            <input className="input" type="text" value={monthlyCapacity} onChange={(e) => setMonthlyCapacity(e.target.value)} placeholder="예: 50,000개, 100톤" required disabled={contactOnly} />
+            <label>{t("form.monthlyCapacityLabel")}</label>
+            <input className="input" type="text" value={monthlyCapacity} onChange={(e) => setMonthlyCapacity(e.target.value)} placeholder={t("form.monthlyCapacityPlaceholder")} required disabled={contactOnly} />
           </div>
           <div className="input-field">
-            <label>MOQ</label>
-            <input className="input" type="text" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder="예: 1,000개, 500kg" required disabled={contactOnly} />
+            <label>{t("form.moqLabel")}</label>
+            <input className="input" type="text" value={moq} onChange={(e) => setMoq(e.target.value)} placeholder={t("form.moqPlaceholder")} required disabled={contactOnly} />
           </div>
         </div>
 
-        <h2 className="section-title mt-16">인증서 관리</h2>
+        <h2 className="section-title mt-16">{t("form.certificationTitle")}</h2>
         <div className="check-group">
-          <label className="checkbox"><input type="checkbox" checked={oemAvailable} onChange={(e) => setOemAvailable(e.target.checked)} disabled={contactOnly} /> OEM 가능</label>
-          <label className="checkbox"><input type="checkbox" checked={odmAvailable} onChange={(e) => setOdmAvailable(e.target.checked)} disabled={contactOnly} /> ODM 가능</label>
-          <label className="checkbox"><input type="checkbox" checked={rawMaterialSupport} onChange={(e) => setRawMaterialSupport(e.target.checked)} disabled={contactOnly} /> 원재료 지원</label>
-          <label className="checkbox"><input type="checkbox" checked={packagingLabelingSupport} onChange={(e) => setPackagingLabelingSupport(e.target.checked)} disabled={contactOnly} /> 포장/라벨 지원</label>
+          <label className="checkbox"><input type="checkbox" checked={oemAvailable} onChange={(e) => setOemAvailable(e.target.checked)} disabled={contactOnly} /> {t("form.oemLabel")}</label>
+          <label className="checkbox"><input type="checkbox" checked={odmAvailable} onChange={(e) => setOdmAvailable(e.target.checked)} disabled={contactOnly} /> {t("form.odmLabel")}</label>
+          <label className="checkbox"><input type="checkbox" checked={rawMaterialSupport} onChange={(e) => setRawMaterialSupport(e.target.checked)} disabled={contactOnly} /> {t("form.rawMaterialLabel")}</label>
+          <label className="checkbox"><input type="checkbox" checked={packagingLabelingSupport} onChange={(e) => setPackagingLabelingSupport(e.target.checked)} disabled={contactOnly} /> {t("form.packagingLabel")}</label>
         </div>
         <div className="input-field">
-          <label>소개</label>
-          <textarea className="textarea" value={introduction} onChange={(e) => setIntroduction(e.target.value)} placeholder="회사 소개 (최대 2,000자)" disabled={contactOnly} />
+          <label>{t("form.introductionLabel")}</label>
+          <textarea className="textarea" value={introduction} onChange={(e) => setIntroduction(e.target.value)} placeholder={t("form.introductionPlaceholder")} disabled={contactOnly} />
         </div>
 
-        <h2 className="section-title mt-16">포트폴리오 이미지</h2>
-        <p className="text-muted text-sm">제품 사진, 공장 사진 등 포트폴리오 이미지를 등록하세요.</p>
+        <h2 className="section-title mt-16">{t("form.portfolioTitle")}</h2>
+        <p className="text-muted text-sm">{t("form.portfolioDescription")}</p>
 
         {(existingPortfolioImages.length > 0 || previewUrls.length > 0) && (
           <div className="portfolio-grid">
@@ -216,14 +218,14 @@ export function SupplierProfileForm({
               <div key={url} className="portfolio-thumb">
                 <img src={url} alt={selectedPortfolioFiles[idx]?.name ?? "preview"} />
                 <span className="portfolio-thumb-name">{selectedPortfolioFiles[idx]?.name}</span>
-                <button type="button" className="portfolio-thumb-remove" onClick={() => removeSelectedFile(idx)} aria-label="삭제">&times;</button>
+                <button type="button" className="portfolio-thumb-remove" onClick={() => removeSelectedFile(idx)} aria-label={t("form.portfolioRemoveAria")}>&times;</button>
               </div>
             ))}
           </div>
         )}
 
         {existingPortfolioImages.length === 0 && previewUrls.length === 0 && (
-          <p className="text-muted text-sm">등록된 포트폴리오 이미지가 없습니다.</p>
+          <p className="text-muted text-sm">{t("form.portfolioNoImages")}</p>
         )}
 
         <input
@@ -235,11 +237,11 @@ export function SupplierProfileForm({
           onChange={handlePortfolioSelect}
         />
         <button type="button" className="btn btn-secondary" onClick={() => portfolioInputRef.current?.click()} disabled={contactOnly}>
-          이미지 추가
+          {t("form.portfolioAddButton")}
         </button>
 
         <button className="btn btn-primary" type="submit" disabled={isPending || (!contactOnly && selectedCategories.length === 0)}>
-          {isPending ? "처리 중..." : contactOnly ? "연락처 저장" : "저장하기"}
+          {isPending ? t("form.processingButton") : contactOnly ? t("form.contactSaveButton") : t("form.saveButton")}
         </button>
       </div>
     </form>

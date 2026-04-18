@@ -1,0 +1,52 @@
+{
+  "dialog": {
+    "closeAria": "닫기"
+  },
+  "comparison": {
+    "title": "견적 비교",
+    "backToDetail": "← 의뢰 상세로 돌아가기",
+    "loading": "로딩 중...",
+    "loadError": "견적 목록을 불러오지 못했습니다.",
+    "receivedCount": "받은 견적 {{count}}건",
+    "emptyMessage": "아직 받은 견적이 없습니다.",
+    "warningBanner": "공급자 선택 후에는 다른 견적이 자동 거절됩니다. 신중하게 선택해주세요.",
+    "headers": {
+      "supplier": "공급자",
+      "submittedAt": "제출일",
+      "unitPrice": "단가",
+      "moq": "MOQ",
+      "leadTime": "리드타임",
+      "sampleCost": "샘플비",
+      "state": "상태",
+      "actions": "액션"
+    },
+    "sampleFree": "무료",
+    "leadTimeWeeks": "{{weeks}}주",
+    "selectButton": "선택",
+    "declineButton": "거절",
+    "messageButton": "메시지",
+    "detailDialogTitle": "견적 상세",
+    "detailSelectButton": "이 견적 선택",
+    "detailSummary": "단가 {{price}} / MOQ {{moq}} / 납기 {{leadTime}}",
+    "sampleCostLabel": "샘플 비용: {{cost}}",
+    "submittedAtLabel": "제출일: {{date}}",
+    "selectErrorMessage": "견적 선택에 실패했습니다.",
+    "declineDialogTitle": "견적 거절",
+    "declineConfirmMessage": "{{companyName}}의 견적을 거절합니다. 필요하면 사유를 남길 수 있습니다.",
+    "declineReasonPlaceholder": "거절 사유를 입력하세요 (선택)",
+    "declineConfirmButton": "거절 확정",
+    "selectConfirmTitle": "견적 선택 확인",
+    "selectConfirmMessage": "{{companyName}}의 견적을 선택하시겠습니까?",
+    "selectUnitPriceLabel": "단가: {{value}}",
+    "selectMoqLabel": "MOQ: {{value}}",
+    "selectLeadTimeLabel": "납기: {{value}}",
+    "selectConfirmWarning": "견적을 선택하면 의뢰가 마감되고 다른 견적은 자동으로 거절 처리됩니다. 이 작업은 되돌릴 수 없습니다.",
+    "selectConfirmButton": "선택 확정"
+  },
+  "state": {
+    "submitted": "대기",
+    "selected": "선택됨",
+    "declined": "거절됨",
+    "withdrawn": "철회됨"
+  }
+}

@@ -1,8 +1,10 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useLogin } from "../hooks/useLogin"
 
 export function LoginPage() {
+  const { t } = useTranslation("auth")
   const navigate = useNavigate()
   const loginMutation = useLogin()
   const [email, setEmail] = useState("")
@@ -18,10 +20,10 @@ export function LoginPage() {
     <div className="auth-layout">
       <div className="auth-layout-left">
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div className="mb-24" style={{ fontSize: 28, fontWeight: 800 }}>잇다</div>
-          <h1>식품 제조 매칭의<br />새로운 기준</h1>
+          <div className="mb-24" style={{ fontSize: 28, fontWeight: 800 }}>{t("brand")}</div>
+          <h1>{t("login.heroTitleLine1")}<br />{t("login.heroTitleLine2")}</h1>
           <p className="mt-12">
-            공급자 탐색부터 견적 비교, 상담까지 하나의 플랫폼에서 식품 제조 파트너를 만나보세요.
+            {t("login.heroDesc")}
           </p>
           <div className="w-full flex items-center justify-center" style={{
             marginTop: 40,
@@ -32,14 +34,14 @@ export function LoginPage() {
             color: "rgba(255,255,255,0.3)",
             fontSize: "0.85rem"
           }}>
-            Food Factory Image
+            {t("login.imagePlaceholder")}
           </div>
         </div>
       </div>
       <div className="auth-layout-right">
         <form className="auth-form" onSubmit={handleSubmit}>
-          <h2>로그인</h2>
-          <p className="text-muted" style={{ marginTop: -12 }}>계정에 로그인하여 서비스를 이용하세요.</p>
+          <h2>{t("login.title")}</h2>
+          <p className="text-muted" style={{ marginTop: -12 }}>{t("login.subtitle")}</p>
 
           {loginMutation.isError && (
             <div role="alert" className="font-medium" style={{
@@ -49,29 +51,29 @@ export function LoginPage() {
               color: "var(--danger)",
               fontSize: "0.875rem",
             }}>
-              로그인에 실패했습니다. 이메일과 비밀번호를 다시 확인해 주세요.
+              {t("login.errorMessage")}
             </div>
           )}
 
           <div className="input-field">
-            <label>이메일</label>
+            <label>{t("login.emailLabel")}</label>
             <input
               type="email"
               className="input"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="name@company.com"
+              placeholder={t("login.emailPlaceholder")}
             />
           </div>
 
           <div className="input-field">
-            <label>비밀번호</label>
+            <label>{t("login.passwordLabel")}</label>
             <input
               type="password"
               className="input"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="비밀번호를 입력하세요"
+              placeholder={t("login.passwordPlaceholder")}
             />
           </div>
 
@@ -80,11 +82,11 @@ export function LoginPage() {
             className="btn btn-primary w-full"
             disabled={loginMutation.isPending || !email || !password}
           >
-            로그인
+            {t("login.submit")}
           </button>
 
           <p className="auth-helper-text text-center">
-            계정이 없으신가요? <Link to="/signup">회원가입</Link>
+            {t("login.noAccount")} <Link to="/signup">{t("login.signupLink")}</Link>
           </p>
         </form>
       </div>

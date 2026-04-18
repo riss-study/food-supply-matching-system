@@ -130,7 +130,13 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 
 ### 2.9 접근성/국제화
 - 상호작용 요소엔 aria-label 또는 text content. 아이콘만 있는 버튼 특히 주의.
-- 한국어 하드코딩 문자열은 최소화, i18n 리소스로.
+- **사용자 가시 텍스트는 전부 i18n 리소스.** 인라인 한국어 금지 (코드 주석 예외).
+  - `import { useTranslation } from "react-i18next"` + `const { t } = useTranslation("<feature-ns>")`
+  - feature별 namespace JSON (`src/i18n/locales/ko/<ns>.json`)
+  - 공통 어휘(로딩/저장/취소 등)는 `common.json` 재사용, `t("common:save")` prefix
+  - 동적 값: interpolation 사용. json `"suffix": "{{count}}건"`, 코드 `t("suffix", { count })`
+  - 상태 라벨 맵 (`Record<State, string>`) 은 json 으로 옮기고 `t(\`state.${s}\`)` 동적 호출
+  - 테스트 setup 에 `import "../i18n"` 추가 — `t()` 가 실제 번역 반환하도록
 
 ---
 
@@ -337,3 +343,4 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 | 1.1 | 2026-04-18 | §8 사례 2 추가: CORS `allowedOriginPatterns` 전환 (하드코딩 제거 근본 해결). |
 | 1.2 | 2026-04-18 | §2.5에 Query Key Factory 규약 추가. 리터럴 queryKey 금지, feature별 factory 강제. |
 | 1.3 | 2026-04-19 | §2.6 강화: 정적 style 값은 utility class 우선, 동적만 인라인 허용. |
+| 1.4 | 2026-04-19 | §2.9 강화: 사용자 가시 텍스트는 i18n 리소스 강제, useTranslation + namespace 규약 명시. |

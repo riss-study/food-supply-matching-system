@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { usePublicNotices } from "../hooks/usePublicNotices"
 import type { PaginationMeta } from "@fsm/types"
 
 export function NoticeListPage() {
+  const { t } = useTranslation("notices")
   const [page, setPage] = useState(1)
   const size = 20
 
@@ -18,18 +20,18 @@ export function NoticeListPage() {
     <div className="page">
       <div className="page-header">
         <div className="page-header-text">
-          <h1>공지사항</h1>
-          <p>서비스 운영 소식, 업데이트, 안내사항을 한 곳에서 확인할 수 있습니다.</p>
+          <h1>{t("list.title")}</h1>
+          <p>{t("list.description")}</p>
         </div>
       </div>
 
-      {isLoading ? <p>로딩 중...</p> : null}
+      {isLoading ? <p>{t("common:loading")}</p> : null}
 
-      {error ? <p className="text-danger">공지사항을 불러오지 못했습니다.</p> : null}
+      {error ? <p className="text-danger">{t("list.loadError")}</p> : null}
 
       {!isLoading && !error && data?.items.length === 0 && (
         <div className="empty-state">
-          <p>등록된 공지사항이 없습니다.</p>
+          <p>{t("list.emptyMessage")}</p>
         </div>
       )}
 

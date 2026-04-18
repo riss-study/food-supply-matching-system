@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next"
+
 export type NoticeState = "draft" | "published" | "archived"
 
 export function getNoticeStateBadgeColor(state: string): { bg: string; text: string; border: string } {
@@ -13,22 +15,14 @@ export function getNoticeStateBadgeColor(state: string): { bg: string; text: str
   }
 }
 
-export function getNoticeStateLabel(state: string): string {
-  const labels: Record<string, string> = {
-    draft: "작성중",
-    published: "게시됨",
-    archived: "보관됨",
-  }
-  return labels[state] || state
-}
-
 interface NoticeStateBadgeProps {
   state: string
 }
 
 export function NoticeStateBadge({ state }: NoticeStateBadgeProps) {
+  const { t } = useTranslation("notices")
   const colors = getNoticeStateBadgeColor(state)
-  const label = getNoticeStateLabel(state)
+  const label = t(`state.${state}`, { defaultValue: state })
 
   return (
     <span

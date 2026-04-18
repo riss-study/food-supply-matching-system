@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useMe } from "../../auth/hooks/useMe"
 
 interface ApprovalGateProps {
@@ -8,10 +9,11 @@ interface ApprovalGateProps {
 }
 
 export function ApprovalGate({ children, fallback }: ApprovalGateProps) {
+  const { t } = useTranslation("business-profile")
   const { data: me, isLoading } = useMe()
 
   if (isLoading) {
-    return <span>로딩 중...</span>
+    return <span>{t("common:loading")}</span>
   }
 
   const isApproved = me?.businessApprovalState === "approved"
@@ -24,15 +26,15 @@ export function ApprovalGate({ children, fallback }: ApprovalGateProps) {
     return (
       <div className="alert-warning">
         <div>
-          <p className="font-medium" style={{ margin: 0 }}>사업자 승인 필요</p>
+          <p className="font-medium" style={{ margin: 0 }}>{t("approvalGate.title")}</p>
           <p className="text-base" style={{ margin: "8px 0 0" }}>
-            의뢰를 등록하려면 사업자 정보 승인이 필요합니다.
+            {t("approvalGate.description")}
           </p>
           <Link
             to="/business-profile"
             className="btn btn-sm btn-warning mt-12"
           >
-            사업자 정보 등록하기 →
+            {t("approvalGate.link")}
           </Link>
         </div>
       </div>

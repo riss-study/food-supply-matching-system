@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
 type QuoteDialogTone = "default" | "danger" | "success"
 
@@ -29,6 +30,7 @@ type QuoteDialogProps = {
 }
 
 export function QuoteDialog({ title, tone = "default", onClose, children, footer }: QuoteDialogProps) {
+  const { t } = useTranslation("quotes")
   const palette = toneStyles[tone]
 
   return (
@@ -74,7 +76,7 @@ export function QuoteDialog({ title, tone = "default", onClose, children, footer
               height: 32,
               lineHeight: 1,
             }}
-            aria-label="닫기"
+            aria-label={t("dialog.closeAria")}
           >
             ×
           </button>

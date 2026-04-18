@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next"
+
 export type ReviewState = "draft" | "submitted" | "under_review" | "hold" | "approved" | "rejected" | "suspended"
 
 export function getStateBadgeColor(state: string): { bg: string; text: string; border: string } {
@@ -21,26 +23,14 @@ export function getStateBadgeColor(state: string): { bg: string; text: string; b
   }
 }
 
-export function getStateLabel(state: string): string {
-  const labels: Record<string, string> = {
-    draft: "작성중",
-    submitted: "제출됨",
-    under_review: "검토중",
-    hold: "보류",
-    approved: "승인됨",
-    rejected: "반려",
-    suspended: "중단",
-  }
-  return labels[state] || state
-}
-
 interface StateBadgeProps {
   state: string
 }
 
 export function StateBadge({ state }: StateBadgeProps) {
+  const { t } = useTranslation("reviews")
   const colors = getStateBadgeColor(state)
-  const label = getStateLabel(state)
+  const label = t(`state.${state}`, { defaultValue: state })
 
   return (
     <span

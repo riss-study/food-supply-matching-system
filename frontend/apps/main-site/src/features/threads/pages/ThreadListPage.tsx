@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useThreads } from "../hooks/useThreads"
 import type { ThreadSummary } from "@fsm/types"
 
 function ThreadListItem({ thread }: { thread: ThreadSummary }) {
+  const { t } = useTranslation("threads")
   const hasUnread = thread.unreadCount > 0
 
   const formatTime = (dateString: string) => {
@@ -13,7 +15,7 @@ function ThreadListItem({ thread }: { thread: ThreadSummary }) {
     if (diffDays === 0) {
       return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false })
     } else if (diffDays < 7) {
-      return `${diffDays}일 전`
+      return t("list.daysAgo", { days: diffDays })
     } else {
       return date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" })
     }
@@ -25,15 +27,15 @@ function ThreadListItem({ thread }: { thread: ThreadSummary }) {
       <div className="flex-1 flex flex-col gap-4">
         <div className="flex items-center gap-8">
           <span className="font-medium">{thread.otherParty.displayName}</span>
-          <span className="text-muted text-sm">의뢰: {thread.requestTitle}</span>
+          <span className="text-muted text-sm">{t("list.requestPrefix", { title: thread.requestTitle })}</span>
         </div>
         {thread.lastMessage ? (
           <div className={`text-sm truncate ${hasUnread ? "font-medium" : "text-muted"}`}>
             {thread.lastMessage.hasAttachments && "📎 "}
-            {thread.lastMessage.body || "(첨부 파일)"}
+            {thread.lastMessage.body || t("list.attachmentPlaceholder")}
           </div>
         ) : (
-          <div className="text-sm text-muted">아직 메시지가 없습니다</div>
+          <div className="text-sm text-muted">{t("list.noMessages")}</div>
         )}
       </div>
       <div className="flex flex-col items-end gap-8">
@@ -47,14 +49,15 @@ function ThreadListItem({ thread }: { thread: ThreadSummary }) {
 }
 
 export function ThreadListPage() {
+  const { t } = useTranslation("threads")
   const { data, isLoading, error } = useThreads({ page: 1, size: 20 })
   const threads = data?.items ?? []
 
   if (isLoading) {
     return (
       <div className="page">
-        <h1>메시지</h1>
-        <p className="text-muted">로딩 중...</p>
+        <h1>{t("list.title")}</h1>
+        <p className="text-muted">{t("list.loading")}</p>
       </div>
     )
   }
@@ -62,20 +65,20 @@ export function ThreadListPage() {
   if (error) {
     return (
       <div className="page">
-        <h1>메시지</h1>
-        <p className="text-danger">메시지 목록을 불러오지 못했습니다.</p>
+        <h1>{t("list.title")}</h1>
+        <p className="text-danger">{t("list.loadError")}</p>
       </div>
     )
   }
 
   return (
     <div className="page">
-      <h1 className="font-bold" style={{ fontSize: 22 }}>메시지</h1>
+      <h1 className="font-bold" style={{ fontSize: 22 }}>{t("list.title")}</h1>
 
       {threads.length === 0 ? (
         <div className="empty-state">
-          <p>아직 대화가 없습니다.</p>
-          <p className="text-sm">견적을 제출하거나 의뢰에 대해 문의하면 여기에 대화가 표시됩니다.</p>
+          <p>{t("list.emptyTitle")}</p>
+          <p className="text-sm">{t("list.emptyDescription")}</p>
         </div>
       ) : (
         <div className="surface p-0 overflow-hidden">

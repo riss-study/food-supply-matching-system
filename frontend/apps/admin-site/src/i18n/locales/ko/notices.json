@@ -1,0 +1,38 @@
+{
+  "listTitle": "공지사항 관리",
+  "createButton": "새 공지 작성",
+  "tabs": {
+    "all": "전체",
+    "draft": "작성중",
+    "published": "게시됨",
+    "archived": "보관됨"
+  },
+  "empty": "공지사항이 없습니다.",
+  "columns": {
+    "title": "제목",
+    "state": "상태",
+    "createdAt": "작성일",
+    "author": "작성자"
+  },
+  "state": {
+    "draft": "작성중",
+    "published": "게시됨",
+    "archived": "보관됨"
+  },
+  "modal": {
+    "editTitle": "공지 편집",
+    "createTitle": "새 공지 작성",
+    "titleLabel": "제목",
+    "titleHint": "5-200자 이내",
+    "bodyLabel": "내용",
+    "bodyHint": "10-5000자 이내",
+    "attachmentsLabel": "첨부파일",
+    "newFilesLabel": "새 파일 ({{count}}개)",
+    "selectFile": "파일 선택",
+    "publishImmediately": "즉시 게시",
+    "publish": "게시하기",
+    "archive": "보관하기",
+    "saveEdit": "저장",
+    "saveCreate": "작성"
+  }
+}

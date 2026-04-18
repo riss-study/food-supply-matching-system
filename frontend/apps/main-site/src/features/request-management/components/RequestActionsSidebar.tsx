@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import type { RequestDetail } from "@fsm/types"
 import { usePublishRequest } from "../hooks/usePublishRequest"
 import { useCloseRequest } from "../hooks/useCloseRequest"
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function RequestActionsSidebar({ request, onEditToggle, onError }: Props) {
+  const { t } = useTranslation("request-management")
   const publishMutation = usePublishRequest()
   const closeMutation = useCloseRequest()
 
@@ -18,40 +20,40 @@ export function RequestActionsSidebar({ request, onEditToggle, onError }: Props)
   const canClose = request.state === "open"
 
   const handlePublish = () => {
-    if (!window.confirm("의뢰를 게시하시겠습니까? 게시 후에는 공급자가 의뢰를 볼 수 있습니다.")) return
+    if (!window.confirm(t("actions.publishConfirm"))) return
     publishMutation.mutate(request.requestId, {
-      onError: () => onError("게시 처리에 실패했습니다."),
+      onError: () => onError(t("actions.publishError")),
     })
   }
 
   const handleClose = () => {
-    if (!window.confirm("의뢰를 마감하시겠습니까? 마감 후에는 더 이상 견적을 받을 수 없습니다.")) return
+    if (!window.confirm(t("actions.closeConfirm"))) return
     closeMutation.mutate(request.requestId, {
-      onError: () => onError("마감 처리에 실패했습니다."),
+      onError: () => onError(t("actions.closeError")),
     })
   }
 
   return (
     <aside className="flex flex-col gap-16">
       <div className="surface flex flex-col items-center gap-12 text-center">
-        <h3 className="section-title">받은 견적</h3>
+        <h3 className="section-title">{t("actions.receivedQuotesTitle")}</h3>
         {(request.quoteCount ?? 0) > 0 ? (
           <>
-            <p className="font-bold" style={{ fontSize: 36, color: "var(--ink)" }}>{request.quoteCount}건</p>
+            <p className="font-bold" style={{ fontSize: 36, color: "var(--ink)" }}>{t("actions.quoteCount", { count: request.quoteCount })}</p>
             {request.state === "open" && (
               <Link to={`/requests/${request.requestId}/quotes`} className="btn btn-primary w-full">
-                견적 비교
+                {t("actions.compareQuotes")}
               </Link>
             )}
           </>
         ) : (
-          <p className="text-muted text-sm">아직 견적이 없습니다</p>
+          <p className="text-muted text-sm">{t("actions.noQuotesYet")}</p>
         )}
       </div>
 
       {canPublish && (
         <button className="btn btn-primary w-full" onClick={handlePublish} disabled={publishMutation.isPending}>
-          {publishMutation.isPending ? "게시 중..." : "의뢰 게시하기"}
+          {publishMutation.isPending ? t("actions.publishing") : t("actions.publishButton")}
         </button>
       )}
 
@@ -59,12 +61,12 @@ export function RequestActionsSidebar({ request, onEditToggle, onError }: Props)
         <div className="flex gap-8 justify-center">
           {canEdit && (
             <button className="btn btn-secondary" onClick={onEditToggle}>
-              수정
+              {t("common:edit")}
             </button>
           )}
           {canClose && (
             <button className="btn btn-danger" onClick={handleClose} disabled={closeMutation.isPending}>
-              {closeMutation.isPending ? "처리 중..." : "마감"}
+              {closeMutation.isPending ? t("common:processing") : t("actions.closeButton")}
             </button>
           )}
         </div>

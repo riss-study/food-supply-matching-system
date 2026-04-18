@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { Navigate, useLocation } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useMe } from "../../auth/hooks/useMe"
 import { useAuthStore } from "../../auth/store/auth-store"
 
@@ -8,6 +9,7 @@ interface SupplierRouteProps {
 }
 
 export function SupplierRoute({ children }: SupplierRouteProps) {
+  const { t } = useTranslation("supplier-profile")
   const accessToken = useAuthStore((state) => state.accessToken)
   const { data: me, isLoading } = useMe()
   const location = useLocation()
@@ -17,7 +19,7 @@ export function SupplierRoute({ children }: SupplierRouteProps) {
   }
 
   if (isLoading) {
-    return <div>로딩 중...</div>
+    return <div>{t("common:loading")}</div>
   }
 
   if (me?.role !== "supplier") {

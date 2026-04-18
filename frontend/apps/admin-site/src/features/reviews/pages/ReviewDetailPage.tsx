@@ -1,47 +1,39 @@
 import { useParams } from "react-router-dom"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useReviewDetail } from "../hooks/useReviewDetail"
 import { useApproveReview, useHoldReview, useRejectReview } from "../hooks/useReviewActions"
 import { StateBadge } from "../components/StateBadge"
 import { adminApiClient } from "../../auth/lib/api-client"
 import type { AdminReviewHistoryItem } from "@fsm/types"
 
-function getActionTypeLabel(actionType: string): string {
-  const labels: Record<string, string> = {
-    review_approve: "승인",
-    review_hold: "보류",
-    review_reject: "반려",
-    submission_created: "제출 생성",
-    submission_updated: "제출 수정",
-  }
-  return labels[actionType] || actionType
-}
-
 function HistoryItem({ item }: { item: AdminReviewHistoryItem }) {
+  const { t } = useTranslation("reviews")
+  const actionLabel = t(`actionType.${item.actionType}`, { defaultValue: item.actionType })
   return (
     <div className="timeline-item">
       <div className="timeline-item-header">
-        <span className="timeline-item-action">{getActionTypeLabel(item.actionType)}</span>
+        <span className="timeline-item-action">{actionLabel}</span>
         <span className="timeline-item-date">
           {new Date(item.createdAt).toLocaleString("ko-KR")}
         </span>
       </div>
       <div className="timeline-item-actor">
-        처리자: {item.actorUserId}
+        {t("detail.actor", { actor: item.actorUserId })}
       </div>
       {item.noteInternal && (
         <div className="timeline-item-note">
-          <span className="timeline-item-label">내부 메모:</span> {item.noteInternal}
+          <span className="timeline-item-label">{t("detail.noteInternalLabel")}</span> {item.noteInternal}
         </div>
       )}
       {item.notePublic && (
         <div className="timeline-item-note">
-          <span className="timeline-item-label">공개 메모:</span> {item.notePublic}
+          <span className="timeline-item-label">{t("detail.notePublicLabel")}</span> {item.notePublic}
         </div>
       )}
       {item.reasonCode && (
         <div className="timeline-item-note">
-          <span className="timeline-item-label">사유 코드:</span> {item.reasonCode}
+          <span className="timeline-item-label">{t("detail.reasonCodeLabel")}</span> {item.reasonCode}
         </div>
       )}
     </div>
@@ -49,6 +41,7 @@ function HistoryItem({ item }: { item: AdminReviewHistoryItem }) {
 }
 
 export function ReviewDetailPage() {
+  const { t } = useTranslation("reviews")
   const { reviewId = "" } = useParams()
   const { data, isLoading } = useReviewDetail(reviewId)
   const approveMutation = useApproveReview(reviewId)
@@ -59,13 +52,13 @@ export function ReviewDetailPage() {
   const [reasonCode, setReasonCode] = useState("")
 
   if (isLoading || !data) {
-    return <div className="page"><h1>검수 상세</h1><p>로딩 중...</p></div>
+    return <div className="page"><h1>{t("detailTitle")}</h1><p>{t("common:loading")}</p></div>
   }
 
   return (
     <div className="page">
       <div className="page-header">
-        <h1>검수 상세</h1>
+        <h1>{t("detailTitle")}</h1>
       </div>
 
       <div className="two-col-sidebar-r">
@@ -78,17 +71,17 @@ export function ReviewDetailPage() {
               </div>
             </div>
             <dl className="detail-grid">
-              <dt>지역</dt>
+              <dt>{t("detail.region")}</dt>
               <dd>{data.region}</dd>
-              <dt>대표자</dt>
+              <dt>{t("detail.representative")}</dt>
               <dd>{data.representativeName}</dd>
-              <dt>카테고리</dt>
+              <dt>{t("detail.categories")}</dt>
               <dd>{data.categories.join(", ")}</dd>
-              <dt>제출일</dt>
+              <dt>{t("detail.submittedAt")}</dt>
               <dd>{new Date(data.submittedAt).toLocaleString("ko-KR")}</dd>
               {data.reviewedAt && (
                 <>
-                  <dt>검수일</dt>
+                  <dt>{t("detail.reviewedAt")}</dt>
                   <dd>{new Date(data.reviewedAt).toLocaleString("ko-KR")}</dd>
                 </>
               )}
@@ -96,7 +89,7 @@ export function ReviewDetailPage() {
           </div>
 
           <div className="surface">
-            <h2 className="section-title mb-16">제출 서류</h2>
+            <h2 className="section-title mb-16">{t("detail.submittedDocuments")}</h2>
             <ul className="file-list">
               {data.files.map((file) => (
                 <li key={file.fileId} className="file-list-item">
@@ -115,10 +108,10 @@ export function ReviewDetailPage() {
                         URL.revokeObjectURL(url)
                       }}
                     >
-                      다운로드
+                      {t("common:download")}
                     </button>
                   ) : (
-                    <span className="file-list-unavailable">다운로드 불가</span>
+                    <span className="file-list-unavailable">{t("common:downloadUnavailable")}</span>
                   )}
                 </li>
               ))}
@@ -129,7 +122,7 @@ export function ReviewDetailPage() {
         <div>
           {data.reviewHistory.length > 0 && (
             <div className="surface">
-              <h2 className="section-title mb-16">검수 이력 ({data.reviewHistory.length}건)</h2>
+              <h2 className="section-title mb-16">{t("detail.historyTitle", { count: data.reviewHistory.length })}</h2>
               <div className="timeline">
                 {data.reviewHistory.map((item, index) => (
                   <HistoryItem key={index} item={item} />
@@ -139,35 +132,35 @@ export function ReviewDetailPage() {
           )}
 
           <div className="surface">
-            <h2 className="section-title mb-16">검수 결정</h2>
+            <h2 className="section-title mb-16">{t("detail.decisionTitle")}</h2>
             <div className="form-stack">
               <div className="input-field">
-                <label>내부 메모</label>
+                <label>{t("detail.noteInternal")}</label>
                 <textarea
                   className="textarea"
                   value={noteInternal}
                   onChange={(e) => setNoteInternal(e.target.value)}
-                  placeholder="내부 메모"
+                  placeholder={t("detail.noteInternal")}
                   rows={3}
                 />
               </div>
               <div className="input-field">
-                <label>사용자 표시 메모</label>
+                <label>{t("detail.notePublic")}</label>
                 <textarea
                   className="textarea"
                   value={notePublic}
                   onChange={(e) => setNotePublic(e.target.value)}
-                  placeholder="사용자 표시 메모"
+                  placeholder={t("detail.notePublic")}
                   rows={3}
                 />
               </div>
               <div className="input-field">
-                <label>사유 코드 (선택)</label>
+                <label>{t("detail.reasonCodeOptional")}</label>
                 <input
                   className="input"
                   value={reasonCode}
                   onChange={(e) => setReasonCode(e.target.value)}
-                  placeholder="사유 코드 (선택)"
+                  placeholder={t("detail.reasonCodeOptional")}
                 />
               </div>
               <div className="btn-group">
@@ -176,21 +169,21 @@ export function ReviewDetailPage() {
                   onClick={() => approveMutation.mutate({ noteInternal, notePublic })}
                   disabled={approveMutation.isPending}
                 >
-                  {approveMutation.isPending ? "처리 중..." : "승인"}
+                  {approveMutation.isPending ? t("common:processing") : t("detail.approve")}
                 </button>
                 <button
                   className="btn btn-warning"
                   onClick={() => holdMutation.mutate({ noteInternal, notePublic })}
                   disabled={holdMutation.isPending}
                 >
-                  {holdMutation.isPending ? "처리 중..." : "보류"}
+                  {holdMutation.isPending ? t("common:processing") : t("detail.hold")}
                 </button>
                 <button
                   className="btn btn-danger"
                   onClick={() => rejectMutation.mutate({ noteInternal, notePublic, reasonCode })}
                   disabled={rejectMutation.isPending}
                 >
-                  {rejectMutation.isPending ? "처리 중..." : "반려"}
+                  {rejectMutation.isPending ? t("common:processing") : t("detail.reject")}
                 </button>
               </div>
             </div>

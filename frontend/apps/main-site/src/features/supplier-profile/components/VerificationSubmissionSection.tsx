@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useSubmitVerification } from "../hooks/useSubmitVerification"
 
 interface Props {
@@ -6,6 +7,7 @@ interface Props {
 }
 
 export function VerificationSubmissionSection({ profileId }: Props) {
+  const { t } = useTranslation("supplier-profile")
   const submitMutation = useSubmitVerification()
   const [businessRegistrationDoc, setBusinessRegistrationDoc] = useState<File | null>(null)
   const [certificationFiles, setCertificationFiles] = useState<File[]>([])
@@ -22,10 +24,10 @@ export function VerificationSubmissionSection({ profileId }: Props) {
 
   return (
     <div className="surface">
-      <h2 className="section-title mb-16">검수 서류 제출</h2>
+      <h2 className="section-title mb-16">{t("submission.title")}</h2>
       <div className="form-stack">
         <div className="input-field">
-          <label>사업자등록증 (필수)</label>
+          <label>{t("submission.registrationDocLabel")}</label>
           <input
             type="file"
             accept=".pdf,image/png,image/jpeg"
@@ -33,7 +35,7 @@ export function VerificationSubmissionSection({ profileId }: Props) {
           />
         </div>
         <div className="input-field">
-          <label>인증서 파일들</label>
+          <label>{t("submission.certificationsLabel")}</label>
           <input
             type="file"
             multiple
@@ -42,7 +44,7 @@ export function VerificationSubmissionSection({ profileId }: Props) {
           />
         </div>
         <div className="input-field">
-          <label>포트폴리오 이미지</label>
+          <label>{t("submission.portfolioLabel")}</label>
           <input
             type="file"
             multiple
@@ -55,9 +57,9 @@ export function VerificationSubmissionSection({ profileId }: Props) {
           disabled={!profileId || !businessRegistrationDoc || submitMutation.isPending}
           onClick={handleSubmit}
         >
-          {submitMutation.isPending ? "제출 중..." : "검수 제출하기"}
+          {submitMutation.isPending ? t("submission.submittingButton") : t("submission.submitButton")}
         </button>
-        {submitMutation.isError ? <p className="text-danger text-sm">검수 제출에 실패했습니다.</p> : null}
+        {submitMutation.isError ? <p className="text-danger text-sm">{t("submission.submitError")}</p> : null}
       </div>
     </div>
   )

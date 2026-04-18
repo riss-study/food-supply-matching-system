@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { RequestDetail } from "@fsm/types"
 import { useUpdateRequest } from "../hooks/useUpdateRequest"
 
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function RequestEditForm({ request, onSaved, onError }: Props) {
+  const { t } = useTranslation("request-management")
   const updateMutation = useUpdateRequest()
   const [title, setTitle] = useState(request.title)
   const [desiredVolume, setDesiredVolume] = useState(String(request.desiredVolume))
@@ -52,78 +54,78 @@ export function RequestEditForm({ request, onSaved, onError }: Props) {
       },
       {
         onSuccess: onSaved,
-        onError: () => onError("수정 저장에 실패했습니다."),
+        onError: () => onError(t("edit.saveError")),
       },
     )
   }
 
   return (
     <div className="surface flex flex-col gap-12">
-      <h2 className="section-title">의뢰 수정</h2>
+      <h2 className="section-title">{t("edit.title")}</h2>
       <div className="input-field">
-        <label>의뢰 제목</label>
-        <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="의뢰 제목" />
+        <label>{t("edit.titleLabel")}</label>
+        <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("edit.titlePlaceholder")} />
       </div>
       <div className="flex gap-12 flex-wrap">
         <div className="input-field flex-1">
-          <label>희망 수량</label>
+          <label>{t("edit.desiredVolumeLabel")}</label>
           <input
             className="input"
             type="number"
             value={desiredVolume}
             onChange={(e) => setDesiredVolume(e.target.value)}
-            placeholder="희망 수량"
+            placeholder={t("edit.desiredVolumePlaceholder")}
           />
         </div>
         <div className="input-field flex-1">
-          <label>최소 단가</label>
+          <label>{t("edit.priceMinLabel")}</label>
           <input
             className="input"
             type="number"
             value={targetPriceMin}
             onChange={(e) => setTargetPriceMin(e.target.value)}
-            placeholder="최소 단가"
+            placeholder={t("edit.priceMinPlaceholder")}
           />
         </div>
         <div className="input-field flex-1">
-          <label>최대 단가</label>
+          <label>{t("edit.priceMaxLabel")}</label>
           <input
             className="input"
             type="number"
             value={targetPriceMax}
             onChange={(e) => setTargetPriceMax(e.target.value)}
-            placeholder="최대 단가"
+            placeholder={t("edit.priceMaxPlaceholder")}
           />
         </div>
       </div>
       <div className="flex gap-12 flex-wrap">
         <div className="input-field flex-1">
-          <label>원재료 규칙</label>
+          <label>{t("edit.rawMaterialRuleLabel")}</label>
           <select
             className="select"
             value={rawMaterialRule}
             onChange={(e) => setRawMaterialRule(e.target.value as RawMaterialRule)}
           >
-            <option value="">원재료 규칙 선택</option>
-            <option value="requester_provided">의뢰자 제공</option>
-            <option value="supplier_provided">공급자 제공</option>
+            <option value="">{t("edit.rawMaterialRulePlaceholder")}</option>
+            <option value="requester_provided">{t("edit.rawMaterialRequester")}</option>
+            <option value="supplier_provided">{t("edit.rawMaterialSupplier")}</option>
           </select>
         </div>
         <div className="input-field flex-1">
-          <label>포장 요구</label>
+          <label>{t("edit.packagingLabel")}</label>
           <select
             className="select"
             value={packagingRequirement}
             onChange={(e) => setPackagingRequirement(e.target.value as PackagingRequirement)}
           >
-            <option value="">포장 요구 선택</option>
-            <option value="private_label">프라이빗 라벨</option>
-            <option value="bulk">벌크</option>
-            <option value="none">없음</option>
+            <option value="">{t("edit.packagingPlaceholder")}</option>
+            <option value="private_label">{t("edit.packagingPrivateLabel")}</option>
+            <option value="bulk">{t("edit.packagingBulk")}</option>
+            <option value="none">{t("edit.packagingNone")}</option>
           </select>
         </div>
         <div className="input-field flex-1">
-          <label>납기</label>
+          <label>{t("edit.deliveryLabel")}</label>
           <input
             className="input"
             type="date"
@@ -133,12 +135,12 @@ export function RequestEditForm({ request, onSaved, onError }: Props) {
         </div>
       </div>
       <div className="input-field">
-        <label>추가 요구사항</label>
+        <label>{t("edit.notesLabel")}</label>
         <textarea
           className="textarea"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="추가 요구사항"
+          placeholder={t("edit.notesPlaceholder")}
           rows={4}
         />
       </div>
@@ -148,7 +150,7 @@ export function RequestEditForm({ request, onSaved, onError }: Props) {
           onClick={handleSubmit}
           disabled={updateMutation.isPending || title.trim().length < 5 || desiredVolume.trim().length === 0}
         >
-          {updateMutation.isPending ? "저장 중..." : "변경 저장"}
+          {updateMutation.isPending ? t("edit.savingButton") : t("edit.saveButton")}
         </button>
       </div>
     </div>

@@ -1,0 +1,51 @@
+{
+  "statusLabels": {
+    "not_submitted": "미제출",
+    "submitted": "승인 대기 중",
+    "approved": "승인 완료",
+    "rejected": "반려됨"
+  },
+  "form": {
+    "businessNameLabel": "상호명",
+    "businessNamePlaceholder": "2-100자",
+    "registrationNumberLabel": "사업자등록번호",
+    "registrationNumberPlaceholder": "000-00-00000",
+    "registrationNumberInvalid": "올바른 형식이 아닙니다 (000-00-00000)",
+    "contactNameLabel": "담당자 이름",
+    "contactPhoneLabel": "담당자 연락처",
+    "contactEmailLabel": "담당자 이메일"
+  },
+  "page": {
+    "title": "사업자 정보",
+    "registerTitle": "사업자 정보 등록",
+    "registerDesc": "의뢰를 등록하려면 사업자 정보를 먼저 제출하고 승인 상태를 확인해야 합니다.",
+    "manageTitle": "사업자 정보 관리",
+    "approvalState": "승인 상태:",
+    "submittedMessage": "승인 대기 중입니다. 관리자 검토 후 의뢰 생성이 가능합니다.",
+    "approvedMessage": "승인이 완료되었습니다. 의뢰 생성이 가능합니다.",
+    "approvedCta": "새 의뢰 등록하기",
+    "rejectedMessage": "반려되었습니다. 아래 사유를 확인하고 수정해 주세요.",
+    "rejectionReasonPrefix": "사유: {{reason}}",
+    "editTitle": "정보 수정",
+    "editedInfoTitle": "등록된 정보",
+    "dt": {
+      "businessName": "상호명",
+      "registrationNumber": "사업자등록번호",
+      "contactName": "담당자",
+      "contactPhone": "연락처",
+      "contactEmail": "이메일",
+      "submittedAt": "제출일",
+      "approvedAt": "승인일"
+    },
+    "editButton": "정보 수정",
+    "submitButton": "제출하기",
+    "editSubmitButton": "수정하기",
+    "submitError": "제출에 실패했습니다.",
+    "updateError": "수정에 실패했습니다."
+  },
+  "approvalGate": {
+    "title": "사업자 승인 필요",
+    "description": "의뢰를 등록하려면 사업자 정보 승인이 필요합니다.",
+    "link": "사업자 정보 등록하기 →"
+  }
+}

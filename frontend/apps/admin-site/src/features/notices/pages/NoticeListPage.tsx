@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useNotices } from "../hooks/useNotices"
 import { NoticeStateBadge } from "../components/NoticeStateBadge"
 import type { PaginationMeta } from "@fsm/types"
@@ -9,13 +10,14 @@ interface NoticeListPageProps {
 }
 
 const tabs = [
-  { value: "", label: "전체" },
-  { value: "draft", label: "작성중" },
-  { value: "published", label: "게시됨" },
-  { value: "archived", label: "보관됨" },
+  { value: "", labelKey: "tabs.all" },
+  { value: "draft", labelKey: "tabs.draft" },
+  { value: "published", labelKey: "tabs.published" },
+  { value: "archived", labelKey: "tabs.archived" },
 ]
 
 export function NoticeListPage({ onCreateClick, onEditClick }: NoticeListPageProps) {
+  const { t } = useTranslation("notices")
   const [state, setState] = useState("")
   const [sort] = useState("")
   const [order] = useState<"asc" | "desc">("desc")
@@ -45,13 +47,13 @@ export function NoticeListPage({ onCreateClick, onEditClick }: NoticeListPagePro
   return (
     <div className="page">
       <div className="page-header">
-        <h1>공지사항 관리</h1>
+        <h1>{t("listTitle")}</h1>
         <div className="page-header-actions">
           <input className="input" type="date" value={fromDate} max={maxFrom} onChange={(e) => { setFromDate(e.target.value); setPage(1) }} />
           <span className="text-muted">~</span>
           <input className="input" type="date" value={toDate} min={minTo} max={today} onChange={(e) => { setToDate(e.target.value); setPage(1) }} />
           <button className="btn btn-primary" onClick={onCreateClick}>
-            새 공지 작성
+            {t("createButton")}
           </button>
         </div>
       </div>
@@ -63,39 +65,39 @@ export function NoticeListPage({ onCreateClick, onEditClick }: NoticeListPagePro
             className={state === tab.value ? "active" : ""}
             onClick={() => { setState(tab.value); setPage(1) }}
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>
 
-      {isLoading ? <p className="text-muted text-center">로딩 중...</p> : null}
+      {isLoading ? <p className="text-muted text-center">{t("common:loading")}</p> : null}
 
       {!isLoading && data?.items.length === 0 ? (
         <div className="empty-state">
-          <p>공지사항이 없습니다.</p>
+          <p>{t("empty")}</p>
         </div>
       ) : data?.items.length ? (
         <div className="surface p-0 overflow-hidden">
           <table className="data-table">
             <thead>
               <tr>
-                <th>제목</th>
-                <th>상태</th>
-                <th>작성일</th>
-                <th>작성자</th>
+                <th>{t("columns.title")}</th>
+                <th>{t("columns.state")}</th>
+                <th>{t("columns.createdAt")}</th>
+                <th>{t("columns.author")}</th>
               </tr>
             </thead>
             <tbody>
               {data.items.map((item) => (
                 <tr key={item.noticeId} className="cursor-pointer" onClick={() => onEditClick?.(item.noticeId)}>
-                  <td className="font-semibold" data-label="제목">{item.title}</td>
-                  <td data-label="상태">
+                  <td className="font-semibold" data-label={t("columns.title")}>{item.title}</td>
+                  <td data-label={t("columns.state")}>
                     <NoticeStateBadge state={item.state} />
                   </td>
-                  <td className="text-muted" data-label="작성일">
+                  <td className="text-muted" data-label={t("columns.createdAt")}>
                     {new Date(item.createdAt).toLocaleDateString("ko-KR")}
                   </td>
-                  <td className="text-muted" data-label="작성자">{item.authorName || item.authorId}</td>
+                  <td className="text-muted" data-label={t("columns.author")}>{item.authorName || item.authorId}</td>
                 </tr>
               ))}
             </tbody>

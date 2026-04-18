@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import type { CreateNoticeRequest, NoticeDetail, NoticeAttachment, UpdateNoticeRequest } from "@fsm/types"
 import { adminApiClient } from "../../auth/lib/api-client"
 
@@ -21,6 +22,7 @@ export function NoticeCreateEditModal({
   onArchive,
   isSubmitting,
 }: NoticeCreateEditModalProps) {
+  const { t } = useTranslation("notices")
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
   const [publishImmediately, setPublishImmediately] = useState(false)
@@ -190,12 +192,12 @@ export function NoticeCreateEditModal({
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-        <h2>{isEditMode ? "공지 편집" : "새 공지 작성"}</h2>
+        <h2>{isEditMode ? t("modal.editTitle") : t("modal.createTitle")}</h2>
 
         <form onSubmit={handleSubmit}>
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              제목
+              {t("modal.titleLabel")}
               <input
                 type="text"
                 value={title}
@@ -207,12 +209,12 @@ export function NoticeCreateEditModal({
                 disabled={isSubmitting}
               />
             </label>
-            <small className="text-muted">5-200자 이내</small>
+            <small className="text-muted">{t("modal.titleHint")}</small>
           </div>
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              내용
+              {t("modal.bodyLabel")}
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
@@ -223,11 +225,11 @@ export function NoticeCreateEditModal({
                 disabled={isSubmitting}
               />
             </label>
-            <small className="text-muted">10-5000자 이내</small>
+            <small className="text-muted">{t("modal.bodyHint")}</small>
           </div>
 
           <div style={formGroupStyle}>
-            <label style={labelStyle}>첨부파일</label>
+            <label style={labelStyle}>{t("modal.attachmentsLabel")}</label>
 
             {existingAttachments.length > 0 && (
               <ul className="file-list">
@@ -248,7 +250,7 @@ export function NoticeCreateEditModal({
                       onClick={() => handleRemoveExistingAttachment(attachment.attachmentId)}
                       disabled={isSubmitting}
                     >
-                      삭제
+                      {t("common:delete")}
                     </button>
                   </li>
                 ))}
@@ -257,7 +259,7 @@ export function NoticeCreateEditModal({
 
             {newFiles.length > 0 && (
               <div className="mb-12">
-                <p className="text-success font-medium mb-8" style={{ fontSize: 13 }}>새 파일 ({newFiles.length}개)</p>
+                <p className="text-success font-medium mb-8" style={{ fontSize: 13 }}>{t("modal.newFilesLabel", { count: newFiles.length })}</p>
                 <ul className="file-list" style={{ border: "1px solid var(--line)", borderRadius: 8, padding: "0 12px" }}>
                   {newFiles.map((file, index) => (
                     <li key={`${file.name}-${index}`} className="file-list-item">
@@ -290,7 +292,7 @@ export function NoticeCreateEditModal({
               onClick={() => fileInputRef.current?.click()}
               disabled={isSubmitting}
             >
-              파일 선택
+              {t("modal.selectFile")}
             </button>
           </div>
 
@@ -303,14 +305,14 @@ export function NoticeCreateEditModal({
                   onChange={(e) => setPublishImmediately(e.target.checked)}
                   disabled={isSubmitting}
                 />
-                즉시 게시
+                {t("modal.publishImmediately")}
               </label>
             </div>
           )}
 
           <div style={buttonGroupStyle}>
             <button type="button" onClick={onClose} style={buttonStyle} disabled={isSubmitting}>
-              취소
+              {t("common:cancel")}
             </button>
 
             {isEditMode && (isDraft || notice?.state === "archived") && onPublish && (
@@ -320,7 +322,7 @@ export function NoticeCreateEditModal({
                 style={successButtonStyle}
                 disabled={isSubmitting}
               >
-                게시하기
+                {t("modal.publish")}
               </button>
             )}
 
@@ -331,12 +333,12 @@ export function NoticeCreateEditModal({
                 style={dangerButtonStyle}
                 disabled={isSubmitting}
               >
-                보관하기
+                {t("modal.archive")}
               </button>
             )}
 
             <button type="submit" style={primaryButtonStyle} disabled={isSubmitting}>
-              {isSubmitting ? "저장 중..." : isEditMode ? "저장" : "작성"}
+              {isSubmitting ? t("common:saving") : isEditMode ? t("modal.saveEdit") : t("modal.saveCreate")}
             </button>
           </div>
         </form>

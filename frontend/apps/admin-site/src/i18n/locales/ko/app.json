@@ -1,0 +1,11 @@
+{
+  "homeTitle": "운영 작업 공간",
+  "homeDescription": "검수, 공지, 통계를 빠르게 확인하고 운영 판단을 내리는 내부 작업 공간입니다.",
+  "brand": "잇다",
+  "brandSuffix": "Admin",
+  "nav": {
+    "reviews": "업체 검수",
+    "notices": "공지 관리",
+    "stats": "통계"
+  }
+}

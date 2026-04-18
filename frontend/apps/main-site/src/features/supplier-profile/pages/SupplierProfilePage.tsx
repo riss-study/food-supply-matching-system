@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { useCreateSupplierProfile } from "../hooks/useCreateSupplierProfile"
 import { useLatestVerificationSubmission } from "../hooks/useLatestVerificationSubmission"
 import { useSupplierProfile } from "../hooks/useSupplierProfile"
@@ -7,6 +8,7 @@ import { SupplierProfileForm } from "../components/SupplierProfileForm"
 import { VerificationSubmissionSection } from "../components/VerificationSubmissionSection"
 
 export function SupplierProfilePage() {
+  const { t } = useTranslation("supplier-profile")
   const { data: profile, isLoading } = useSupplierProfile()
   const { data: latestSubmission } = useLatestVerificationSubmission()
   const createMutation = useCreateSupplierProfile()
@@ -16,9 +18,9 @@ export function SupplierProfilePage() {
     return (
       <div className="page">
         <div className="page-header">
-          <h1>공급자 프로필</h1>
+          <h1>{t("page.title")}</h1>
         </div>
-        <p>로딩 중...</p>
+        <p>{t("page.loading")}</p>
       </div>
     )
   }
@@ -32,8 +34,8 @@ export function SupplierProfilePage() {
       <div className="content-narrow-lg flex flex-col gap-24">
         <div className="page-header">
           <div className="page-header-text">
-            <h1>공급자 프로필 관리</h1>
-            <p>회사 소개, 생산 역량, 공개 프로필 준비 상태, 검수 제출 흐름을 한 화면에서 관리합니다.</p>
+            <h1>{t("page.manageTitle")}</h1>
+            <p>{t("page.manageDescription")}</p>
           </div>
         </div>
 
@@ -81,7 +83,7 @@ export function SupplierProfilePage() {
             }}
           />
         ) : (
-          <p className="text-muted">현재 검수 상태에서는 프로필을 수정할 수 없습니다.</p>
+          <p className="text-muted">{t("page.notEditable")}</p>
         )}
 
         <VerificationSubmissionSection profileId={profile?.profileId} />

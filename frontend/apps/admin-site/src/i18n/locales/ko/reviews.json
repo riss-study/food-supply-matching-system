@@ -1,0 +1,57 @@
+{
+  "queueTitle": "업체 검수",
+  "detailTitle": "검수 상세",
+  "tabs": {
+    "all": "전체",
+    "submitted": "제출됨",
+    "under_review": "검수중",
+    "hold": "보완요청",
+    "approved": "승인",
+    "rejected": "반려"
+  },
+  "empty": "검수 대기 건이 없습니다.",
+  "columns": {
+    "companyName": "회사명",
+    "state": "현재 상태",
+    "stateShort": "상태",
+    "submittedAt": "제출일",
+    "pendingDays": "대기일수"
+  },
+  "pendingDaysValue": "{{days}}일",
+  "state": {
+    "draft": "작성중",
+    "submitted": "제출됨",
+    "under_review": "검토중",
+    "hold": "보류",
+    "approved": "승인됨",
+    "rejected": "반려",
+    "suspended": "중단"
+  },
+  "actionType": {
+    "review_approve": "승인",
+    "review_hold": "보류",
+    "review_reject": "반려",
+    "submission_created": "제출 생성",
+    "submission_updated": "제출 수정"
+  },
+  "detail": {
+    "region": "지역",
+    "representative": "대표자",
+    "categories": "카테고리",
+    "submittedAt": "제출일",
+    "reviewedAt": "검수일",
+    "submittedDocuments": "제출 서류",
+    "historyTitle": "검수 이력 ({{count}}건)",
+    "actor": "처리자: {{actor}}",
+    "noteInternalLabel": "내부 메모:",
+    "notePublicLabel": "공개 메모:",
+    "reasonCodeLabel": "사유 코드:",
+    "decisionTitle": "검수 결정",
+    "noteInternal": "내부 메모",
+    "notePublic": "사용자 표시 메모",
+    "reasonCodeOptional": "사유 코드 (선택)",
+    "approve": "승인",
+    "hold": "보류",
+    "reject": "반려"
+  }
+}

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useCancelRequest } from "../hooks/useCancelRequest"
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function RequestCancelDialog({ requestId, onClose, onError }: Props) {
+  const { t } = useTranslation("request-management")
   const cancelMutation = useCancelRequest()
   const [reason, setReason] = useState("")
 
@@ -17,32 +19,32 @@ export function RequestCancelDialog({ requestId, onClose, onError }: Props) {
       { requestId, reason },
       {
         onSuccess: onClose,
-        onError: () => onError("취소 처리에 실패했습니다."),
+        onError: () => onError(t("cancel.cancelError")),
       },
     )
   }
 
   return (
     <div className="surface flex flex-col gap-12">
-      <h3 className="font-semibold text-danger">의뢰 취소</h3>
-      <p className="text-muted">의뢰를 취소하시겠습니까? 취소된 의뢰는 복구할 수 없습니다.</p>
+      <h3 className="font-semibold text-danger">{t("cancel.title")}</h3>
+      <p className="text-muted">{t("cancel.message")}</p>
       <div className="input-field">
-        <label>취소 사유 (선택사항)</label>
+        <label>{t("cancel.reasonLabel")}</label>
         <textarea
           className="textarea"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="취소 사유를 입력해주세요"
+          placeholder={t("cancel.reasonPlaceholder")}
           maxLength={500}
           rows={2}
         />
       </div>
       <div className="flex gap-8">
         <button className="btn btn-danger btn-sm" onClick={handleConfirm} disabled={cancelMutation.isPending}>
-          {cancelMutation.isPending ? "처리 중..." : "확인"}
+          {cancelMutation.isPending ? t("cancel.processingButton") : t("cancel.confirmButton")}
         </button>
         <button className="btn btn-secondary btn-sm" onClick={onClose}>
-          취소
+          {t("cancel.cancelButton")}
         </button>
       </div>
     </div>

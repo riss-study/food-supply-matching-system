@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { Link, useParams } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useThreadDetail } from "../hooks/useThreadDetail"
 import { useSendMessage } from "../hooks/useSendMessage"
 import { useMarkThreadRead } from "../hooks/useMarkThreadRead"
@@ -20,6 +21,7 @@ interface UploadingFile {
 }
 
 export function ThreadDetailPage() {
+  const { t } = useTranslation("threads")
   const { threadId = "" } = useParams<{ threadId: string }>()
   const currentUser = useAuthStore((state) => state.user)
   const { data: thread, isLoading, error } = useThreadDetail(threadId)
@@ -84,11 +86,11 @@ export function ThreadDetailPage() {
           scrollToBottom()
         },
         onError: () => {
-          setSendError("메시지 전송에 실패했습니다. 다시 시도해주세요.")
+          setSendError(t("detail.sendError"))
         },
       },
     )
-  }, [messageText, pendingAttachments, sendMessageMutation, scrollToBottom])
+  }, [messageText, pendingAttachments, sendMessageMutation, scrollToBottom, t])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -150,8 +152,8 @@ export function ThreadDetailPage() {
   if (isLoading) {
     return (
       <div className="page">
-        <h1>대화</h1>
-        <p className="text-muted">로딩 중...</p>
+        <h1>{t("detail.title")}</h1>
+        <p className="text-muted">{t("detail.loading")}</p>
       </div>
     )
   }
@@ -159,9 +161,9 @@ export function ThreadDetailPage() {
   if (error || !thread) {
     return (
       <div className="page">
-        <h1>대화</h1>
-        <p className="text-danger">대화 정보를 불러오지 못했습니다.</p>
-        <Link to="/threads" className="btn btn-ghost btn-sm">메시지 목록으로 돌아가기</Link>
+        <h1>{t("detail.title")}</h1>
+        <p className="text-danger">{t("detail.loadError")}</p>
+        <Link to="/threads" className="btn btn-ghost btn-sm">{t("detail.backToList")}</Link>
       </div>
     )
   }
@@ -188,46 +190,48 @@ export function ThreadDetailPage() {
   const contactShareLabel = (state: ContactShareState) => {
     switch (state) {
       case "requested":
-        if (requestedByMe) return "연락처 공유 요청을 보냈습니다"
-        if (canApproveContactShare) return "상대방이 연락처 공유를 요청했습니다. 승인하면 연락처 공개 절차가 시작됩니다"
-        return "연락처 공유 요청이 진행 중입니다"
+        if (requestedByMe) return t("detail.contactShare.requestedByMe")
+        if (canApproveContactShare) return t("detail.contactShare.requestedApprove")
+        return t("detail.contactShare.requestedProgress")
       case "one_side_approved":
-        if (canApproveContactShare) return "상대방의 승인까지 완료되었습니다. 내 최종 승인이 필요합니다"
+        if (canApproveContactShare) return t("detail.contactShare.oneSideNeedMine")
         if ((isRequester && thread.requesterApproved) || (!isRequester && thread.supplierApproved)) {
-          return "내 승인이 완료되었습니다. 상대방의 최종 승인을 기다리는 중입니다"
+          return t("detail.contactShare.oneSideWaitOther")
         }
-        return "상대방의 최종 승인을 기다리는 중입니다"
+        return t("detail.contactShare.oneSideWaitOtherOnly")
       case "mutually_approved":
-        return "양측 승인이 완료되어 연락처가 공개되었습니다"
+        return t("detail.contactShare.mutuallyApproved")
       case "revoked":
-        return "이전 연락처 공유 요청이 철회되었습니다"
+        return t("detail.contactShare.revoked")
       default:
-        return "연락처는 양측 승인 후에만 공개됩니다"
+        return t("detail.contactShare.default")
     }
   }
 
   const handleRequestContactShare = () => {
-    if (!window.confirm("연락처 공유를 요청할까요? 상대방이 추가 승인해야 공개됩니다.")) return
+    if (!window.confirm(t("detail.requestContactShareConfirm"))) return
     setContactShareError(null)
     requestContactShareMutation.mutate(undefined, {
-      onError: () => setContactShareError("연락처 공유 요청에 실패했습니다."),
+      onError: () => setContactShareError(t("detail.requestContactShareError")),
     })
   }
 
   const handleApproveContactShare = () => {
     setContactShareError(null)
     approveContactShareMutation.mutate(undefined, {
-      onError: () => setContactShareError("연락처 공유 승인에 실패했습니다."),
+      onError: () => setContactShareError(t("detail.approveContactShareError")),
     })
   }
 
   const handleRevokeContactShare = () => {
-    if (!window.confirm("연락처 공유 요청을 철회할까요?")) return
+    if (!window.confirm(t("detail.revokeContactShareConfirm"))) return
     setContactShareError(null)
     revokeContactShareMutation.mutate(undefined, {
-      onError: () => setContactShareError("연락처 공유 철회에 실패했습니다."),
+      onError: () => setContactShareError(t("detail.revokeContactShareError")),
     })
   }
+
+  const otherRoleLabel = thread.otherParty.role === "supplier" ? t("detail.roleSupplier") : t("detail.roleRequester")
 
   return (
     <div className="thread-layout">
@@ -235,23 +239,23 @@ export function ThreadDetailPage() {
       <div className="thread-subheader">
         <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
         <div className="flex flex-col gap-2">
-          <span className="text-base font-semibold">{thread.otherParty.displayName} ({thread.otherParty.role === "supplier" ? "공급자" : "의뢰자"})</span>
+          <span className="text-base font-semibold">{thread.otherParty.displayName} {t("detail.counterpartSuffix", { role: otherRoleLabel })}</span>
           <span className="text-sm text-accent">{thread.requestTitle}</span>
         </div>
         <div className="flex-1" />
         {canRequestContactShare && (
           <button type="button" className="btn btn-secondary btn-sm" onClick={handleRequestContactShare} disabled={isContactActionPending}>
-            연락처 공유 요청
+            {t("detail.requestContactShare")}
           </button>
         )}
         {canApproveContactShare && (
           <button type="button" className="btn btn-primary btn-sm" onClick={handleApproveContactShare} disabled={isContactActionPending}>
-            연락처 공유 승인
+            {t("detail.approveContactShare")}
           </button>
         )}
         {canRevokeContactShare && (
           <button type="button" className="btn btn-danger btn-sm" onClick={handleRevokeContactShare} disabled={isContactActionPending}>
-            요청 철회
+            {t("detail.revokeContactShare")}
           </button>
         )}
       </div>
@@ -267,12 +271,12 @@ export function ThreadDetailPage() {
       {thread.sharedContact && (
         <div className="flex gap-16" style={{ padding: '12px 40px', background: 'var(--accent-soft)', fontSize: 13 }}>
           <div className="flex flex-col gap-2">
-            <span className="font-semibold">요청자</span>
-            <span>{thread.sharedContact.requester.name} · {thread.sharedContact.requester.phone || "전화번호 미입력"} · {thread.sharedContact.requester.email || "이메일 미입력"}</span>
+            <span className="font-semibold">{t("detail.sharedRequester")}</span>
+            <span>{thread.sharedContact.requester.name} · {thread.sharedContact.requester.phone || t("detail.noPhone")} · {thread.sharedContact.requester.email || t("detail.noEmail")}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="font-semibold">공급자</span>
-            <span>{thread.sharedContact.supplier.name} · {thread.sharedContact.supplier.phone || "전화번호 미입력"} · {thread.sharedContact.supplier.email || "이메일 미입력"}</span>
+            <span className="font-semibold">{t("detail.sharedSupplier")}</span>
+            <span>{thread.sharedContact.supplier.name} · {thread.sharedContact.supplier.phone || t("detail.noPhone")} · {thread.sharedContact.supplier.email || t("detail.noEmail")}</span>
           </div>
         </div>
       )}
@@ -287,8 +291,8 @@ export function ThreadDetailPage() {
       <div className="thread-messages">
         {thread.messages.length === 0 ? (
           <div className="empty-state">
-            <p>아직 메시지가 없습니다.</p>
-            <p className="text-sm">첫 메시지를 보내보세요!</p>
+            <p>{t("detail.emptyMessagesTitle")}</p>
+            <p className="text-sm">{t("detail.emptyMessagesDescription")}</p>
           </div>
         ) : (
           orderedMessages.map((message) => (
@@ -327,7 +331,7 @@ export function ThreadDetailPage() {
           value={messageText}
           onChange={(e) => setMessageText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="메시지를 입력하세요..."
+          placeholder={t("detail.messagePlaceholder")}
         />
         <button
           type="button"
@@ -336,7 +340,7 @@ export function ThreadDetailPage() {
           disabled={!canSend}
           style={{ whiteSpace: 'nowrap' }}
         >
-          {sendMessageMutation.isPending ? "전송 중..." : "전송"}
+          {sendMessageMutation.isPending ? t("detail.sendingButton") : t("detail.sendButton")}
         </button>
       </div>
 
@@ -352,7 +356,7 @@ export function ThreadDetailPage() {
             className="btn btn-secondary btn-sm"
             onClick={() => setPreviewImage(null)}
           >
-            닫기
+            {t("detail.closePreview")}
           </button>
         </div>
       )}

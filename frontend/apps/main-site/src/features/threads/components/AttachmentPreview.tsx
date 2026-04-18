@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { ThreadAttachment } from "@fsm/types"
 import { downloadAttachment, formatFileSize, isPreviewableImage } from "../api/thread-api"
 
@@ -8,6 +9,7 @@ interface AttachmentPreviewProps {
 }
 
 export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewProps) {
+  const { t } = useTranslation("threads")
   const isImage = isPreviewableImage(attachment.contentType)
   const [objectUrl, setObjectUrl] = useState<string | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -174,7 +176,7 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
             cursor: isDownloading || !attachmentRef ? "not-allowed" : "pointer",
           }}
         >
-          {isDownloading ? "준비 중..." : "다운로드"}
+          {isDownloading ? t("attachment.downloading") : t("attachment.download")}
         </button>
     </div>
   )

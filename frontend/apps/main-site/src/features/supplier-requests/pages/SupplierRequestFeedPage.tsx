@@ -1,8 +1,10 @@
 import { Link, useSearchParams } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useSupplierRequestFeed } from "../hooks/useSupplierRequestFeed"
 import { useSupplierCategories } from "../../discovery/hooks/useDiscoveryLookups"
 
 export function SupplierRequestFeedPage() {
+  const { t } = useTranslation("supplier-requests")
   const [searchParams, setSearchParams] = useSearchParams()
   const category = searchParams.get("category") ?? ""
   const page = Number(searchParams.get("page") ?? "1")
@@ -13,16 +15,16 @@ export function SupplierRequestFeedPage() {
     <div className="page">
       <div className="page-header">
         <div className="page-header-text">
-          <h1>의뢰 피드</h1>
+          <h1>{t("feed.title")}</h1>
         </div>
-        <p className="text-muted text-sm">내 카테고리에 맞는 의뢰를 확인하세요</p>
+        <p className="text-muted text-sm">{t("feed.description")}</p>
       </div>
 
       <div className="flex items-center gap-12 flex-wrap">
         <input
           className="input"
           style={{ maxWidth: 280 }}
-          placeholder="🔍 의뢰 검색..."
+          placeholder={t("feed.searchPlaceholder")}
           value={searchParams.get("keyword") ?? ""}
           onChange={(e) => {
             const params = new URLSearchParams(searchParams)
@@ -39,7 +41,7 @@ export function SupplierRequestFeedPage() {
           onChange={(e) => setSearchParams({ category: e.target.value, page: "1" })}
           style={{ maxWidth: 160 }}
         >
-          <option value="">카테고리</option>
+          <option value="">{t("feed.categorySelect")}</option>
           {categories?.map((item) => (
             <option key={item.category} value={item.category}>
               {item.category}
@@ -49,10 +51,10 @@ export function SupplierRequestFeedPage() {
       </div>
 
       {isLoading ? (
-        <p>로딩 중...</p>
+        <p>{t("feed.loading")}</p>
       ) : data?.items.length === 0 ? (
         <div className="empty-state">
-          <p>표시할 의뢰가 없습니다.</p>
+          <p>{t("feed.emptyMessage")}</p>
         </div>
       ) : (
         <>
@@ -60,29 +62,29 @@ export function SupplierRequestFeedPage() {
             {data?.items.map((request) => (
               <article className="surface relative" key={request.requestId}>
                 <span className={`badge ${request.mode === "public" ? "badge-gray" : "badge-amber"} absolute-badge`}>
-                  {request.mode === "public" ? "공개" : "지정"}
+                  {request.mode === "public" ? t("feed.modePublic") : t("feed.modeTargeted")}
                 </span>
 
                 <h2 className="section-title mb-8">{request.title}</h2>
 
                 <p className="text-sm text-muted mb-8">
-                  카테고리: {request.category} &nbsp;&nbsp; 수량: {request.desiredVolume} &nbsp;&nbsp;
+                  {t("feed.categoryPrefix", { category: request.category })} &nbsp;&nbsp; {t("feed.volumePrefix", { volume: request.desiredVolume })} &nbsp;&nbsp;
                   {request.targetPriceRange && (
                     <>
-                      희망 단가: {request.targetPriceRange.min?.toLocaleString() ?? ""}~{request.targetPriceRange.max?.toLocaleString() ?? ""}원
+                      {t("feed.priceRangePrefix", { min: request.targetPriceRange.min?.toLocaleString() ?? "", max: request.targetPriceRange.max?.toLocaleString() ?? "" })}
                     </>
                   )}
                 </p>
 
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted">
-                    등록일: {new Date(request.createdAt).toLocaleDateString("ko-KR")}
+                    {t("feed.createdPrefix", { date: new Date(request.createdAt).toLocaleDateString("ko-KR") })}
                   </span>
                   <Link
                     to={`/supplier/requests/${request.requestId}`}
                     className="btn btn-primary btn-sm"
                   >
-                    견적 제출하기
+                    {t("feed.submitQuoteCta")}
                   </Link>
                 </div>
               </article>

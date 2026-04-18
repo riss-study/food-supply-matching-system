@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import type { RequestQuoteSummary } from "@fsm/types"
 import { useRequestQuotes } from "../hooks/useRequestQuotes"
 import { useSelectQuote } from "../hooks/useSelectQuote"
@@ -13,18 +14,15 @@ const quoteStateBadgeClass: Record<string, string> = {
   submitted: "badge badge-blue",
 }
 
-const quoteStateLabel: Record<string, string> = {
-  submitted: "대기",
-  selected: "선택됨",
-  declined: "거절됨",
-  withdrawn: "철회됨",
+function QuoteStateBadge({ state }: { state: RequestQuoteSummary["state"] }) {
+  const { t } = useTranslation("quotes")
+  return <span className={quoteStateBadgeClass[state] ?? "badge badge-gray"}>{t(`state.${state}`, { defaultValue: state })}</span>
 }
 
-function QuoteStateBadge({ state }: { state: RequestQuoteSummary["state"] }) {
-  return <span className={quoteStateBadgeClass[state] ?? "badge badge-gray"}>{quoteStateLabel[state] ?? state}</span>
-}
+type SortField = "submittedAt" | "unitPriceEstimate" | "moq" | "leadTime"
 
 export function QuoteComparisonPage() {
+  const { t } = useTranslation("quotes")
   const { requestId = "" } = useParams<{ requestId: string }>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -77,7 +75,7 @@ export function QuoteComparisonPage() {
         closeSelectDialog()
       },
       onError: () => {
-        setActionError("견적 선택에 실패했습니다.")
+        setActionError(t("comparison.selectErrorMessage"))
       },
     })
   }
@@ -96,34 +94,34 @@ export function QuoteComparisonPage() {
   }
 
   if (isLoading) {
-    return <div className="page"><h1>견적 비교</h1><p className="text-muted">로딩 중...</p></div>
+    return <div className="page"><h1>{t("comparison.title")}</h1><p className="text-muted">{t("comparison.loading")}</p></div>
   }
 
   if (error) {
-    return <div className="page"><h1>견적 비교</h1><p className="text-danger">견적 목록을 불러오지 못했습니다.</p></div>
+    return <div className="page"><h1>{t("comparison.title")}</h1><p className="text-danger">{t("comparison.loadError")}</p></div>
   }
 
   return (
     <div className="page">
-      <Link to={`/requests/${requestId}`} className="btn btn-ghost btn-sm">← 의뢰 상세로 돌아가기</Link>
+      <Link to={`/requests/${requestId}`} className="btn btn-ghost btn-sm">{t("comparison.backToDetail")}</Link>
 
       <div className="page-header">
         <div className="page-header-text">
-          <h1>견적 비교</h1>
-          {quotes.length > 0 && <p className="text-muted">받은 견적 {quotes.length}건</p>}
+          <h1>{t("comparison.title")}</h1>
+          {quotes.length > 0 && <p className="text-muted">{t("comparison.receivedCount", { count: quotes.length })}</p>}
         </div>
       </div>
 
       {quotes.length === 0 ? (
         <div className="empty-state">
-          <p>아직 받은 견적이 없습니다.</p>
+          <p>{t("comparison.emptyMessage")}</p>
         </div>
       ) : (
       <>
       {/* Warning banner */}
       <div className="alert-warning">
         <span>⚠</span>
-        <span>공급자 선택 후에는 다른 견적이 자동 거절됩니다. 신중하게 선택해주세요.</span>
+        <span>{t("comparison.warningBanner")}</span>
       </div>
 
       {/* Table */}
@@ -131,35 +129,35 @@ export function QuoteComparisonPage() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>공급자</th>
-              <th>제출일</th>
-              <th>단가</th>
-              <th>MOQ</th>
-              <th>리드타임</th>
-              <th>샘플비</th>
-              <th>상태</th>
-              <th>액션</th>
+              <th>{t("comparison.headers.supplier")}</th>
+              <th>{t("comparison.headers.submittedAt")}</th>
+              <th>{t("comparison.headers.unitPrice")}</th>
+              <th>{t("comparison.headers.moq")}</th>
+              <th>{t("comparison.headers.leadTime")}</th>
+              <th>{t("comparison.headers.sampleCost")}</th>
+              <th>{t("comparison.headers.state")}</th>
+              <th>{t("comparison.headers.actions")}</th>
             </tr>
           </thead>
           <tbody>
             {quotes.map((quote) => (
               <tr key={quote.quoteId} className={quote.state === "selected" ? "row-selected" : ""}>
-                <td className="font-semibold" data-label="공급자">{quote.companyName}</td>
-                <td className="text-muted" data-label="제출일">{new Date(quote.submittedAt).toLocaleDateString("ko-KR")}</td>
-                <td className="font-semibold" data-label="단가">{quote.unitPriceEstimate}</td>
-                <td data-label="MOQ">{quote.moq}</td>
-                <td data-label="리드타임">{Math.ceil(quote.leadTime / 7)}주</td>
-                <td data-label="샘플비">{quote.sampleCost ? quote.sampleCost : "무료"}</td>
-                <td data-label="상태"><QuoteStateBadge state={quote.state} /></td>
+                <td className="font-semibold" data-label={t("comparison.headers.supplier")}>{quote.companyName}</td>
+                <td className="text-muted" data-label={t("comparison.headers.submittedAt")}>{new Date(quote.submittedAt).toLocaleDateString("ko-KR")}</td>
+                <td className="font-semibold" data-label={t("comparison.headers.unitPrice")}>{quote.unitPriceEstimate}</td>
+                <td data-label={t("comparison.headers.moq")}>{quote.moq}</td>
+                <td data-label={t("comparison.headers.leadTime")}>{t("comparison.leadTimeWeeks", { weeks: Math.ceil(quote.leadTime / 7) })}</td>
+                <td data-label={t("comparison.headers.sampleCost")}>{quote.sampleCost ? quote.sampleCost : t("comparison.sampleFree")}</td>
+                <td data-label={t("comparison.headers.state")}><QuoteStateBadge state={quote.state} /></td>
                 <td data-label="">
                   <div className="flex gap-6">
                     {quote.state === "submitted" && (
                       <>
-                        <button className="btn btn-sm btn-primary" onClick={() => handleSelectClick(quote)} disabled={selectMutation.isPending}>선택</button>
-                        <button className="btn btn-sm btn-danger" onClick={() => handleDeclineClick(quote)}>거절</button>
+                        <button className="btn btn-sm btn-primary" onClick={() => handleSelectClick(quote)} disabled={selectMutation.isPending}>{t("comparison.selectButton")}</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDeclineClick(quote)}>{t("comparison.declineButton")}</button>
                       </>
                     )}
-                    <button className="btn btn-sm btn-secondary" onClick={() => navigate(`/threads/${quote.threadId}`)}>메시지</button>
+                    <button className="btn btn-sm btn-secondary" onClick={() => navigate(`/threads/${quote.threadId}`)}>{t("comparison.messageButton")}</button>
                   </div>
                 </td>
               </tr>
@@ -183,27 +181,27 @@ export function QuoteComparisonPage() {
       {/* Quote detail dialog */}
       {selectedQuote && (
         <QuoteDialog
-          title="견적 상세"
+          title={t("comparison.detailDialogTitle")}
           onClose={closeDetailDialog}
           footer={(
             <>
               {selectedQuote.state === "submitted" && (
                 <>
-                  <button className="btn btn-sm btn-primary" onClick={() => handleSelectClick(selectedQuote)} disabled={selectMutation.isPending}>이 견적 선택</button>
-                  <button className="btn btn-sm btn-danger" onClick={() => handleDeclineClick(selectedQuote)}>거절</button>
+                  <button className="btn btn-sm btn-primary" onClick={() => handleSelectClick(selectedQuote)} disabled={selectMutation.isPending}>{t("comparison.detailSelectButton")}</button>
+                  <button className="btn btn-sm btn-danger" onClick={() => handleDeclineClick(selectedQuote)}>{t("comparison.declineButton")}</button>
                 </>
               )}
-              <button className="btn btn-sm btn-secondary" onClick={closeDetailDialog}>닫기</button>
+              <button className="btn btn-sm btn-secondary" onClick={closeDetailDialog}>{t("common:close")}</button>
             </>
           )}
         >
           <div className="flex flex-col gap-8">
             <p className="font-semibold">{selectedQuote.companyName}</p>
-            <p>단가 {selectedQuote.unitPriceEstimate} / MOQ {selectedQuote.moq} / 납기 {selectedQuote.leadTime}</p>
+            <p>{t("comparison.detailSummary", { price: selectedQuote.unitPriceEstimate, moq: selectedQuote.moq, leadTime: selectedQuote.leadTime })}</p>
             {selectedQuote.sampleCost && (
-              <p>샘플 비용: {selectedQuote.sampleCost}</p>
+              <p>{t("comparison.sampleCostLabel", { cost: selectedQuote.sampleCost })}</p>
             )}
-            <p className="text-muted text-sm">제출일: {new Date(selectedQuote.submittedAt).toLocaleString("ko-KR")}</p>
+            <p className="text-muted text-sm">{t("comparison.submittedAtLabel", { date: new Date(selectedQuote.submittedAt).toLocaleString("ko-KR") })}</p>
           </div>
         </QuoteDialog>
       )}
@@ -217,7 +215,7 @@ export function QuoteComparisonPage() {
       {/* Decline dialog */}
       {declineTarget && (
         <QuoteDialog
-          title="견적 거절"
+          title={t("comparison.declineDialogTitle")}
           tone="danger"
           onClose={closeDeclineDialog}
           footer={(
@@ -230,45 +228,45 @@ export function QuoteComparisonPage() {
                 )}
                 disabled={declineMutation.isPending}
               >
-                거절 확정
+                {t("comparison.declineConfirmButton")}
               </button>
-              <button className="btn btn-sm btn-secondary" onClick={closeDeclineDialog}>취소</button>
+              <button className="btn btn-sm btn-secondary" onClick={closeDeclineDialog}>{t("common:cancel")}</button>
             </>
           )}
         >
           <p className="text-danger mb-8">
-            {declineTarget.companyName}의 견적을 거절합니다. 필요하면 사유를 남길 수 있습니다.
+            {t("comparison.declineConfirmMessage", { companyName: declineTarget.companyName })}
           </p>
-          <textarea className="textarea w-full" value={declineReason} onChange={(event) => setDeclineReason(event.target.value)} rows={4} placeholder="거절 사유를 입력하세요 (선택)" />
+          <textarea className="textarea w-full" value={declineReason} onChange={(event) => setDeclineReason(event.target.value)} rows={4} placeholder={t("comparison.declineReasonPlaceholder")} />
         </QuoteDialog>
       )}
 
       {/* Select confirm dialog */}
       {selectConfirmTarget && (
         <QuoteDialog
-          title="견적 선택 확인"
+          title={t("comparison.selectConfirmTitle")}
           tone="success"
           onClose={closeSelectDialog}
           footer={(
             <>
               <button className="btn btn-sm btn-primary" onClick={handleConfirmSelect} disabled={selectMutation.isPending}>
-                {selectMutation.isPending ? "처리 중..." : "선택 확정"}
+                {selectMutation.isPending ? t("common:processing") : t("comparison.selectConfirmButton")}
               </button>
-              <button className="btn btn-sm btn-secondary" onClick={closeSelectDialog} disabled={selectMutation.isPending}>취소</button>
+              <button className="btn btn-sm btn-secondary" onClick={closeSelectDialog} disabled={selectMutation.isPending}>{t("common:cancel")}</button>
             </>
           )}
         >
           <div className="flex flex-col gap-8">
             <p className="text-success font-semibold">
-              {selectConfirmTarget.companyName}의 견적을 선택하시겠습니까?
+              {t("comparison.selectConfirmMessage", { companyName: selectConfirmTarget.companyName })}
             </p>
             <div className="surface flex flex-col gap-6">
-              <p>단가: {selectConfirmTarget.unitPriceEstimate}</p>
-              <p>MOQ: {selectConfirmTarget.moq}</p>
-              <p>납기: {selectConfirmTarget.leadTime}</p>
+              <p>{t("comparison.selectUnitPriceLabel", { value: selectConfirmTarget.unitPriceEstimate })}</p>
+              <p>{t("comparison.selectMoqLabel", { value: selectConfirmTarget.moq })}</p>
+              <p>{t("comparison.selectLeadTimeLabel", { value: selectConfirmTarget.leadTime })}</p>
             </div>
             <p className="text-danger text-sm font-medium">
-              견적을 선택하면 의뢰가 마감되고 다른 견적은 자동으로 거절 처리됩니다. 이 작업은 되돌릴 수 없습니다.
+              {t("comparison.selectConfirmWarning")}
             </p>
           </div>
         </QuoteDialog>

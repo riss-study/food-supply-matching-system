@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useRequestDetail } from "../hooks/useRequestDetail"
 import { useCreateThread } from "../../threads"
 import { RequestStateBadge } from "../components/RequestStateBadge"
@@ -9,6 +10,7 @@ import { RequestInfoSection } from "../components/RequestInfoSection"
 import { RequestActionsSidebar } from "../components/RequestActionsSidebar"
 
 export function RequestDetailPage() {
+  const { t } = useTranslation("request-management")
   const { requestId } = useParams<{ requestId: string }>()
   const navigate = useNavigate()
   const { data: request, isLoading, error } = useRequestDetail(requestId ?? "")
@@ -20,8 +22,8 @@ export function RequestDetailPage() {
   if (isLoading) {
     return (
       <div className="page">
-        <h1>의뢰 상세</h1>
-        <p className="text-muted">로딩 중...</p>
+        <h1>{t("detail.title")}</h1>
+        <p className="text-muted">{t("common:loading")}</p>
       </div>
     )
   }
@@ -29,10 +31,10 @@ export function RequestDetailPage() {
   if (error || !request) {
     return (
       <div className="page">
-        <h1>의뢰 상세</h1>
-        <p className="text-danger">의뢰 정보를 불러올 수 없습니다.</p>
+        <h1>{t("detail.title")}</h1>
+        <p className="text-danger">{t("detail.loadError")}</p>
         <Link to="/requests" className="btn btn-ghost btn-sm">
-          목록으로 돌아가기
+          {t("common:backToList")}
         </Link>
       </div>
     )
@@ -45,7 +47,7 @@ export function RequestDetailPage() {
       { supplierId },
       {
         onSuccess: (response) => navigate(`/threads/${response.threadId}`),
-        onError: () => setActionError("대화방 생성에 실패했습니다."),
+        onError: () => setActionError(t("detail.createThreadError")),
       },
     )
   }
@@ -53,7 +55,7 @@ export function RequestDetailPage() {
   return (
     <div className="page">
       <Link to="/requests" className="btn btn-ghost btn-sm">
-        ← 목록으로 돌아가기
+        {t("detail.backToList")}
       </Link>
 
       <div className="flex flex-col gap-6">
@@ -64,9 +66,9 @@ export function RequestDetailPage() {
         <div className="flex gap-12 text-muted text-sm">
           <span>{request.category}</span>
           <span>·</span>
-          <span>{request.mode === "public" ? "공개" : "지정"}</span>
+          <span>{request.mode === "public" ? t("list.modePublic") : t("list.modeTargeted")}</span>
           <span>·</span>
-          <span>{new Date(request.createdAt).toLocaleDateString("ko-KR")} 등록</span>
+          <span>{t("detail.createdSuffix", { date: new Date(request.createdAt).toLocaleDateString("ko-KR") })}</span>
         </div>
       </div>
 

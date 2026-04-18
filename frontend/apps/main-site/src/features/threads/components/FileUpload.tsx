@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import {
   formatFileSize,
   MAX_ATTACHMENT_SIZE,
@@ -12,6 +13,7 @@ interface FileUploadProps {
 }
 
 export function FileUpload({ onFilesSelected, disabled, maxFiles = 5 }: FileUploadProps) {
+  const { t } = useTranslation("threads")
   const [isDragging, setIsDragging] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -34,7 +36,7 @@ export function FileUpload({ onFilesSelected, disabled, maxFiles = 5 }: FileUplo
     const fileArray = Array.from(files)
 
     if (fileArray.length > maxFiles) {
-      setValidationError(`최대 ${maxFiles}개의 파일만 업로드할 수 있습니다.`)
+      setValidationError(t("upload.tooManyFiles", { max: maxFiles }))
       return null
     }
 
@@ -42,7 +44,7 @@ export function FileUpload({ onFilesSelected, disabled, maxFiles = 5 }: FileUplo
     for (const file of fileArray) {
       const result = validateAttachment(file)
       if (!result.valid) {
-        invalidFiles.push(`${file.name}: ${result.error}`)
+        invalidFiles.push(t("upload.invalidFile", { fileName: file.name, error: result.error }))
       }
     }
 
@@ -114,10 +116,10 @@ export function FileUpload({ onFilesSelected, disabled, maxFiles = 5 }: FileUplo
 
         <div className="text-muted text-base">
           <p style={{ margin: "0 0 8px" }}>
-            <strong>파일을 드래그하여 업로드</strong>하거나 클릭하여 선택하세요
+            <strong>{t("upload.dropLine1")}</strong>{t("upload.dropLine2Prefix")}
           </p>
           <p className="text-sm text-muted" style={{ margin: 0 }}>
-            최대 {maxFiles}개, {formatFileSize(MAX_ATTACHMENT_SIZE)} 이하 (JPEG, PNG, GIF, PDF)
+            {t("upload.helperText", { max: maxFiles, maxSize: formatFileSize(MAX_ATTACHMENT_SIZE) })}
           </p>
         </div>
       </div>
@@ -150,6 +152,7 @@ interface UploadingFileListProps {
 }
 
 export function UploadingFileList({ files, onRemove }: UploadingFileListProps) {
+  const { t } = useTranslation("threads")
   if (files.length === 0) return null
 
   return (
@@ -206,7 +209,7 @@ export function UploadingFileList({ files, onRemove }: UploadingFileListProps) {
               border: "none",
               lineHeight: 1,
             }}
-            aria-label="Remove file"
+            aria-label={t("upload.removeAria")}
           >
             ×
           </button>

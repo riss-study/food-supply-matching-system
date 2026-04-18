@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { Link, Navigate, Route, Routes } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { ProtectedRoute } from "./features/auth/components/ProtectedRoute"
 import { LoginPage } from "./features/auth/pages/LoginPage"
 import { SignupPage } from "./features/auth/pages/SignupPage"
@@ -20,67 +21,68 @@ type NavItem = {
 }
 
 function HomePage() {
+  const { t } = useTranslation("app")
   return (
     <div className="home-page">
       {/* Hero Banner */}
       <section className="home-hero">
-        <span className="home-hero-label">B2B 식품 제조 매칭 플랫폼</span>
+        <span className="home-hero-label">{t("home.heroLabel")}</span>
         <h1 className="home-hero-title">
-          믿을 수 있는 식품 제조 파트너를<br />지금 만나보세요
+          {t("home.heroTitleLine1")}<br />{t("home.heroTitleLine2")}
         </h1>
         <p className="home-hero-desc">
-          HACCP, ISO 인증 제조사부터 OEM/ODM 전문 업체까지.<br />
-          검증된 공급자 네트워크에서 최적의 파트너를 찾으세요.
+          {t("home.heroDescLine1")}<br />
+          {t("home.heroDescLine2")}
         </p>
         <div className="flex gap-12 justify-center">
-          <Link to="/suppliers" className="btn btn-primary">공급자 탐색</Link>
-          <Link to="/requests/new" className="btn btn-secondary" style={{ background: "rgba(255,255,255,0.15)", color: "var(--inverse-fg)", borderColor: "rgba(255,255,255,0.25)" }}>의뢰 등록</Link>
+          <Link to="/suppliers" className="btn btn-primary">{t("home.ctaExplore")}</Link>
+          <Link to="/requests/new" className="btn btn-secondary" style={{ background: "rgba(255,255,255,0.15)", color: "var(--inverse-fg)", borderColor: "rgba(255,255,255,0.25)" }}>{t("home.ctaCreateRequest")}</Link>
         </div>
       </section>
 
       {/* 핵심 기능 */}
       <section className="home-section">
-        <h2 className="home-section-title">핵심 기능</h2>
+        <h2 className="home-section-title">{t("home.featureSectionTitle")}</h2>
         <div className="card-grid">
           <div className="surface">
             <div className="home-feature-icon">&#x1F50D;</div>
-            <h3 className="font-bold mb-4">공급자 탐색</h3>
-            <p className="text-muted text-sm">카테고리, 지역, 생산능력 등 다양한 조건으로 검증된 식품 제조사를 검색하세요.</p>
+            <h3 className="font-bold mb-4">{t("home.featureDiscoveryTitle")}</h3>
+            <p className="text-muted text-sm">{t("home.featureDiscoveryDesc")}</p>
           </div>
           <div className="surface">
             <div className="home-feature-icon">&#x1F4CB;</div>
-            <h3 className="font-bold mb-4">의뢰 관리</h3>
-            <p className="text-muted text-sm">식품 제조 의뢰를 등록하고 견적을 비교하여 최적의 파트너를 선택하세요.</p>
+            <h3 className="font-bold mb-4">{t("home.featureRequestTitle")}</h3>
+            <p className="text-muted text-sm">{t("home.featureRequestDesc")}</p>
           </div>
           <div className="surface">
             <div className="home-feature-icon">&#x1F4AC;</div>
-            <h3 className="font-bold mb-4">실시간 소통</h3>
-            <p className="text-muted text-sm">공급자와 직접 메시지를 주고받으며 상세 조건을 조율할 수 있습니다.</p>
+            <h3 className="font-bold mb-4">{t("home.featureCommunicationTitle")}</h3>
+            <p className="text-muted text-sm">{t("home.featureCommunicationDesc")}</p>
           </div>
         </div>
       </section>
 
       {/* 바로가기 */}
       <section className="home-section">
-        <h2 className="home-section-title" style={{ textAlign: "left" }}>바로가기</h2>
+        <h2 className="home-section-title" style={{ textAlign: "left" }}>{t("home.shortcutSectionTitle")}</h2>
         <div className="card-grid">
           <Link to="/suppliers" className="surface home-shortcut">
             <div className="home-feature-icon">&#x1F50D;</div>
-            <h3 className="font-bold mb-4">공급자 탐색</h3>
-            <p className="text-muted text-sm mb-12">검증된 식품 제조사 검색</p>
-            <span className="text-accent text-sm font-medium">탐색하기 →</span>
+            <h3 className="font-bold mb-4">{t("home.shortcutExploreTitle")}</h3>
+            <p className="text-muted text-sm mb-12">{t("home.shortcutExploreDesc")}</p>
+            <span className="text-accent text-sm font-medium">{t("home.shortcutExploreAction")}</span>
           </Link>
           <Link to="/requests/new" className="surface home-shortcut">
             <div className="home-feature-icon">&#x2795;</div>
-            <h3 className="font-bold mb-4">의뢰 등록</h3>
-            <p className="text-muted text-sm mb-12">새로운 제조 의뢰 작성</p>
-            <span className="text-accent text-sm font-medium">등록하기 →</span>
+            <h3 className="font-bold mb-4">{t("home.shortcutCreateRequestTitle")}</h3>
+            <p className="text-muted text-sm mb-12">{t("home.shortcutCreateRequestDesc")}</p>
+            <span className="text-accent text-sm font-medium">{t("home.shortcutCreateRequestAction")}</span>
           </Link>
           <Link to="/requests" className="surface home-shortcut">
             <div className="home-feature-icon">&#x2630;</div>
-            <h3 className="font-bold mb-4">내 의뢰</h3>
-            <p className="text-muted text-sm mb-12">의뢰 현황과 견적 관리</p>
-            <span className="text-accent text-sm font-medium">확인하기 →</span>
+            <h3 className="font-bold mb-4">{t("home.shortcutMyRequestsTitle")}</h3>
+            <p className="text-muted text-sm mb-12">{t("home.shortcutMyRequestsDesc")}</p>
+            <span className="text-accent text-sm font-medium">{t("home.shortcutMyRequestsAction")}</span>
           </Link>
         </div>
       </section>
@@ -89,22 +91,23 @@ function HomePage() {
 }
 
 function DashboardPage() {
+  const { t } = useTranslation("app")
   const user = useAuthStore((state) => state.user)
   const clearAuth = useAuthStore((state) => state.clearAuth)
-  const roleLabel = user?.role === "supplier" ? "공급자" : user?.role === "requester" ? "요청자" : "사용자"
+  const roleLabel = user?.role === "supplier" ? t("role.supplier") : user?.role === "requester" ? t("role.requester") : t("role.default")
   const guideText =
     user?.role === "supplier"
-      ? "의뢰 피드, 내 견적, 메시지 화면으로 이동해 다음 작업을 이어가세요."
-      : "공급자 탐색, 내 의뢰, 메시지 화면으로 이동해 다음 작업을 이어가세요."
+      ? t("dashboard.guideSupplier")
+      : t("dashboard.guideRequester")
 
   return (
     <div className="page" style={{ padding: "32px 0" }}>
       <div className="surface" style={{ padding: 32 }}>
-        <h1 className="font-bold mb-8" style={{ fontSize: "1.5rem" }}>{roleLabel} 시작 화면</h1>
-        <p className="text-muted mb-4">{user ? `${user.email} 계정으로 로그인되어 있습니다.` : "사용자 정보를 불러오지 못했습니다."}</p>
+        <h1 className="font-bold mb-8" style={{ fontSize: "1.5rem" }}>{roleLabel} {t("dashboard.titleSuffix")}</h1>
+        <p className="text-muted mb-4">{user ? t("dashboard.loggedInAs", { email: user.email }) : t("dashboard.noUserInfo")}</p>
         <p className="text-muted mb-16">{guideText}</p>
         <div>
-          <button type="button" className="btn btn-secondary" onClick={clearAuth}>로그아웃</button>
+          <button type="button" className="btn btn-secondary" onClick={clearAuth}>{t("common:logout")}</button>
         </div>
       </div>
     </div>
@@ -112,6 +115,7 @@ function DashboardPage() {
 }
 
 export default function App() {
+  const { t } = useTranslation("app")
   const user = useAuthStore((state) => state.user)
   const clearAuth = useAuthStore((state) => state.clearAuth)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -129,20 +133,20 @@ export default function App() {
   }, [])
 
   const publicNav: NavItem[] = [
-    { to: "/", label: "홈" },
-    { to: "/suppliers", label: "공급자 탐색" },
-    { to: "/notices", label: "공지사항" },
+    { to: "/", label: t("nav.home") },
+    { to: "/suppliers", label: t("nav.supplierSearch") },
+    { to: "/notices", label: t("nav.notices") },
   ]
 
   const requesterNav: NavItem[] = [
-    { to: "/requests", label: "내 의뢰" },
-    { to: "/threads", label: "메시지" },
+    { to: "/requests", label: t("nav.myRequests") },
+    { to: "/threads", label: t("nav.messages") },
   ]
 
   const supplierNav: NavItem[] = [
-    { to: "/supplier/requests", label: "의뢰 피드" },
-    { to: "/supplier/quotes", label: "내 견적" },
-    { to: "/threads", label: "메시지" },
+    { to: "/supplier/requests", label: t("nav.supplierRequestFeed") },
+    { to: "/supplier/quotes", label: t("nav.supplierQuotes") },
+    { to: "/threads", label: t("nav.messages") },
   ]
 
   const activeNav = user?.role === "requester" ? requesterNav : user?.role === "supplier" ? supplierNav : []
@@ -150,7 +154,7 @@ export default function App() {
   return (
     <div className="main-shell">
       <header className="main-header">
-        <Link to="/" className="main-header-brand">잇다</Link>
+        <Link to="/" className="main-header-brand">{t("brand")}</Link>
         <nav className="main-header-nav">
           {publicNav.map((item) => (
             <Link key={item.to} to={item.to}>{item.label}</Link>
@@ -160,8 +164,8 @@ export default function App() {
           ))}
           {!user && (
             <>
-              <Link to="/login">로그인</Link>
-              <Link to="/signup">회원가입</Link>
+              <Link to="/login">{t("nav.login")}</Link>
+              <Link to="/signup">{t("nav.signup")}</Link>
             </>
           )}
         </nav>
@@ -170,16 +174,16 @@ export default function App() {
             <div className="main-header-user-wrap" ref={userMenuRef}>
               <div className="main-header-user" onClick={() => setUserMenuOpen(!userMenuOpen)}>
                 <div className="main-header-avatar" />
-                <span className="main-header-username">{user.email?.split("@")[0] ?? "사용자"}</span>
+                <span className="main-header-username">{user.email?.split("@")[0] ?? t("nav.defaultUser")}</span>
                 <span className="main-header-chevron">&#x2304;</span>
               </div>
               {userMenuOpen && (
                 <div className="user-dropdown">
                   <Link to={user?.role === "supplier" ? "/supplier/profile" : "/business-profile"} className="user-dropdown-item" onClick={() => setUserMenuOpen(false)}>
-                    내 프로필
+                    {t("common:myProfile")}
                   </Link>
                   <button type="button" className="user-dropdown-item" onClick={() => { clearAuth(); setUserMenuOpen(false); }}>
-                    로그아웃
+                    {t("common:logout")}
                   </button>
                 </div>
               )}
@@ -190,7 +194,7 @@ export default function App() {
           type="button"
           className="mobile-menu-toggle"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="메뉴"
+          aria-label={t("common:menu")}
         >
           {mobileMenuOpen ? "\u2715" : "\u2630"}
         </button>
@@ -209,13 +213,13 @@ export default function App() {
             ))}
             {user ? (
               <>
-                <Link to={user?.role === "supplier" ? "/supplier/profile" : "/business-profile"} onClick={() => setMobileMenuOpen(false)}>내 프로필</Link>
-                <button type="button" className="mobile-nav-logout" onClick={() => { clearAuth(); setMobileMenuOpen(false); }}>로그아웃</button>
+                <Link to={user?.role === "supplier" ? "/supplier/profile" : "/business-profile"} onClick={() => setMobileMenuOpen(false)}>{t("common:myProfile")}</Link>
+                <button type="button" className="mobile-nav-logout" onClick={() => { clearAuth(); setMobileMenuOpen(false); }}>{t("common:logout")}</button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>로그인</Link>
-                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>회원가입</Link>
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>{t("nav.login")}</Link>
+                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>{t("nav.signup")}</Link>
               </>
             )}
           </nav>

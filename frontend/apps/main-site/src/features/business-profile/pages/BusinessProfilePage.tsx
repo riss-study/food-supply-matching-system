@@ -1,16 +1,10 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import type { BusinessApprovalState } from "@fsm/types"
 import { useBusinessProfile } from "../hooks/useBusinessProfile"
 import { useSubmitBusinessProfile } from "../hooks/useSubmitBusinessProfile"
 import { useUpdateBusinessProfile } from "../hooks/useUpdateBusinessProfile"
-
-const statusLabels: Record<BusinessApprovalState, string> = {
-  not_submitted: "미제출",
-  submitted: "승인 대기 중",
-  approved: "승인 완료",
-  rejected: "반려됨",
-}
 
 const statusBadgeClass: Record<BusinessApprovalState, string> = {
   not_submitted: "badge badge-gray",
@@ -20,9 +14,10 @@ const statusBadgeClass: Record<BusinessApprovalState, string> = {
 }
 
 function StatusBadge({ state }: { state: BusinessApprovalState }) {
+  const { t } = useTranslation("business-profile")
   return (
     <span className={statusBadgeClass[state]}>
-      {statusLabels[state]}
+      {t(`statusLabels.${state}`)}
     </span>
   )
 }
@@ -51,6 +46,7 @@ function BusinessProfileForm({
   isPending: boolean
   submitLabel: string
 }) {
+  const { t } = useTranslation("business-profile")
   const [businessName, setBusinessName] = useState(initialData?.businessName ?? "")
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState(
     initialData?.businessRegistrationNumber ?? "",
@@ -95,12 +91,12 @@ function BusinessProfileForm({
     <form className="surface" onSubmit={handleSubmit}>
       <div className="form-stack">
         <div className="input-field">
-          <label>상호명</label>
+          <label>{t("form.businessNameLabel")}</label>
           <input
             className="input"
             value={businessName}
             onChange={(e) => setBusinessName(e.target.value)}
-            placeholder="2-100자"
+            placeholder={t("form.businessNamePlaceholder")}
             minLength={2}
             maxLength={100}
             required
@@ -108,36 +104,36 @@ function BusinessProfileForm({
         </div>
 
         <div className="input-field">
-          <label>사업자등록번호</label>
+          <label>{t("form.registrationNumberLabel")}</label>
           <input
             className="input"
             value={businessRegistrationNumber}
             onChange={(e) => setBusinessRegistrationNumber(formatRegistrationNumber(e.target.value))}
-            placeholder="000-00-00000"
+            placeholder={t("form.registrationNumberPlaceholder")}
             required
           />
           {!isValidRegistrationNumber(businessRegistrationNumber) && businessRegistrationNumber && (
-            <span className="text-danger text-sm">올바른 형식이 아닙니다 (000-00-00000)</span>
+            <span className="text-danger text-sm">{t("form.registrationNumberInvalid")}</span>
           )}
         </div>
 
         <div className="input-field">
-          <label>담당자 이름</label>
+          <label>{t("form.contactNameLabel")}</label>
           <input className="input" value={contactName} onChange={(e) => setContactName(e.target.value)} required />
         </div>
 
         <div className="input-field">
-          <label>담당자 연락처</label>
+          <label>{t("form.contactPhoneLabel")}</label>
           <input className="input" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} required />
         </div>
 
         <div className="input-field">
-          <label>담당자 이메일</label>
+          <label>{t("form.contactEmailLabel")}</label>
           <input className="input" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} required />
         </div>
 
         <button className="btn btn-primary" type="submit" disabled={!isFormValid || isPending}>
-          {isPending ? "처리 중..." : submitLabel}
+          {isPending ? t("common:processing") : submitLabel}
         </button>
       </div>
     </form>
@@ -145,6 +141,7 @@ function BusinessProfileForm({
 }
 
 export function BusinessProfilePage() {
+  const { t } = useTranslation("business-profile")
   const { data: profile, isLoading } = useBusinessProfile()
   const submitMutation = useSubmitBusinessProfile()
   const updateMutation = useUpdateBusinessProfile()
@@ -153,8 +150,8 @@ export function BusinessProfilePage() {
   if (isLoading) {
     return (
       <div className="page">
-        <div className="page-header"><h1>사업자 정보</h1></div>
-        <p>로딩 중...</p>
+        <div className="page-header"><h1>{t("page.title")}</h1></div>
+        <p>{t("common:loading")}</p>
       </div>
     )
   }
@@ -165,16 +162,16 @@ export function BusinessProfilePage() {
         <div className="content-narrow">
         <div className="page-header">
           <div className="page-header-text">
-            <h1>사업자 정보 등록</h1>
-            <p>의뢰를 등록하려면 사업자 정보를 먼저 제출하고 승인 상태를 확인해야 합니다.</p>
+            <h1>{t("page.registerTitle")}</h1>
+            <p>{t("page.registerDesc")}</p>
           </div>
         </div>
         <BusinessProfileForm
           onSubmit={(data) => submitMutation.mutate(data)}
           isPending={submitMutation.isPending}
-          submitLabel="제출하기"
+          submitLabel={t("page.submitButton")}
         />
-        {submitMutation.isError && <p className="text-danger">제출에 실패했습니다.</p>}
+        {submitMutation.isError && <p className="text-danger">{t("page.submitError")}</p>}
         </div>
       </div>
     )
@@ -187,36 +184,36 @@ export function BusinessProfilePage() {
       <div className="content-narrow flex flex-col gap-24">
       <div className="page-header">
         <div className="page-header-text">
-          <h1>사업자 정보 관리</h1>
+          <h1>{t("page.manageTitle")}</h1>
         </div>
       </div>
 
       <div className="surface">
         <div className="flex items-center gap-12 mb-16">
-          <span className="text-muted">승인 상태:</span>
+          <span className="text-muted">{t("page.approvalState")}</span>
           <StatusBadge state={profile.approvalState} />
         </div>
 
         {profile.approvalState === "submitted" && (
           <div className="surface-highlight p-16 rounded mb-16">
-            <p>승인 대기 중입니다. 관리자 검토 후 의뢰 생성이 가능합니다.</p>
+            <p>{t("page.submittedMessage")}</p>
           </div>
         )}
 
         {profile.approvalState === "approved" && (
           <div className="surface-highlight p-16 rounded mb-16">
-            <p>승인이 완료되었습니다. 의뢰 생성이 가능합니다.</p>
+            <p>{t("page.approvedMessage")}</p>
             <Link to="/requests/new" className="btn btn-primary btn-sm mt-8">
-              새 의뢰 등록하기
+              {t("page.approvedCta")}
             </Link>
           </div>
         )}
 
         {profile.approvalState === "rejected" && (
           <div className="surface surface-highlight p-16 rounded mb-16">
-            <p className="text-danger">반려되었습니다. 아래 사유를 확인하고 수정해 주세요.</p>
+            <p className="text-danger">{t("page.rejectedMessage")}</p>
             {profile.rejectionReason && (
-              <p className="font-medium mt-4">사유: {profile.rejectionReason}</p>
+              <p className="font-medium mt-4">{t("page.rejectionReasonPrefix", { reason: profile.rejectionReason })}</p>
             )}
           </div>
         )}
@@ -224,7 +221,7 @@ export function BusinessProfilePage() {
 
       {isEditing ? (
         <div className="surface">
-          <h2 className="section-title mb-16">정보 수정</h2>
+          <h2 className="section-title mb-16">{t("page.editTitle")}</h2>
           <BusinessProfileForm
             initialData={{
               businessName: profile.businessName,
@@ -239,39 +236,39 @@ export function BusinessProfilePage() {
               })
             }}
             isPending={updateMutation.isPending}
-            submitLabel="수정하기"
+            submitLabel={t("page.editSubmitButton")}
           />
           <button className="btn btn-ghost mt-8" onClick={() => setIsEditing(false)}>
-            취소
+            {t("common:cancel")}
           </button>
-          {updateMutation.isError && <p className="text-danger mt-12">수정에 실패했습니다.</p>}
+          {updateMutation.isError && <p className="text-danger mt-12">{t("page.updateError")}</p>}
         </div>
       ) : (
         <div className="surface">
-          <h2 className="section-title mb-16">등록된 정보</h2>
+          <h2 className="section-title mb-16">{t("page.editedInfoTitle")}</h2>
           <dl className="detail-grid">
-            <dt>상호명</dt>
+            <dt>{t("page.dt.businessName")}</dt>
             <dd>{profile.businessName}</dd>
-            <dt>사업자등록번호</dt>
+            <dt>{t("page.dt.registrationNumber")}</dt>
             <dd>{profile.businessRegistrationNumber}</dd>
-            <dt>담당자</dt>
+            <dt>{t("page.dt.contactName")}</dt>
             <dd>{profile.contactName}</dd>
-            <dt>연락처</dt>
+            <dt>{t("page.dt.contactPhone")}</dt>
             <dd>{profile.contactPhone}</dd>
-            <dt>이메일</dt>
+            <dt>{t("page.dt.contactEmail")}</dt>
             <dd>{profile.contactEmail}</dd>
-            <dt>제출일</dt>
+            <dt>{t("page.dt.submittedAt")}</dt>
             <dd>{profile.submittedAt ? new Date(profile.submittedAt).toLocaleDateString("ko-KR") : "-"}</dd>
             {profile.approvedAt && (
               <>
-                <dt>승인일</dt>
+                <dt>{t("page.dt.approvedAt")}</dt>
                 <dd>{new Date(profile.approvedAt).toLocaleDateString("ko-KR")}</dd>
               </>
             )}
           </dl>
           {canEdit && (
             <button className="btn btn-secondary mt-16" onClick={() => setIsEditing(true)}>
-              정보 수정
+              {t("page.editButton")}
             </button>
           )}
         </div>

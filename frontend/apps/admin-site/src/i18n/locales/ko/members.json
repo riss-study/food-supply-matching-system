@@ -1,0 +1,25 @@
+{
+  "title": "회원 목록",
+  "tabs": {
+    "all": "전체",
+    "requester": "요청자",
+    "supplier": "공급자",
+    "admin": "관리자"
+  },
+  "columns": {
+    "email": "이메일",
+    "role": "역할",
+    "joinedAt": "가입일",
+    "status": "상태"
+  },
+  "empty": "회원이 없습니다.",
+  "role": {
+    "requester": "요청자",
+    "supplier": "공급자",
+    "admin": "관리자"
+  },
+  "status": {
+    "active": "활성",
+    "suspended": "정지"
+  }
+}

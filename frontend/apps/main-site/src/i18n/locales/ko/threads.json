@@ -1,0 +1,64 @@
+{
+  "attachment": {
+    "downloading": "준비 중...",
+    "download": "다운로드"
+  },
+  "upload": {
+    "tooManyFiles": "최대 {{max}}개의 파일만 업로드할 수 있습니다.",
+    "invalidFile": "{{fileName}}: {{error}}",
+    "dropLine1": "파일을 드래그하여 업로드",
+    "dropLine2Prefix": "하거나 클릭하여 선택하세요",
+    "helperText": "최대 {{max}}개, {{maxSize}} 이하 (JPEG, PNG, GIF, PDF)",
+    "removeAria": "Remove file"
+  },
+  "list": {
+    "title": "메시지",
+    "loading": "로딩 중...",
+    "loadError": "메시지 목록을 불러오지 못했습니다.",
+    "emptyTitle": "아직 대화가 없습니다.",
+    "emptyDescription": "견적을 제출하거나 의뢰에 대해 문의하면 여기에 대화가 표시됩니다.",
+    "requestPrefix": "의뢰: {{title}}",
+    "attachmentPlaceholder": "(첨부 파일)",
+    "noMessages": "아직 메시지가 없습니다",
+    "daysAgo": "{{days}}일 전"
+  },
+  "detail": {
+    "title": "대화",
+    "loading": "로딩 중...",
+    "loadError": "대화 정보를 불러오지 못했습니다.",
+    "backToList": "메시지 목록으로 돌아가기",
+    "roleSupplier": "공급자",
+    "roleRequester": "의뢰자",
+    "counterpartSuffix": "({{role}})",
+    "requestContactShare": "연락처 공유 요청",
+    "approveContactShare": "연락처 공유 승인",
+    "revokeContactShare": "요청 철회",
+    "contactShare": {
+      "requestedByMe": "연락처 공유 요청을 보냈습니다",
+      "requestedApprove": "상대방이 연락처 공유를 요청했습니다. 승인하면 연락처 공개 절차가 시작됩니다",
+      "requestedProgress": "연락처 공유 요청이 진행 중입니다",
+      "oneSideNeedMine": "상대방의 승인까지 완료되었습니다. 내 최종 승인이 필요합니다",
+      "oneSideWaitOther": "내 승인이 완료되었습니다. 상대방의 최종 승인을 기다리는 중입니다",
+      "oneSideWaitOtherOnly": "상대방의 최종 승인을 기다리는 중입니다",
+      "mutuallyApproved": "양측 승인이 완료되어 연락처가 공개되었습니다",
+      "revoked": "이전 연락처 공유 요청이 철회되었습니다",
+      "default": "연락처는 양측 승인 후에만 공개됩니다"
+    },
+    "sharedRequester": "요청자",
+    "sharedSupplier": "공급자",
+    "noPhone": "전화번호 미입력",
+    "noEmail": "이메일 미입력",
+    "requestContactShareConfirm": "연락처 공유를 요청할까요? 상대방이 추가 승인해야 공개됩니다.",
+    "requestContactShareError": "연락처 공유 요청에 실패했습니다.",
+    "approveContactShareError": "연락처 공유 승인에 실패했습니다.",
+    "revokeContactShareConfirm": "연락처 공유 요청을 철회할까요?",
+    "revokeContactShareError": "연락처 공유 철회에 실패했습니다.",
+    "emptyMessagesTitle": "아직 메시지가 없습니다.",
+    "emptyMessagesDescription": "첫 메시지를 보내보세요!",
+    "sendError": "메시지 전송에 실패했습니다. 다시 시도해주세요.",
+    "messagePlaceholder": "메시지를 입력하세요...",
+    "sendingButton": "전송 중...",
+    "sendButton": "전송",
+    "closePreview": "닫기"
+  }
+}

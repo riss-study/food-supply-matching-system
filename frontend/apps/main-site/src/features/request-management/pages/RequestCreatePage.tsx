@@ -1,30 +1,23 @@
 import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import type { CreateRequestRequest, RequestMode } from "@fsm/types"
 import { useCreateRequest } from "../hooks/useCreateRequest"
 import { useSupplierList } from "../../discovery/hooks/useSupplierList"
 
-const categories = [
-  { code: "snack", label: "스낵/간식" },
-  { code: "beverage", label: "음료" },
-  { code: "sauce", label: "소스/조미료" },
-  { code: "bakery", label: "베이커리" },
-  { code: "dairy", label: "유제품" },
-  { code: "health", label: "건강식품" },
-  { code: "frozen", label: "냉동식품" },
-  { code: "other", label: "기타" },
-]
+const categoryCodes = ["snack", "beverage", "sauce", "bakery", "dairy", "health", "frozen", "other"] as const
 
 const certifications = [
   { code: "HACCP", label: "HACCP" },
   { code: "ISO22000", label: "ISO 22000" },
   { code: "FSSC22000", label: "FSSC 22000" },
-  { code: "ORGANIC", label: "유기농" },
-  { code: "HALAL", label: "할랄" },
-  { code: "KOSHER", label: "코셔" },
-]
+  { code: "ORGANIC", labelKey: "organic" },
+  { code: "HALAL", labelKey: "halal" },
+  { code: "KOSHER", labelKey: "kosher" },
+] as const
 
 export function RequestCreatePage() {
+  const { t } = useTranslation("request-management")
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const createMutation = useCreateRequest()
@@ -106,41 +99,41 @@ export function RequestCreatePage() {
     <div className="page">
       <div className="page-header">
         <div className="page-header-text">
-          <h1>새 의뢰 작성</h1>
-          <p>제조 의뢰 정보를 입력하세요. 공급자가 견적을 보내드립니다.</p>
+          <h1>{t("create.title")}</h1>
+          <p>{t("create.description")}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-20">
         {/* 기본 정보 */}
         <section className="surface flex flex-col gap-16">
-          <h2 className="section-title">기본 정보</h2>
+          <h2 className="section-title">{t("create.basicInfoTitle")}</h2>
 
           <div className="form-row">
             <div className="input-field">
-              <label>의뢰 제목</label>
+              <label>{t("create.titleLabel")}</label>
               <input
                 className="input"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="의뢰 제목을 입력하세요 (5~200자)"
+                placeholder={t("create.titlePlaceholder")}
                 minLength={5}
                 maxLength={200}
                 required
               />
             </div>
             <div className="input-field">
-              <label>카테고리</label>
+              <label>{t("create.categoryLabel")}</label>
               <select
                 className="select"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 required
               >
-                <option value="">카테고리 선택</option>
-                {categories.map((cat) => (
-                  <option key={cat.code} value={cat.code}>{cat.label}</option>
+                <option value="">{t("create.categorySelect")}</option>
+                {categoryCodes.map((code) => (
+                  <option key={code} value={code}>{t(`create.categoryOptions.${code}`)}</option>
                 ))}
               </select>
             </div>
@@ -148,24 +141,24 @@ export function RequestCreatePage() {
 
           <div className="form-row">
             <div className="input-field">
-              <label>의뢰 방식</label>
+              <label>{t("create.modeLabel")}</label>
               <select
                 className="select"
                 value={mode}
                 onChange={(e) => setMode(e.target.value as RequestMode)}
               >
-                <option value="public">공개</option>
-                <option value="targeted">지정</option>
+                <option value="public">{t("create.modePublic")}</option>
+                <option value="targeted">{t("create.modeTargeted")}</option>
               </select>
             </div>
             <div className="input-field">
-              <label>희망 수량</label>
+              <label>{t("create.desiredVolumeLabel")}</label>
               <input
                 className="input"
                 type="text"
                 value={desiredVolume}
                 onChange={(e) => setDesiredVolume(e.target.value)}
-                placeholder="예: 10,000개, 50톤, 1,000박스"
+                placeholder={t("create.desiredVolumePlaceholder")}
                 required
               />
             </div>
@@ -174,11 +167,11 @@ export function RequestCreatePage() {
 
         {/* 제조 조건 */}
         <section className="surface flex flex-col gap-16">
-          <h2 className="section-title">제조 조건</h2>
+          <h2 className="section-title">{t("create.conditionsTitle")}</h2>
 
           <div className="form-row">
             <div className="input-field">
-              <label>목표 단가 범위</label>
+              <label>{t("create.targetPriceLabel")}</label>
               <input
                 className="input"
                 type="text"
@@ -188,70 +181,71 @@ export function RequestCreatePage() {
                   setTargetPriceMin(parts[0] || "")
                   setTargetPriceMax(parts[1] || "")
                 }}
-                placeholder="예: 5,000 ~ 8,000원/kg (최소~최대)"
+                placeholder={t("create.targetPricePlaceholder")}
               />
             </div>
             <div className="input-field">
-              <label>인증 요구사항</label>
+              <label>{t("create.certificationLabel")}</label>
               <select
                 className="select"
                 value={selectedCertifications[0] ?? ""}
                 onChange={(e) => setSelectedCertifications(e.target.value ? [e.target.value] : [])}
               >
-                <option value="">HACCP, ISO 등</option>
-                {certifications.map((cert) => (
-                  <option key={cert.code} value={cert.code}>{cert.label}</option>
-                ))}
+                <option value="">{t("create.certificationPlaceholder")}</option>
+                {certifications.map((cert) => {
+                  const label = "labelKey" in cert ? t(`create.certificationOptions.${cert.labelKey}`) : cert.label
+                  return <option key={cert.code} value={cert.code}>{label}</option>
+                })}
               </select>
             </div>
           </div>
 
           <div className="form-row">
             <div className="input-field">
-              <label>원료 규정</label>
+              <label>{t("create.rawMaterialLabel")}</label>
               <select
                 className="select"
                 value={rawMaterialRule}
                 onChange={(e) => setRawMaterialRule(e.target.value as typeof rawMaterialRule)}
               >
-                <option value="">선택하세요</option>
-                <option value="requester_provided">의뢰자 제공</option>
-                <option value="supplier_provided">공급자 제공</option>
+                <option value="">{t("create.rawMaterialPlaceholder")}</option>
+                <option value="requester_provided">{t("create.rawMaterialRequester")}</option>
+                <option value="supplier_provided">{t("create.rawMaterialSupplier")}</option>
               </select>
             </div>
             <div className="input-field">
-              <label>포장 요구사항</label>
+              <label>{t("create.packagingLabel")}</label>
               <select
                 className="select"
                 value={packagingRequirement}
                 onChange={(e) => setPackagingRequirement(e.target.value as typeof packagingRequirement)}
               >
-                <option value="">선택하세요</option>
-                <option value="private_label">프라이빗 라벨</option>
-                <option value="bulk">벌크</option>
-                <option value="none">없음</option>
+                <option value="">{t("create.packagingPlaceholder")}</option>
+                <option value="private_label">{t("create.packagingPrivateLabel")}</option>
+                <option value="bulk">{t("create.packagingBulk")}</option>
+                <option value="none">{t("create.packagingNone")}</option>
               </select>
             </div>
           </div>
 
           <div className="input-field">
-            <label>납품 요구사항</label>
+            <label>{t("create.deliveryLabel")}</label>
             <input
               className="input"
               type="text"
               value={deliveryRequirement}
               onChange={(e) => setDeliveryRequirement(e.target.value)}
-              placeholder="희망 납품일, 조건 등"
+              placeholder={t("create.deliveryPlaceholder")}
             />
           </div>
 
           <div className="input-field">
-            <label>추가 요청사항</label>
+            <label>{t("create.notesLabel")}</label>
             <textarea
               className="textarea"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="공급자에게 전달할 추가 메모나 요청사항을 작성하세요. (최대 2,000자)"
+              placeholder={t("create.notesPlaceholder")}
               maxLength={2000}
               rows={4}
             />
@@ -262,8 +256,8 @@ export function RequestCreatePage() {
         {mode === "targeted" && (
           <section className="surface flex flex-col gap-12">
             <h2 className="section-title">
-              지정 공급자 선택 <span className="text-danger">*</span>
-              <span className="text-muted font-medium text-sm"> ({targetSupplierIds.length}개 선택됨)</span>
+              {t("create.targetTitle")} <span className="text-danger">{t("create.targetRequired")}</span>
+              <span className="text-muted font-medium text-sm"> {t("create.targetSelectedCount", { count: targetSupplierIds.length })}</span>
             </h2>
 
             {hasPrefilledSupplier && targetSupplierIdFromUrl && targetSupplierIds.includes(targetSupplierIdFromUrl) && !prefilledSupplierCleared && (
@@ -271,7 +265,7 @@ export function RequestCreatePage() {
                 <div className="flex items-center gap-8">
                   <span className="text-success">✓</span>
                   <span className="font-semibold">{targetSupplierNameFromUrl}</span>
-                  <span className="text-sm text-muted">(선택됨)</span>
+                  <span className="text-sm text-muted">{t("create.selected")}</span>
                 </div>
                 <button
                   type="button"
@@ -281,7 +275,7 @@ export function RequestCreatePage() {
                     toggleTargetSupplier(targetSupplierIdFromUrl)
                   }}
                 >
-                  제거
+                  {t("create.removeButton")}
                 </button>
               </div>
             )}
@@ -292,13 +286,13 @@ export function RequestCreatePage() {
                 type="text"
                 value={supplierSearchKeyword}
                 onChange={(e) => setSupplierSearchKeyword(e.target.value)}
-                placeholder="공급자 검색..."
+                placeholder={t("create.supplierSearchPlaceholder")}
               />
             </div>
 
             <div className="flex flex-col gap-8 overflow-auto">
               {suppliersData?.items.length === 0 ? (
-                <p className="text-muted text-sm">검색 결과가 없습니다.</p>
+                <p className="text-muted text-sm">{t("create.noSearchResults")}</p>
               ) : (
                 suppliersData?.items.map((supplier) => (
                   <label
@@ -322,14 +316,14 @@ export function RequestCreatePage() {
             </div>
 
             {targetSupplierIds.length === 0 && (
-              <p className="text-danger text-sm">지정 모드에서는 최소 1개 이상의 공급자를 선택해야 합니다.</p>
+              <p className="text-danger text-sm">{t("create.noSuppliersSelected")}</p>
             )}
           </section>
         )}
 
         {createMutation.isError && (
           <div className="surface">
-            <p className="text-danger">의뢰 등록에 실패했습니다. 다시 시도해주세요.</p>
+            <p className="text-danger">{t("create.submitError")}</p>
           </div>
         )}
 
@@ -340,21 +334,21 @@ export function RequestCreatePage() {
             className="btn btn-secondary"
             onClick={() => navigate("/requests")}
           >
-            취소
+            {t("create.cancelButton")}
           </button>
           <button
             type="submit"
             className="btn btn-primary"
             disabled={!isFormValid || createMutation.isPending}
           >
-            {createMutation.isPending ? "등록 중..." : "의뢰 등록"}
+            {createMutation.isPending ? t("create.submittingButton") : t("create.submitButton")}
           </button>
           {!isFormValid && (
             <p className="text-danger text-sm">
-              {title.length < 5 ? "제목을 5자 이상 입력하세요. " : ""}
-              {!category ? "카테고리를 선택하세요. " : ""}
-              {desiredVolume.trim().length === 0 ? "희망 수량을 입력하세요. " : ""}
-              {mode === "targeted" && targetSupplierIds.length === 0 ? "지정 공급자를 선택하세요." : ""}
+              {title.length < 5 ? t("create.validationTitleShort") : ""}
+              {!category ? t("create.validationCategory") : ""}
+              {desiredVolume.trim().length === 0 ? t("create.validationVolume") : ""}
+              {mode === "targeted" && targetSupplierIds.length === 0 ? t("create.validationTargetSuppliers") : ""}
             </p>
           )}
         </div>

@@ -1,0 +1,79 @@
+{
+  "verificationState": {
+    "draft": "초안",
+    "submitted": "제출됨",
+    "under_review": "검토 중",
+    "hold": "보류",
+    "approved": "승인됨",
+    "rejected": "반려됨",
+    "suspended": "중단됨"
+  },
+  "statusCard": {
+    "preSubmissionTitle": "검수 제출 전",
+    "preSubmissionDesc": "사업자등록증과 필요한 파일을 업로드해 검수를 시작하세요.",
+    "statusTitle": "검수 상태",
+    "submittedAtLabel": "제출일: {{date}}",
+    "reviewNoteLabel": "안내: {{note}}",
+    "fileLineItem": "{{fileName}} ({{status}})",
+    "approvedMessage": "승인 완료! 공개 프로필이 활성화되었습니다.",
+    "approvedDescription": "요청자들이 내 프로필을 검색하고 의뢰를 받을 수 있습니다.",
+    "viewPublicProfile": "내 공개 프로필 보기"
+  },
+  "submission": {
+    "title": "검수 서류 제출",
+    "registrationDocLabel": "사업자등록증 (필수)",
+    "certificationsLabel": "인증서 파일들",
+    "portfolioLabel": "포트폴리오 이미지",
+    "submittingButton": "제출 중...",
+    "submitButton": "검수 제출하기",
+    "submitError": "검수 제출에 실패했습니다."
+  },
+  "route": {
+    "loading": "로딩 중..."
+  },
+  "page": {
+    "title": "공급자 프로필",
+    "manageTitle": "공급자 프로필 관리",
+    "manageDescription": "회사 소개, 생산 역량, 공개 프로필 준비 상태, 검수 제출 흐름을 한 화면에서 관리합니다.",
+    "loading": "로딩 중...",
+    "notEditable": "현재 검수 상태에서는 프로필을 수정할 수 없습니다."
+  },
+  "form": {
+    "optionsLoading": "옵션 로딩 중...",
+    "basicInfoTitle": "기본 회사 정보",
+    "companyNameLabel": "회사명",
+    "companyNamePlaceholder": "회사명 (2~100자)",
+    "representativeLabel": "대표자명",
+    "representativePlaceholder": "대표자명 (2~50자)",
+    "contactPhoneLabel": "연락처 전화번호",
+    "contactPhonePlaceholder": "연락처 전화번호",
+    "contactEmailLabel": "연락처 이메일",
+    "contactEmailPlaceholder": "연락처 이메일",
+    "regionLabel": "지역",
+    "regionSelect": "지역 선택",
+    "categoryLegend": "카테고리 (복수 선택)",
+    "categoryRequired": "최소 하나의 카테고리를 선택해주세요.",
+    "manufacturingCapabilityTitle": "제조 역량",
+    "equipmentLabel": "설비 요약",
+    "equipmentPlaceholder": "보유 설비 요약 (최대 500자)",
+    "monthlyCapacityLabel": "월 생산량",
+    "monthlyCapacityPlaceholder": "예: 50,000개, 100톤",
+    "moqLabel": "MOQ",
+    "moqPlaceholder": "예: 1,000개, 500kg",
+    "certificationTitle": "인증서 관리",
+    "oemLabel": "OEM 가능",
+    "odmLabel": "ODM 가능",
+    "rawMaterialLabel": "원재료 지원",
+    "packagingLabel": "포장/라벨 지원",
+    "introductionLabel": "소개",
+    "introductionPlaceholder": "회사 소개 (최대 2,000자)",
+    "portfolioTitle": "포트폴리오 이미지",
+    "portfolioDescription": "제품 사진, 공장 사진 등 포트폴리오 이미지를 등록하세요.",
+    "portfolioNoImages": "등록된 포트폴리오 이미지가 없습니다.",
+    "portfolioAddButton": "이미지 추가",
+    "portfolioRemoveAria": "삭제",
+    "contactSaveButton": "연락처 저장",
+    "saveButton": "저장하기",
+    "processingButton": "처리 중..."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "title": "통계 대시보드",
+  "kpi": {
+    "totalUsers": "전체 사용자",
+    "requesters": "의뢰자",
+    "suppliers": "공급자",
+    "pendingReviews": "검수대기"
+  },
+  "supplierStateTitle": "공급자 검증 상태 분포",
+  "supplierState": {
+    "approved": "승인됨",
+    "submitted": "제출됨",
+    "under_review": "검토중",
+    "hold": "보류",
+    "rejected": "반려",
+    "suspended": "중단",
+    "draft": "작성중"
+  },
+  "requestsTitle": "의뢰 현황",
+  "requests": {
+    "total": "전체 의뢰",
+    "open": "진행중",
+    "closed": "마감",
+    "cancelled": "취소",
+    "draft": "작성중"
+  },
+  "reviewsTitle": "검수 현황",
+  "reviews": {
+    "avgReviewDays": "평균 검수 일수",
+    "totalReviewed": "전체 검수 완료"
+  },
+  "daysValue": "{{days}}일"
+}
