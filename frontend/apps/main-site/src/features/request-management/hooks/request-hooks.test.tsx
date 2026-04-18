@@ -65,7 +65,7 @@ describe("request-management hooks", () => {
         mode: "public",
         title: "Test",
         category: "snack",
-        desiredVolume: 1000,
+        desiredVolume: "1000",
         certificationRequirement: [],
         state: "open",
         requester: { businessName: "Test Co", contactName: "John" },
@@ -112,7 +112,7 @@ describe("request-management hooks", () => {
         mode: "public",
         title: "New Request",
         category: "snack",
-        desiredVolume: 1000,
+        desiredVolume: "1000",
       })
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true))

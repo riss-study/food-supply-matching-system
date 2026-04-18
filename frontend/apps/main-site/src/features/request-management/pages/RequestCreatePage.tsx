@@ -75,8 +75,8 @@ export function RequestCreatePage() {
       ...(targetPriceMin || targetPriceMax
         ? {
             targetPriceRange: {
-              ...(targetPriceMin ? { min: Number(targetPriceMin) } : {}),
-              ...(targetPriceMax ? { max: Number(targetPriceMax) } : {}),
+              ...(targetPriceMin ? { min: targetPriceMin } : {}),
+              ...(targetPriceMax ? { max: targetPriceMax } : {}),
             },
           }
         : {}),

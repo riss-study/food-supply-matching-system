@@ -27,7 +27,7 @@ describe("quotes hooks", () => {
   it("loads request quotes", async () => {
     const { getRequestQuotes } = await import("../api/quotes-api")
     vi.mocked(getRequestQuotes).mockResolvedValueOnce({
-      items: [{ quoteId: "quo_1", supplierId: "sprof_1", companyName: "예시 식품", unitPriceEstimate: 800, moq: 2000, leadTime: 30, state: "submitted", threadId: "thd_1", submittedAt: "2026-03-20T00:00:00Z" }],
+      items: [{ quoteId: "quo_1", supplierId: "sprof_1", companyName: "예시 식품", unitPriceEstimate: "800", moq: "2000", leadTime: "30", state: "submitted", threadId: "thd_1", submittedAt: "2026-03-20T00:00:00Z" }],
       meta: { page: 1, size: 20 },
     })
 

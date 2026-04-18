@@ -29,7 +29,7 @@ describe("supplier quotes hooks", () => {
   it("loads supplier quote list", async () => {
     const { getSupplierQuotes } = await import("../api/supplier-quotes-api")
     vi.mocked(getSupplierQuotes).mockResolvedValueOnce({
-      items: [{ quoteId: "quo_1", requestId: "req_1", requestTitle: "테스트", category: "snack", unitPriceEstimate: 800, moq: 2000, leadTime: 30, state: "submitted", version: 1, threadId: "thd_1", submittedAt: "2026-03-20T00:00:00Z" }],
+      items: [{ quoteId: "quo_1", requestId: "req_1", requestTitle: "테스트", category: "snack", unitPriceEstimate: "800", moq: "2000", leadTime: "30", state: "submitted", version: 1, threadId: "thd_1", submittedAt: "2026-03-20T00:00:00Z" }],
       meta: { page: 1, size: 20 },
     })
     const { result } = renderHook(() => useSupplierQuotes({ page: 1, size: 20 }), { wrapper: createWrapper() })
@@ -41,7 +41,7 @@ describe("supplier quotes hooks", () => {
     const { submitQuote } = await import("../api/supplier-quotes-api")
     vi.mocked(submitQuote).mockResolvedValueOnce({ quoteId: "quo_1", state: "submitted", threadId: "thd_1", createdAt: "2026-03-20T00:00:00Z" })
     const { result } = renderHook(() => useSubmitQuote(), { wrapper: createWrapper() })
-    result.current.mutate({ requestId: "req_1", request: { unitPriceEstimate: 800, moq: 2000, leadTime: 30 } })
+    result.current.mutate({ requestId: "req_1", request: { unitPriceEstimate: "800", moq: "2000", leadTime: "30" } })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
 
@@ -49,7 +49,7 @@ describe("supplier quotes hooks", () => {
     const { updateQuote } = await import("../api/supplier-quotes-api")
     vi.mocked(updateQuote).mockResolvedValueOnce({ quoteId: "quo_1", state: "submitted", version: 2, updatedAt: "2026-03-20T00:00:00Z" })
     const { result } = renderHook(() => useUpdateQuote(), { wrapper: createWrapper() })
-    result.current.mutate({ quoteId: "quo_1", request: { unitPriceEstimate: 750 } })
+    result.current.mutate({ quoteId: "quo_1", request: { unitPriceEstimate: "750" } })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
 

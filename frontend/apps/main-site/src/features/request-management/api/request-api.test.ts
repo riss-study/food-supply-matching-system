@@ -92,7 +92,7 @@ describe("request-api", () => {
         mode: "public",
         title: "New Request",
         category: "snack",
-        desiredVolume: 1000,
+        desiredVolume: "1000",
       })
 
       expect(result.requestId).toBe("req_new")

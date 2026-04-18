@@ -146,7 +146,7 @@ export function QuoteComparisonPage() {
                 <td className="text-muted" data-label={t("comparison.headers.submittedAt")}>{new Date(quote.submittedAt).toLocaleDateString("ko-KR")}</td>
                 <td className="font-semibold" data-label={t("comparison.headers.unitPrice")}>{quote.unitPriceEstimate}</td>
                 <td data-label={t("comparison.headers.moq")}>{quote.moq}</td>
-                <td data-label={t("comparison.headers.leadTime")}>{t("comparison.leadTimeWeeks", { weeks: Math.ceil(quote.leadTime / 7) })}</td>
+                <td data-label={t("comparison.headers.leadTime")}>{t("comparison.leadTimeWeeks", { weeks: Math.ceil(Number(quote.leadTime) / 7) || 0 })}</td>
                 <td data-label={t("comparison.headers.sampleCost")}>{quote.sampleCost ? quote.sampleCost : t("comparison.sampleFree")}</td>
                 <td data-label={t("comparison.headers.state")}><QuoteStateBadge state={quote.state} /></td>
                 <td data-label="">
@@ -166,10 +166,10 @@ export function QuoteComparisonPage() {
         </table>
       </div>
 
-      {meta != null && meta.totalPages >= 1 && (
+      {meta?.totalPages != null && meta.totalPages >= 1 && (
         <div className="pagination">
           <button disabled={!meta.hasPrev} onClick={() => updateFilter({ page: String(Math.max(1, page - 1)) })}>‹</button>
-          {Array.from({ length: Math.min(meta.totalPages, 5) }, (_, i) => i + 1).map((p) => (
+          {Array.from({ length: Math.min(meta.totalPages ?? 1, 5) }, (_, i) => i + 1).map((p) => (
             <button key={p} className={p === page ? "active" : ""} onClick={() => updateFilter({ page: String(p) })}>{p}</button>
           ))}
           <button disabled={!meta.hasNext} onClick={() => updateFilter({ page: String(page + 1) })}>›</button>

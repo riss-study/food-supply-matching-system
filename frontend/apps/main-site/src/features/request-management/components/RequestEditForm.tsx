@@ -42,8 +42,8 @@ export function RequestEditForm({ request, onSaved, onError }: Props) {
           targetPriceRange:
             targetPriceMin || targetPriceMax
               ? {
-                  ...(targetPriceMin ? { min: Number(targetPriceMin) } : {}),
-                  ...(targetPriceMax ? { max: Number(targetPriceMax) } : {}),
+                  ...(targetPriceMin ? { min: targetPriceMin } : {}),
+                  ...(targetPriceMax ? { max: targetPriceMax } : {}),
                 }
               : undefined,
           rawMaterialRule: rawMaterialRule || undefined,

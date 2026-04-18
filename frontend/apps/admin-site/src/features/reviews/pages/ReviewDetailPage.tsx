@@ -99,6 +99,7 @@ export function ReviewDetailPage() {
                       type="button"
                       className="btn btn-primary btn-sm"
                       onClick={async () => {
+                        if (!file.downloadUrl) return
                         const res = await adminApiClient.get(file.downloadUrl, { responseType: "blob" })
                         const url = URL.createObjectURL(res.data)
                         const a = document.createElement("a")

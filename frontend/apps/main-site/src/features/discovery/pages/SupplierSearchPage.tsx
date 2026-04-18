@@ -176,7 +176,7 @@ export function SupplierSearchPage() {
             ))}
           </div>
 
-          {data.meta && data.meta.totalPages >= 1 && (
+          {data.meta?.totalPages != null && data.meta.totalPages >= 1 && (
             <div className="pagination">
               <button
                 disabled={!data.meta.hasPrev}
@@ -184,7 +184,7 @@ export function SupplierSearchPage() {
               >
                 ‹
               </button>
-              {Array.from({ length: Math.min(data.meta.totalPages, 5) }, (_, i) => i + 1).map((p) => (
+              {Array.from({ length: Math.min(data.meta.totalPages ?? 1, 5) }, (_, i) => i + 1).map((p) => (
                 <button
                   key={p}
                   className={p === page ? "active" : ""}
