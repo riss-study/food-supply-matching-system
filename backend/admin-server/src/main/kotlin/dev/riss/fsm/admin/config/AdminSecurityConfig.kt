@@ -19,14 +19,14 @@ import org.springframework.http.HttpStatus
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 class AdminSecurityConfig(
-    @org.springframework.beans.factory.annotation.Value("\${fsm.cors.allowed-origins:http://localhost:5173,http://localhost:5174}")
-    private val allowedOrigins: String,
+    @org.springframework.beans.factory.annotation.Value("\${fsm.cors.allowed-origin-patterns:http://*:5173,http://*:5174}")
+    private val allowedOriginPatterns: String,
 ) {
 
     @Bean
     fun adminCorsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration().apply {
-            this.allowedOrigins = this@AdminSecurityConfig.allowedOrigins.split(",").map { it.trim() }
+            this.allowedOriginPatterns = this@AdminSecurityConfig.allowedOriginPatterns.split(",").map { it.trim() }
             allowedMethods = listOf("GET", "POST", "PATCH", "DELETE", "OPTIONS")
             allowedHeaders = listOf("Authorization", "Content-Type", "Accept")
             allowCredentials = true
