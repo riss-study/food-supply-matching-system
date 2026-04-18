@@ -2,23 +2,24 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import type { ThreadSummary } from "@fsm/types"
 import { getThreadList, type ThreadListParams } from "../api/thread-api"
+import { threadKeys } from "../query-keys"
 
 export function useThreads(params: ThreadListParams = {}) {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ["threads", "list", params],
+    queryKey: threadKeys.list({ ...params }),
     queryFn: () => getThreadList(params),
   })
 
   const invalidateThreads = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["threads", "list"] })
+    queryClient.invalidateQueries({ queryKey: threadKeys.lists() })
   }, [queryClient])
 
   const updateThreadInCache = useCallback(
     (threadId: string, updater: (thread: ThreadSummary) => ThreadSummary) => {
       queryClient.setQueriesData<{ items: ThreadSummary[]; meta: unknown }>(
-        { queryKey: ["threads", "list"] },
+        { queryKey: threadKeys.lists() },
         (old) => {
           if (!old) return old
           return {

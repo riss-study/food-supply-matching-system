@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { cancelRequest } from "../api/request-api"
+import { requestKeys } from "../query-keys"
 
 export function useCancelRequest() {
   const queryClient = useQueryClient()
@@ -7,8 +8,8 @@ export function useCancelRequest() {
   return useMutation({
     mutationFn: ({ requestId, reason }: { requestId: string; reason?: string }) => cancelRequest(requestId, { reason }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["requests", "detail", variables.requestId] })
-      queryClient.invalidateQueries({ queryKey: ["requests", "list"] })
+      queryClient.invalidateQueries({ queryKey: requestKeys.detail(variables.requestId) })
+      queryClient.invalidateQueries({ queryKey: requestKeys.lists() })
     },
   })
 }

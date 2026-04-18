@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { SubmitQuoteRequest } from "@fsm/types"
+import { quoteKeys } from "../../quotes/query-keys"
+import { requestKeys } from "../../request-management/query-keys"
+import { supplierRequestKeys } from "../../supplier-requests/query-keys"
 import { submitQuote } from "../api/supplier-quotes-api"
+import { supplierQuoteKeys } from "../query-keys"
 
 export function useSubmitQuote() {
   const queryClient = useQueryClient()
@@ -8,11 +12,11 @@ export function useSubmitQuote() {
   return useMutation({
     mutationFn: ({ requestId, request }: { requestId: string; request: SubmitQuoteRequest }) => submitQuote(requestId, request),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["supplier-quotes", "list"] })
-      queryClient.invalidateQueries({ queryKey: ["supplier-requests", "feed"] })
-      queryClient.invalidateQueries({ queryKey: ["supplier-request", "detail", variables.requestId] })
-      queryClient.invalidateQueries({ queryKey: ["quotes", "list", variables.requestId] })
-      queryClient.invalidateQueries({ queryKey: ["requests", "detail", variables.requestId] })
+      queryClient.invalidateQueries({ queryKey: supplierQuoteKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: supplierRequestKeys.feeds() })
+      queryClient.invalidateQueries({ queryKey: supplierRequestKeys.detail(variables.requestId) })
+      queryClient.invalidateQueries({ queryKey: quoteKeys.listsByRequest(variables.requestId) })
+      queryClient.invalidateQueries({ queryKey: requestKeys.detail(variables.requestId) })
     },
   })
 }

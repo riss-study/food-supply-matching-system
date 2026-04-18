@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { markThreadAsRead } from "../api/thread-api"
+import { threadKeys } from "../query-keys"
 
 export function useMarkThreadRead() {
   const queryClient = useQueryClient()
@@ -7,8 +8,8 @@ export function useMarkThreadRead() {
   return useMutation({
     mutationFn: markThreadAsRead,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["threads", "list"] })
-      queryClient.invalidateQueries({ queryKey: ["threads", "detail", data.threadId] })
+      queryClient.invalidateQueries({ queryKey: threadKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: threadKeys.detail(data.threadId) })
     },
   })
 }

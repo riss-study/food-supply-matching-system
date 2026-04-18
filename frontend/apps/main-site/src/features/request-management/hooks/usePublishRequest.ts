@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { supplierRequestKeys } from "../../supplier-requests/query-keys"
 import { publishRequest } from "../api/request-api"
+import { requestKeys } from "../query-keys"
 
 export function usePublishRequest() {
   const queryClient = useQueryClient()
@@ -7,9 +9,9 @@ export function usePublishRequest() {
   return useMutation({
     mutationFn: publishRequest,
     onSuccess: (_, requestId) => {
-      queryClient.invalidateQueries({ queryKey: ["requests", "detail", requestId] })
-      queryClient.invalidateQueries({ queryKey: ["requests", "list"] })
-      queryClient.invalidateQueries({ queryKey: ["supplier-requests", "feed"] })
+      queryClient.invalidateQueries({ queryKey: requestKeys.detail(requestId) })
+      queryClient.invalidateQueries({ queryKey: requestKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: supplierRequestKeys.feeds() })
     },
   })
 }

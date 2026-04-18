@@ -75,7 +75,41 @@
 ### 2.5 상태관리
 - **서버 상태** = TanStack Query. 같은 데이터 두 번 fetch 금지, 쿼리키로 공유.
 - **클라이언트 전역 상태** = Zustand. atomic하게 쪼개고, 큰 store 하나 지양.
-- 쿼리키 규약: `['<feature>', '<resource>', <params>]`. 문자열 마음대로 말고.
+
+#### 2.5.1 Query Key Factory (필수)
+
+**문자열 리터럴 queryKey 금지.** feature별 `query-keys.ts` 파일에서 factory 객체로 관리.
+
+```ts
+// features/<feature>/query-keys.ts
+export const requestKeys = {
+  all:     ['requests'] as const,
+  lists:   () => [...requestKeys.all, 'list'] as const,
+  list:    (p: RequestListParams) => [...requestKeys.lists(), p] as const,
+  details: () => [...requestKeys.all, 'detail'] as const,
+  detail:  (id: string) => [...requestKeys.details(), id] as const,
+}
+```
+
+사용:
+
+```ts
+useQuery({ queryKey: requestKeys.detail(id), ... })
+queryClient.invalidateQueries({ queryKey: requestKeys.all })      // 이 feature 전부
+queryClient.invalidateQueries({ queryKey: requestKeys.lists() })  // list 계층만
+queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
+```
+
+**규칙**
+- `as const`로 튜플 고정해 TS 추론 유지
+- `all`이 root, 하위는 항상 `[...all, ...]` prefix로 구성 → 계층적 invalidate 가능
+- feature 경계를 넘는 invalidation은 import로 다른 factory를 참조 (예: quote mutation이 `requestKeys.detail(requestId)`도 invalidate)
+- 문자열 오타로 인한 silent bug (`supplier-request` vs `supplier-requests` 등) 원천 차단
+
+**안티패턴**
+- `useQuery({ queryKey: ['requests', 'list', params] })` — 리터럴 금지
+- `invalidateQueries({ queryKey: ['quotes'] })` — factory 거치지 않은 광범위 invalidate. 의도면 `quoteKeys.all`로.
+- 파라미터 순서 다른 두 객체로 같은 요청 2회 캐시됨 — query function 내부 또는 factory 단계에서 정규화.
 
 ### 2.6 스타일링
 - 색상/간격/폰트는 `packages/ui`의 토큰만. 인라인 `#fff`, `16px` 금지.
@@ -299,3 +333,4 @@
 |------|------|------|
 | 1.0 | 2026-04-18 | 초판. Phase 2 진입 시점 원칙 정리. |
 | 1.1 | 2026-04-18 | §8 사례 2 추가: CORS `allowedOriginPatterns` 전환 (하드코딩 제거 근본 해결). |
+| 1.2 | 2026-04-18 | §2.5에 Query Key Factory 규약 추가. 리터럴 queryKey 금지, feature별 factory 강제. |

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createRequest } from "../api/request-api"
+import { requestKeys } from "../query-keys"
 
 export function useCreateRequest() {
   const queryClient = useQueryClient()
@@ -7,7 +8,7 @@ export function useCreateRequest() {
   return useMutation({
     mutationFn: createRequest,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests", "list"] })
+      queryClient.invalidateQueries({ queryKey: requestKeys.lists() })
     },
   })
 }

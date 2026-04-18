@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { getSupplierProfile } from "../api/supplier-profile-api"
+import { supplierProfileKeys } from "../query-keys"
 
 export function useSupplierProfile() {
   return useQuery({
-    queryKey: ["supplier-profile"],
+    queryKey: supplierProfileKeys.current(),
     queryFn: getSupplierProfile,
   })
 }

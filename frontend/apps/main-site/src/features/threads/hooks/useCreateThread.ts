@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateThreadRequest, CreateThreadResponse } from "@fsm/types"
 import { createThread } from "../api/thread-api"
+import { threadKeys } from "../query-keys"
 
 export function useCreateThread(requestId: string) {
   const queryClient = useQueryClient()
@@ -8,7 +9,7 @@ export function useCreateThread(requestId: string) {
   return useMutation<CreateThreadResponse, Error, CreateThreadRequest>({
     mutationFn: (request) => createThread(requestId, request),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["threads", "list"] })
+      queryClient.invalidateQueries({ queryKey: threadKeys.lists() })
     },
   })
 }

@@ -10,6 +10,7 @@ import { useCreateThread } from "../hooks/useCreateThread"
 import { useRequestContactShare } from "../hooks/useRequestContactShare"
 import { useApproveContactShare } from "../hooks/useApproveContactShare"
 import { useRevokeContactShare } from "../hooks/useRevokeContactShare"
+import { threadKeys } from "../query-keys"
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -127,8 +128,8 @@ describe("threads hooks", () => {
     result.current.mutate()
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["threads", "detail", "thread_01"] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["threads", "list"] })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: threadKeys.detail("thread_01") })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: threadKeys.lists() })
   })
 
   it("approves contact share successfully", async () => {
@@ -152,8 +153,8 @@ describe("threads hooks", () => {
     result.current.mutate()
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["threads", "detail", "thread_01"] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["threads", "list"] })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: threadKeys.detail("thread_01") })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: threadKeys.lists() })
   })
 
   it("revokes contact share successfully", async () => {
@@ -177,7 +178,7 @@ describe("threads hooks", () => {
     result.current.mutate()
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["threads", "detail", "thread_01"] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["threads", "list"] })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: threadKeys.detail("thread_01") })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: threadKeys.lists() })
   })
 })

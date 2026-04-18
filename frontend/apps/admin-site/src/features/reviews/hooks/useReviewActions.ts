@@ -1,12 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { ReviewDecisionRequest } from "@fsm/types"
 import { approveReview, holdReview, rejectReview } from "../api/review-api"
+import { adminReviewKeys } from "../query-keys"
 
 function useRefresh(reviewId: string) {
   const queryClient = useQueryClient()
   return () => {
-    queryClient.invalidateQueries({ queryKey: ["admin-review-queue"] })
-    queryClient.invalidateQueries({ queryKey: ["admin-review-detail", reviewId] })
+    queryClient.invalidateQueries({ queryKey: adminReviewKeys.queues() })
+    queryClient.invalidateQueries({ queryKey: adminReviewKeys.detail(reviewId) })
   }
 }
 

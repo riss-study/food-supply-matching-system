@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { getLatestVerificationSubmission } from "../api/supplier-profile-api"
+import { supplierProfileKeys } from "../query-keys"
 
 export function useLatestVerificationSubmission() {
   return useQuery({
-    queryKey: ["latest-verification-submission"],
+    queryKey: supplierProfileKeys.latestVerification(),
     queryFn: getLatestVerificationSubmission,
   })
 }

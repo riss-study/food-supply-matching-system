@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { publishNotice } from "../api/notices-api"
+import { adminNoticeKeys } from "../query-keys"
 
 export function usePublishNotice() {
   const queryClient = useQueryClient()
@@ -7,8 +8,8 @@ export function usePublishNotice() {
   return useMutation({
     mutationFn: (noticeId: string) => publishNotice(noticeId),
     onSuccess: (_, noticeId) => {
-      queryClient.invalidateQueries({ queryKey: ["admin-notices"] })
-      queryClient.invalidateQueries({ queryKey: ["admin-notice-detail", noticeId] })
+      queryClient.invalidateQueries({ queryKey: adminNoticeKeys.all })
+      queryClient.invalidateQueries({ queryKey: adminNoticeKeys.detail(noticeId) })
     },
   })
 }
