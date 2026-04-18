@@ -87,7 +87,7 @@ export function NoticeListPage({ onCreateClick, onEditClick }: NoticeListPagePro
             </thead>
             <tbody>
               {data.items.map((item) => (
-                <tr key={item.noticeId} style={{ cursor: "pointer" }} onClick={() => onEditClick?.(item.noticeId)}>
+                <tr key={item.noticeId} className="cursor-pointer" onClick={() => onEditClick?.(item.noticeId)}>
                   <td className="font-semibold" data-label="제목">{item.title}</td>
                   <td data-label="상태">
                     <NoticeStateBadge state={item.state} />

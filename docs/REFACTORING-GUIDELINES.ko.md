@@ -112,7 +112,9 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 - 파라미터 순서 다른 두 객체로 같은 요청 2회 캐시됨 — query function 내부 또는 factory 단계에서 정규화.
 
 ### 2.6 스타일링
-- 색상/간격/폰트는 `packages/ui`의 토큰만. 인라인 `#fff`, `16px` 금지.
+- 색상/간격/폰트는 `packages/ui`의 토큰(`var(--xxx)`)만. 인라인 `#fff`, `16px` 금지.
+- **정적 style 값은 `shared.css`의 utility class 우선** — 예: `flex`, `flex-col`, `gap-8`, `mb-16`, `p-24`, `text-muted`, `text-base`, `font-bold`, `cursor-pointer`, `text-center`, `items-center`. 매핑 없는 경우에만 utility class 추가하거나 `var(--xxx)` 토큰 활용.
+- 동적 값 (ternary, 계산식, 사용자 입력)은 인라인 `style` 허용.
 - 반복되는 UI 패턴(버튼, 카드, 모달)은 `packages/ui`로 승격.
 - Emotion `styled`는 컴포넌트 단위, 페이지 안에 CSS 수십 줄 쌓지 말 것.
 
@@ -334,3 +336,4 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 | 1.0 | 2026-04-18 | 초판. Phase 2 진입 시점 원칙 정리. |
 | 1.1 | 2026-04-18 | §8 사례 2 추가: CORS `allowedOriginPatterns` 전환 (하드코딩 제거 근본 해결). |
 | 1.2 | 2026-04-18 | §2.5에 Query Key Factory 규약 추가. 리터럴 queryKey 금지, feature별 factory 강제. |
+| 1.3 | 2026-04-19 | §2.6 강화: 정적 style 값은 utility class 우선, 동적만 인라인 허용. |

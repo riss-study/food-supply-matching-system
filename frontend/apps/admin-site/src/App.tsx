@@ -214,7 +214,7 @@ export default function App() {
 
       <div className="admin-main">
         <header className="admin-topbar">
-          <div style={{ flex: 1 }} />
+          <div className="flex-1" />
           <div className="admin-topbar-user-wrap" ref={userMenuRef}>
             <div className="admin-topbar-user" onClick={() => setUserMenuOpen(!userMenuOpen)}>
               <div className="admin-topbar-avatar" />

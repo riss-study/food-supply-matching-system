@@ -21,24 +21,22 @@ export function SignupPage() {
     <div className="auth-layout">
       <div className="auth-layout-left">
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>잇다</div>
+          <div className="mb-24" style={{ fontSize: 28, fontWeight: 800 }}>잇다</div>
           <h1>식품 B2B 매칭 플랫폼에<br />가입하세요</h1>
-          <div className="signup-role-guide" style={{ marginTop: 24, flexDirection: "row", gap: 12 }}>
+          <div className="signup-role-guide mt-24 gap-12" style={{ flexDirection: "row" }}>
             <div
-              className={`signup-role-card ${role === "requester" ? "is-active" : ""}`}
+              className={`signup-role-card flex-1 ${role === "requester" ? "is-active" : ""}`}
               onClick={() => setRole("requester")}
-              style={{ flex: 1 }}
             >
-              <div style={{ fontSize: "1.25rem", marginBottom: 8, opacity: 0.7 }}>&#x1F50D;</div>
+              <div className="mb-8" style={{ fontSize: "1.25rem", opacity: 0.7 }}>&#x1F50D;</div>
               <strong>요청자</strong>
               <p>식품 제조를 의뢰하고<br />최적의 공급자를 찾아보세요</p>
             </div>
             <div
-              className={`signup-role-card ${role === "supplier" ? "is-active" : ""}`}
+              className={`signup-role-card flex-1 ${role === "supplier" ? "is-active" : ""}`}
               onClick={() => setRole("supplier")}
-              style={{ flex: 1 }}
             >
-              <div style={{ fontSize: "1.25rem", marginBottom: 8, opacity: 0.7 }}>&#x1F3ED;</div>
+              <div className="mb-8" style={{ fontSize: "1.25rem", opacity: 0.7 }}>&#x1F3ED;</div>
               <strong>공급자</strong>
               <p>제조 역량을 등록하고<br />새로운 의뢰를 받아보세요</p>
             </div>
@@ -51,13 +49,12 @@ export function SignupPage() {
           <p className="text-muted" style={{ marginTop: -12 }}>아래 정보를 입력하여 가입하세요.</p>
 
           {signupMutation.isError && (
-            <div role="alert" style={{
+            <div role="alert" className="font-medium" style={{
               padding: "12px 16px",
               borderRadius: "var(--radius-sm)",
               background: "var(--danger-soft)",
               color: "var(--danger)",
               fontSize: "0.875rem",
-              fontWeight: 500,
             }}>
               회원가입에 실패했습니다. 입력값을 다시 확인해 주세요.
             </div>

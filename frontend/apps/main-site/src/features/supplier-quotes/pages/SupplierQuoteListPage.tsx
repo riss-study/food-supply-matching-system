@@ -135,7 +135,7 @@ export function SupplierQuoteListPage() {
                       {quote.state === "submitted" && (
                         <>
                           <button className="btn btn-ghost btn-sm" onClick={() => openEdit(quote)}>수정</button>
-                          <button className="text-danger text-sm font-medium" style={{ background: "none", border: "none", cursor: "pointer" }} onClick={() => withdrawMutation.mutate(quote.quoteId)}>철회</button>
+                          <button className="text-danger text-sm font-medium cursor-pointer" style={{ background: "none", border: "none" }} onClick={() => withdrawMutation.mutate(quote.quoteId)}>철회</button>
                         </>
                       )}
                       {quote.state === "declined" && <span className="text-muted text-sm">—</span>}

@@ -235,10 +235,10 @@ export function ThreadDetailPage() {
       <div className="thread-subheader">
         <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
         <div className="flex flex-col gap-2">
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{thread.otherParty.displayName} ({thread.otherParty.role === "supplier" ? "공급자" : "의뢰자"})</span>
-          <span style={{ fontSize: 12, color: 'var(--accent)' }}>{thread.requestTitle}</span>
+          <span className="text-base font-semibold">{thread.otherParty.displayName} ({thread.otherParty.role === "supplier" ? "공급자" : "의뢰자"})</span>
+          <span className="text-sm text-accent">{thread.requestTitle}</span>
         </div>
-        <div style={{ flex: 1 }} />
+        <div className="flex-1" />
         {canRequestContactShare && (
           <button type="button" className="btn btn-secondary btn-sm" onClick={handleRequestContactShare} disabled={isContactActionPending}>
             연락처 공유 요청
@@ -258,14 +258,14 @@ export function ThreadDetailPage() {
 
       {/* Contact share info banner */}
       {(thread.contactShareState !== "not_requested" || thread.sharedContact) && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 40px', background: 'var(--info-soft)', fontSize: 13 }}>
+        <div className="flex items-center gap-10" style={{ padding: '10px 40px', background: 'var(--info-soft)', fontSize: 13 }}>
           <span>ℹ️</span>
           <span className="text-muted">{contactShareLabel(thread.contactShareState)}</span>
         </div>
       )}
 
       {thread.sharedContact && (
-        <div style={{ display: 'flex', gap: 16, padding: '12px 40px', background: 'var(--accent-soft)', fontSize: 13 }}>
+        <div className="flex gap-16" style={{ padding: '12px 40px', background: 'var(--accent-soft)', fontSize: 13 }}>
           <div className="flex flex-col gap-2">
             <span className="font-semibold">요청자</span>
             <span>{thread.sharedContact.requester.name} · {thread.sharedContact.requester.phone || "전화번호 미입력"} · {thread.sharedContact.requester.email || "이메일 미입력"}</span>
@@ -307,7 +307,7 @@ export function ThreadDetailPage() {
 
       {/* Pending attachments */}
       {pendingAttachments.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '8px 40px', background: 'var(--accent-soft)' }}>
+        <div className="flex flex-wrap gap-8" style={{ padding: '8px 40px', background: 'var(--accent-soft)' }}>
           {pendingAttachments.map((attachment) => (
             <div key={attachment.attachmentId} className="flex items-center gap-8 p-8 bg-paper rounded text-sm">
               <span>📎 {attachment.fileName}</span>

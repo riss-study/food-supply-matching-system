@@ -85,11 +85,8 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
 
   return (
     <div
+      className="flex items-center gap-12 p-12"
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: 12,
         backgroundColor: "var(--panel)",
         borderRadius: 8,
         border: "1px solid var(--line)",
@@ -122,26 +119,21 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
           <img
             src={objectUrl ?? ""}
             alt={attachment.fileName}
+            className="w-full h-full"
             style={{
-              width: "100%",
-              height: "100%",
               objectFit: "cover",
             }}
           />
         </div>
       ) : (
         <div
+          className="flex items-center justify-center text-sm font-semibold"
           style={{
             width: 48,
             height: 48,
             borderRadius: 6,
             backgroundColor: "var(--danger-soft)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             flexShrink: 0,
-            fontSize: 12,
-            fontWeight: 600,
             color: "var(--danger)",
           }}
         >
@@ -149,11 +141,10 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
         </div>
       )}
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="flex-1" style={{ minWidth: 0 }}>
         <div
+          className="text-base font-medium"
           style={{
-            fontSize: 14,
-            fontWeight: 500,
             color: "var(--ink)",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -163,7 +154,7 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
         >
           {attachment.fileName}
         </div>
-        <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
+        <div className="text-sm text-muted mt-4">
           {formatFileSize(attachment.fileSize)}
         </div>
       </div>
@@ -174,14 +165,13 @@ export function AttachmentPreview({ attachment, onPreview }: AttachmentPreviewPr
             void handleDownload()
           }}
           disabled={isDownloading || !attachmentRef}
+          className="text-sm text-muted"
           style={{
             padding: "6px 12px",
-            fontSize: 12,
             backgroundColor: "var(--paper)",
             border: "1px solid var(--line-strong)",
             borderRadius: 6,
             cursor: isDownloading || !attachmentRef ? "not-allowed" : "pointer",
-            color: "var(--muted)",
           }}
         >
           {isDownloading ? "준비 중..." : "다운로드"}

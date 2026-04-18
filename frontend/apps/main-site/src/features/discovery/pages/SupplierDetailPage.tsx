@@ -20,7 +20,7 @@ export function SupplierDetailPage() {
       {/* Hero bar */}
       <div className="supplier-hero">
         <div className="flex items-center gap-12">
-          <h1 style={{ fontSize: 28, fontWeight: 700 }}>{data.companyName}</h1>
+          <h1 className="font-bold" style={{ fontSize: 28 }}>{data.companyName}</h1>
           <span className="badge badge-green">인증 완료</span>
         </div>
         <div className="flex items-center gap-16 text-muted text-sm">
@@ -41,7 +41,7 @@ export function SupplierDetailPage() {
           {/* 제조 역량 */}
           <section className="surface">
             <h2 className="section-title mb-12">제조 역량</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+            <div className="grid gap-16" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
               <div><p className="text-muted text-sm">월 생산능력</p><p className="font-bold">{data.monthlyCapacity}</p></div>
               <div><p className="text-muted text-sm">최소 주문량</p><p className="font-bold">{data.moq}</p></div>
               <div><p className="text-muted text-sm">원료 조달</p><p className="font-bold">{data.rawMaterialSupport ? "자체 조달 가능" : "지원 불가"}</p></div>
@@ -109,7 +109,7 @@ export function SupplierDetailPage() {
 
         {/* Right sidebar */}
         <aside className="flex flex-col gap-16">
-          <div className="surface flex flex-col gap-12" style={{ textAlign: "center" }}>
+          <div className="surface flex flex-col gap-12 text-center">
             <h3 className="font-semibold">이 공급자에게<br />의뢰하기</h3>
             <p className="text-sm text-muted">원하는 조건으로 제조 의뢰를<br />보내보세요.</p>
             {canRequest ? (

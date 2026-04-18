@@ -55,7 +55,7 @@ export function SupplierSearchPage() {
       <div className="supplier-search-body">
         {/* LEFT: Filter sidebar */}
         <aside className="supplier-filter-panel">
-          <h2 style={{ fontSize: 16, fontWeight: 700 }}>필터</h2>
+          <h2 className="text-lg font-bold">필터</h2>
 
           <div className="input-field">
             <input
@@ -147,13 +147,13 @@ export function SupplierSearchPage() {
           {data?.items.length ? (
             <>
             <div className="flex items-center gap-8">
-              <h1 style={{ fontSize: 18, fontWeight: 700 }}>
+              <h1 className="font-bold" style={{ fontSize: 18 }}>
                 검색 결과
               </h1>
-              <span className="text-muted" style={{ fontSize: 14 }}>· {data.meta.totalElements}개 업체</span>
+              <span className="text-muted text-base">· {data.meta.totalElements}개 업체</span>
             </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="grid gap-16" style={{ gridTemplateColumns: "1fr 1fr" }}>
             {data?.items.map((item) => (
               <Link to={`/suppliers/${item.profileId}`} className="supplier-card" key={item.profileId}>
                 <div className="flex items-center gap-8">

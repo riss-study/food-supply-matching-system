@@ -24,14 +24,13 @@ export function ApprovalGate({ children, fallback }: ApprovalGateProps) {
     return (
       <div className="alert-warning">
         <div>
-          <p style={{ margin: 0, fontWeight: 500 }}>사업자 승인 필요</p>
-          <p style={{ margin: "8px 0 0", fontSize: 14 }}>
+          <p className="font-medium" style={{ margin: 0 }}>사업자 승인 필요</p>
+          <p className="text-base" style={{ margin: "8px 0 0" }}>
             의뢰를 등록하려면 사업자 정보 승인이 필요합니다.
           </p>
           <Link
             to="/business-profile"
-            className="btn btn-sm btn-warning"
-            style={{ marginTop: 12 }}
+            className="btn btn-sm btn-warning mt-12"
           >
             사업자 정보 등록하기 →
           </Link>

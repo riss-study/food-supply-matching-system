@@ -33,14 +33,11 @@ export function QuoteDialog({ title, tone = "default", onClose, children, footer
 
   return (
     <div
+      className="flex items-center justify-center p-24"
       style={{
         position: "fixed",
         inset: 0,
         backgroundColor: "rgba(15, 23, 42, 0.45)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
         zIndex: 1000,
       }}
     >
@@ -59,11 +56,8 @@ export function QuoteDialog({ title, tone = "default", onClose, children, footer
         }}
       >
         <div
+          className="flex items-start justify-between gap-16"
           style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 16,
             padding: "20px 20px 0",
           }}
         >
@@ -71,15 +65,13 @@ export function QuoteDialog({ title, tone = "default", onClose, children, footer
           <button
             type="button"
             onClick={onClose}
+            className="cursor-pointer text-lg text-muted"
             style={{
               border: "1px solid var(--line-strong)",
               backgroundColor: "var(--paper)",
               borderRadius: "9999px",
               width: 32,
               height: 32,
-              cursor: "pointer",
-              color: "var(--muted)",
-              fontSize: 16,
               lineHeight: 1,
             }}
             aria-label="닫기"
@@ -90,10 +82,8 @@ export function QuoteDialog({ title, tone = "default", onClose, children, footer
         <div style={{ padding: "16px 20px 20px" }}>{children}</div>
         {footer && (
           <div
+            className="flex gap-12 flex-wrap"
             style={{
-              display: "flex",
-              gap: 12,
-              flexWrap: "wrap",
               padding: "0 20px 20px",
             }}
           >

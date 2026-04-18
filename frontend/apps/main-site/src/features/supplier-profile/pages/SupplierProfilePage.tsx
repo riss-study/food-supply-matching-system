@@ -28,8 +28,8 @@ export function SupplierProfilePage() {
   const contactOnlyEdit = profile?.verificationState === "approved"
 
   return (
-    <div className="page" style={{ alignItems: "center" }}>
-      <div className="content-narrow-lg" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <div className="page items-center">
+      <div className="content-narrow-lg flex flex-col gap-24">
         <div className="page-header">
           <div className="page-header-text">
             <h1>공급자 프로필 관리</h1>

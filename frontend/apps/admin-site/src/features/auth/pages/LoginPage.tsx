@@ -18,16 +18,16 @@ export function LoginPage() {
     <div className="login-split">
       <div className="login-brand-panel">
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: -0.5, marginBottom: 8 }}>잇다</h1>
-          <p style={{ fontSize: 11, fontWeight: 500, color: "var(--accent)", letterSpacing: 2, marginBottom: 28 }}>Admin Console</p>
-          <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.6 }}>
+          <h1 className="font-bold mb-8" style={{ fontSize: 26, letterSpacing: -0.5 }}>잇다</h1>
+          <p className="font-medium text-accent" style={{ fontSize: 11, letterSpacing: 2, marginBottom: 28 }}>Admin Console</p>
+          <p className="text-lg text-muted" style={{ lineHeight: 1.6 }}>
             식품 제조 매칭의 모든 것을<br />한 곳에서 관리하세요.
           </p>
         </div>
         <div className="login-brand-image">
           Factory Image
         </div>
-        <p style={{ fontSize: 13, color: "var(--accent)" }}>
+        <p className="text-accent" style={{ fontSize: 13 }}>
           공급자 검수 · 공지사항 · 통계 대시보드
         </p>
       </div>

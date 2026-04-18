@@ -75,13 +75,13 @@ export function ReviewQueuePage() {
             </thead>
             <tbody>
               {data.items.map((item) => (
-                <tr key={item.reviewId} style={{ cursor: "pointer" }} onClick={() => window.location.href = `/reviews/${item.reviewId}`}>
+                <tr key={item.reviewId} className="cursor-pointer" onClick={() => window.location.href = `/reviews/${item.reviewId}`}>
                   <td className="font-semibold" data-label="회사명">{item.companyName}</td>
                   <td data-label="상태">
                     <StateBadge state={item.state} />
                   </td>
                   <td className="text-muted" data-label="제출일">{new Date(item.submittedAt).toLocaleDateString("ko-KR")}</td>
-                  <td data-label="대기일수" style={{ color: item.pendingDays > 7 ? "var(--danger)" : item.pendingDays > 3 ? "var(--warning)" : "var(--ink)", fontWeight: 600 }}>
+                  <td data-label="대기일수" className="font-semibold" style={{ color: item.pendingDays > 7 ? "var(--danger)" : item.pendingDays > 3 ? "var(--warning)" : "var(--ink)" }}>
                     {item.pendingDays > 0 ? `${item.pendingDays}일` : "—"}
                   </td>
                 </tr>

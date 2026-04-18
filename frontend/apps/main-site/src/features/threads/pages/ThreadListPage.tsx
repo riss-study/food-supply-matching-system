@@ -22,9 +22,9 @@ function ThreadListItem({ thread }: { thread: ThreadSummary }) {
   return (
     <Link to={`/threads/${thread.threadId}`} className={`thread-list-item ${hasUnread ? "is-active" : ""}`}>
       <div className="thread-list-avatar" style={{ background: hasUnread ? 'var(--accent)' : 'var(--muted)' }} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div className="flex-1 flex flex-col gap-4">
         <div className="flex items-center gap-8">
-          <span style={{ fontWeight: 500 }}>{thread.otherParty.displayName}</span>
+          <span className="font-medium">{thread.otherParty.displayName}</span>
           <span className="text-muted text-sm">의뢰: {thread.requestTitle}</span>
         </div>
         {thread.lastMessage ? (
@@ -36,7 +36,7 @@ function ThreadListItem({ thread }: { thread: ThreadSummary }) {
           <div className="text-sm text-muted">아직 메시지가 없습니다</div>
         )}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+      <div className="flex flex-col items-end gap-8">
         <span className="text-sm text-muted">{formatTime(thread.updatedAt)}</span>
         {hasUnread && (
           <span className="badge badge-red">{thread.unreadCount > 99 ? "99+" : thread.unreadCount}</span>
@@ -70,7 +70,7 @@ export function ThreadListPage() {
 
   return (
     <div className="page">
-      <h1 style={{ fontSize: 22, fontWeight: 700 }}>메시지</h1>
+      <h1 className="font-bold" style={{ fontSize: 22 }}>메시지</h1>
 
       {threads.length === 0 ? (
         <div className="empty-state">
@@ -78,7 +78,7 @@ export function ThreadListPage() {
           <p className="text-sm">견적을 제출하거나 의뢰에 대해 문의하면 여기에 대화가 표시됩니다.</p>
         </div>
       ) : (
-        <div className="surface" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="surface p-0 overflow-hidden">
           {threads.map((thread) => (
             <ThreadListItem key={thread.threadId} thread={thread} />
           ))}

@@ -18,21 +18,17 @@ export function LoginPage() {
     <div className="auth-layout">
       <div className="auth-layout-left">
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>잇다</div>
+          <div className="mb-24" style={{ fontSize: 28, fontWeight: 800 }}>잇다</div>
           <h1>식품 제조 매칭의<br />새로운 기준</h1>
-          <p style={{ marginTop: 12 }}>
+          <p className="mt-12">
             공급자 탐색부터 견적 비교, 상담까지 하나의 플랫폼에서 식품 제조 파트너를 만나보세요.
           </p>
-          <div style={{
+          <div className="w-full flex items-center justify-center" style={{
             marginTop: 40,
-            width: "100%",
             maxWidth: 320,
             height: 180,
             background: "rgba(255,255,255,0.08)",
             borderRadius: "var(--radius-lg)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             color: "rgba(255,255,255,0.3)",
             fontSize: "0.85rem"
           }}>
@@ -46,13 +42,12 @@ export function LoginPage() {
           <p className="text-muted" style={{ marginTop: -12 }}>계정에 로그인하여 서비스를 이용하세요.</p>
 
           {loginMutation.isError && (
-            <div role="alert" style={{
+            <div role="alert" className="font-medium" style={{
               padding: "12px 16px",
               borderRadius: "var(--radius-sm)",
               background: "var(--danger-soft)",
               color: "var(--danger)",
               fontSize: "0.875rem",
-              fontWeight: 500,
             }}>
               로그인에 실패했습니다. 이메일과 비밀번호를 다시 확인해 주세요.
             </div>

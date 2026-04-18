@@ -95,7 +95,7 @@ export function MemberListPage() {
           <tbody>
             {paged.length === 0 ? (
               <tr>
-                <td colSpan={4} style={{ textAlign: "center" }}>
+                <td colSpan={4} className="text-center">
                   회원이 없습니다.
                 </td>
               </tr>

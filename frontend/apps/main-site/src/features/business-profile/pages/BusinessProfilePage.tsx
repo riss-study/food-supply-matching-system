@@ -161,7 +161,7 @@ export function BusinessProfilePage() {
 
   if (!profile || profile.approvalState === "not_submitted") {
     return (
-      <div className="page" style={{ alignItems: 'center' }}>
+      <div className="page items-center">
         <div className="content-narrow">
         <div className="page-header">
           <div className="page-header-text">
@@ -183,8 +183,8 @@ export function BusinessProfilePage() {
   const canEdit = profile.approvalState === "submitted" || profile.approvalState === "rejected"
 
   return (
-    <div className="page" style={{ alignItems: 'center' }}>
-      <div className="content-narrow" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="page items-center">
+      <div className="content-narrow flex flex-col gap-24">
       <div className="page-header">
         <div className="page-header-text">
           <h1>사업자 정보 관리</h1>

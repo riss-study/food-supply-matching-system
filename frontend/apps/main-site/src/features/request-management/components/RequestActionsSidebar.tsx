@@ -33,11 +33,11 @@ export function RequestActionsSidebar({ request, onEditToggle, onError }: Props)
 
   return (
     <aside className="flex flex-col gap-16">
-      <div className="surface flex flex-col items-center gap-12" style={{ textAlign: "center" }}>
+      <div className="surface flex flex-col items-center gap-12 text-center">
         <h3 className="section-title">받은 견적</h3>
         {(request.quoteCount ?? 0) > 0 ? (
           <>
-            <p style={{ fontSize: 36, fontWeight: 700, color: "var(--ink)" }}>{request.quoteCount}건</p>
+            <p className="font-bold" style={{ fontSize: 36, color: "var(--ink)" }}>{request.quoteCount}건</p>
             {request.state === "open" && (
               <Link to={`/requests/${request.requestId}/quotes`} className="btn btn-primary w-full">
                 견적 비교

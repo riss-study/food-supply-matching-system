@@ -100,7 +100,7 @@ function DashboardPage() {
   return (
     <div className="page" style={{ padding: "32px 0" }}>
       <div className="surface" style={{ padding: 32 }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: 8 }}>{roleLabel} 시작 화면</h1>
+        <h1 className="font-bold mb-8" style={{ fontSize: "1.5rem" }}>{roleLabel} 시작 화면</h1>
         <p className="text-muted mb-4">{user ? `${user.email} 계정으로 로그인되어 있습니다.` : "사용자 정보를 불러오지 못했습니다."}</p>
         <p className="text-muted mb-16">{guideText}</p>
         <div>

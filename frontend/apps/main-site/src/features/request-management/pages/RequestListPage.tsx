@@ -85,7 +85,7 @@ export function RequestListPage() {
               </thead>
               <tbody>
                 {data?.items.map((request) => (
-                  <tr key={request.requestId} onClick={() => navigate(`/requests/${request.requestId}`)} style={{ cursor: "pointer" }}>
+                  <tr key={request.requestId} onClick={() => navigate(`/requests/${request.requestId}`)} className="cursor-pointer">
                     <td className="font-semibold" data-label="제목">{request.title}</td>
                     <td className="text-muted" data-label="카테고리">{request.category}</td>
                     <td className="text-muted" data-label="방식">

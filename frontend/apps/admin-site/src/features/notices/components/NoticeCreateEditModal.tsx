@@ -207,7 +207,7 @@ export function NoticeCreateEditModal({
                 disabled={isSubmitting}
               />
             </label>
-            <small style={{ color: "var(--muted)" }}>5-200자 이내</small>
+            <small className="text-muted">5-200자 이내</small>
           </div>
 
           <div style={formGroupStyle}>
@@ -223,7 +223,7 @@ export function NoticeCreateEditModal({
                 disabled={isSubmitting}
               />
             </label>
-            <small style={{ color: "var(--muted)" }}>10-5000자 이내</small>
+            <small className="text-muted">10-5000자 이내</small>
           </div>
 
           <div style={formGroupStyle}>
@@ -235,7 +235,8 @@ export function NoticeCreateEditModal({
                   <li key={attachment.attachmentId} className="file-list-item">
                     <button
                       type="button"
-                      style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", padding: 0, fontSize: 14 }}
+                      className="text-accent cursor-pointer text-base p-0"
+                      style={{ background: "none", border: "none" }}
                       onClick={() => handleDownload(attachment.url, attachment.fileName)}
                     >
                       {attachment.fileName}
@@ -255,8 +256,8 @@ export function NoticeCreateEditModal({
             )}
 
             {newFiles.length > 0 && (
-              <div style={{ marginBottom: 12 }}>
-                <p style={{ fontSize: 13, color: "var(--success)", fontWeight: 500, marginBottom: 8 }}>새 파일 ({newFiles.length}개)</p>
+              <div className="mb-12">
+                <p className="text-success font-medium mb-8" style={{ fontSize: 13 }}>새 파일 ({newFiles.length}개)</p>
                 <ul className="file-list" style={{ border: "1px solid var(--line)", borderRadius: 8, padding: "0 12px" }}>
                   {newFiles.map((file, index) => (
                     <li key={`${file.name}-${index}`} className="file-list-item">
@@ -295,7 +296,7 @@ export function NoticeCreateEditModal({
 
           {!isEditMode && (
             <div style={formGroupStyle}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+              <label className="flex items-center cursor-pointer" style={{ gap: "0.5rem" }}>
                 <input
                   type="checkbox"
                   checked={publishImmediately}
