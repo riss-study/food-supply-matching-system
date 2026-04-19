@@ -11,6 +11,7 @@ include(
     ":command-domain-quote",
     ":command-domain-thread",
     ":command-domain-notice",
+    ":command-domain-review",
     ":query-model-user",
     ":query-model-supplier",
     ":query-model-request",

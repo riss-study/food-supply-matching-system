@@ -89,6 +89,27 @@ CREATE TABLE IF NOT EXISTS quote (
   UNIQUE KEY uk_active_quote (request_id, supplier_profile_id, state)
 );
 
+CREATE TABLE IF NOT EXISTS review (
+  id VARCHAR(64) PRIMARY KEY,
+  requester_user_id VARCHAR(64) NOT NULL,
+  supplier_profile_id VARCHAR(64) NOT NULL,
+  request_id VARCHAR(64) NOT NULL,
+  quote_id VARCHAR(64) NOT NULL,
+  rating TINYINT NOT NULL,
+  text VARCHAR(500) NULL,
+  hidden BOOLEAN NOT NULL DEFAULT FALSE,
+  version INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_review_request FOREIGN KEY (request_id) REFERENCES request_record(id),
+  CONSTRAINT fk_review_supplier FOREIGN KEY (supplier_profile_id) REFERENCES supplier_profile(id),
+  CONSTRAINT fk_review_quote FOREIGN KEY (quote_id) REFERENCES quote(id),
+  CONSTRAINT fk_review_requester FOREIGN KEY (requester_user_id) REFERENCES user_account(id),
+  UNIQUE KEY uk_review_request_supplier (request_id, supplier_profile_id),
+  INDEX idx_review_supplier (supplier_profile_id),
+  CONSTRAINT chk_review_rating CHECK (rating BETWEEN 1 AND 5)
+);
+
 CREATE TABLE IF NOT EXISTS message_thread (
   id VARCHAR(64) PRIMARY KEY,
   request_id VARCHAR(64) NOT NULL,

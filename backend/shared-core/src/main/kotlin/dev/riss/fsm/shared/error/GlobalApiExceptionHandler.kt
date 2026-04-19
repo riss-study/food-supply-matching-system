@@ -214,6 +214,37 @@ class GlobalApiExceptionHandler {
             ApiErrorResponse(code = 5001, message = exception.message ?: "Password encoding failed")
         )
 
+    // ---- Review ----
+    @ExceptionHandler(ReviewNotFoundException::class)
+    fun handleReviewNotFound(exception: ReviewNotFoundException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            ApiErrorResponse(code = 4041, message = exception.message ?: "Review not found")
+        )
+
+    @ExceptionHandler(ReviewEligibilityFailedException::class)
+    fun handleReviewEligibilityFailed(exception: ReviewEligibilityFailedException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(code = 4036, message = exception.message ?: "Not eligible to write a review")
+        )
+
+    @ExceptionHandler(ReviewUpdateForbiddenException::class)
+    fun handleReviewUpdateForbidden(exception: ReviewUpdateForbiddenException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(code = 4031, message = exception.message ?: "Review update is forbidden")
+        )
+
+    @ExceptionHandler(DuplicateReviewException::class)
+    fun handleDuplicateReview(exception: DuplicateReviewException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4094, message = exception.message ?: "Review already exists")
+        )
+
+    @ExceptionHandler(ReviewContentViolationException::class)
+    fun handleReviewContentViolation(exception: ReviewContentViolationException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+            ApiErrorResponse(code = 4222, message = exception.message ?: "Review content violates moderation rules")
+        )
+
     // ---- Thread message ----
     @ExceptionHandler(MessageContentRequiredException::class)
     fun handleMessageContentRequired(exception: MessageContentRequiredException): ResponseEntity<ApiErrorResponse> =
