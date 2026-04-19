@@ -64,14 +64,16 @@ jobs:
       - name: Apply MariaDB schema and mock data
         working-directory: backend
         run: |
-          mariadb -h 127.0.0.1 -P 13306 -uroot -proot fsm_command < docker/mariadb/init/01-schema.sql
-          mariadb -h 127.0.0.1 -P 13306 -uroot -proot fsm_command < docker/mariadb/init/02-mock-data.sql
+          MARIADB=$(docker ps --filter "ancestor=mariadb:11.4" --format "{{.ID}}")
+          docker exec -i "$MARIADB" mariadb -uroot -proot fsm_command < docker/mariadb/init/01-schema.sql
+          docker exec -i "$MARIADB" mariadb -uroot -proot fsm_command < docker/mariadb/init/02-mock-data.sql
 
       - name: Apply MongoDB read store init and seed
         working-directory: backend
         run: |
-          mongosh --host 127.0.0.1 --port 27018 < docker/mongodb/init/01-init-read-store.js
-          mongosh --host 127.0.0.1 --port 27018 < docker/mongodb/init/02-seed-read-models.js
+          MONGO=$(docker ps --filter "ancestor=mongo:6" --format "{{.ID}}")
+          docker exec -i "$MONGO" mongosh --quiet fsm_read < docker/mongodb/init/01-init-read-store.js
+          docker exec -i "$MONGO" mongosh --quiet fsm_read < docker/mongodb/init/02-seed-read-models.js
 
       - name: Gradle build (test included)
         working-directory: backend
