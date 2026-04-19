@@ -1,6 +1,6 @@
 # 백엔드 리팩토링 노트 — 2026-04-19
 
-> 한 세션(4커밋)에서 진행한 백엔드 개선 사항을 커밋별 before/after + 왜 그렇게 바꿨는지로 정리.
+> 한 세션에서 진행한 백엔드 개선 사항을 커밋별 before/after + 왜 그렇게 바꿨는지로 정리.
 > 지침: `docs/REFACTORING-GUIDELINES.ko.md` §3
 
 ---
@@ -13,6 +13,7 @@
 | 2 | `b86294d` | polish — `var`/`!!` 제거, URL helper 추출 | S |
 | 3 | `676566c` | API 에러 코드 fallback 규약 문서화 | S (docs) |
 | 4 | `3c4edc5` | supplier category/region count → Mongo aggregation | M (perf) |
+| 5 | `09b4e46` | `@Transactional` 을 domain → application layer 로 이동 | M |
 
 검증 공통: `./gradlew test` 전 모듈 **BUILD SUCCESSFUL** + 공인 IP × 3역할 E2E curl 전부 200.
 
@@ -431,6 +432,138 @@ fun regions(): Mono<List<SupplierRegionSummary>> =
 
 ---
 
+## 5. `09b4e46` — `@Transactional` 을 domain → application layer 로 이동
+
+### 배경
+`NoticeCommandService` (command-domain-notice) 의 5개 쓰기 메소드에 전부 `@Transactional` 이 붙어 있었음.
+
+```kotlin
+@Service
+class NoticeCommandService(
+    private val noticeRepository: NoticeRepository,
+) {
+    @Transactional
+    fun createNotice(...): Mono<NoticeEntity> { ... }
+
+    @Transactional
+    fun updateNotice(...): Mono<NoticeEntity> { ... }
+
+    @Transactional
+    fun publishNotice(...): Mono<NoticeEntity> { ... }
+
+    @Transactional
+    fun archiveNotice(...): Mono<NoticeEntity> { ... }
+
+    @Transactional
+    fun changeState(...): Mono<NoticeEntity> { ... }
+}
+```
+
+**지침서 §3.7 위반**:
+> "`@Transactional` 은 application service. domain/repository 에 걸지 않는다."
+
+Request / Quote / Supplier / Thread 도메인은 이미 application layer 에 두고 있었고, Notice 만 잘못된 위치.
+
+### 왜 이 원칙이 중요한가
+1. **트랜잭션 경계는 유즈케이스 단위**. 단일 도메인 save 뿐 아니라 "공지 생성 + Mongo view 반영" 같은 여러 step 을 **하나의 원자 단위**로 묶어야 할 때가 많다. 도메인 레이어가 단일 repository 만 건드리는 지금 단계에선 결과가 같아 보여도, 유즈케이스가 커지는 순간 도메인의 `@Transactional` 은 "부분 트랜잭션" 만 보장하게 된다.
+2. **도메인은 프레임워크 독립** (§3.4). `@Transactional` 은 Spring 관심사. 도메인이 이걸 알면 테스트에서도 Spring context 가 필요해지고, 순수 unit test 를 못 쓴다 (→ §10 숙제와 직결).
+3. **의도 가시성**: application service 의 `create()` 에 `@Transactional` 이 붙어 있으면 "이 유즈케이스가 원자 단위" 가 한눈에 드러남. 도메인에 분산되어 있으면 호출 그래프를 따라가야 알 수 있다.
+
+### 변경 A: domain 에서 `@Transactional` 전부 제거
+
+**`NoticeCommandService.kt`**
+
+Before:
+```kotlin
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import reactor.core.publisher.Mono
+...
+
+@Service
+class NoticeCommandService(
+    private val noticeRepository: NoticeRepository,
+) {
+
+    @Transactional
+    fun createNotice(...): Mono<NoticeEntity> { ... }
+
+    @Transactional
+    fun updateNotice(...): Mono<NoticeEntity> { ... }
+
+    @Transactional
+    fun publishNotice(...): Mono<NoticeEntity> { ... }
+
+    @Transactional
+    fun archiveNotice(...): Mono<NoticeEntity> { ... }
+
+    @Transactional
+    fun changeState(...): Mono<NoticeEntity> { ... }
+}
+```
+
+After:
+```kotlin
+import org.springframework.stereotype.Service
+import reactor.core.publisher.Mono
+...
+
+@Service
+class NoticeCommandService(
+    private val noticeRepository: NoticeRepository,
+) {
+
+    fun createNotice(...): Mono<NoticeEntity> { ... }
+    fun updateNotice(...): Mono<NoticeEntity> { ... }
+    fun publishNotice(...): Mono<NoticeEntity> { ... }
+    fun archiveNotice(...): Mono<NoticeEntity> { ... }
+    fun changeState(...): Mono<NoticeEntity> { ... }
+}
+```
+
+`org.springframework.transaction.annotation.Transactional` import 도 제거.
+
+### 변경 B: application layer 에 `@Transactional` 적용
+
+**`NoticeApplicationService.kt`** (admin-server)
+
+`import org.springframework.transaction.annotation.Transactional` 추가 후 **쓰기 유즈케이스** 네 개에 annotation 부여:
+
+```kotlin
+@Transactional
+fun create(...): Mono<CreateNoticeResponse> { ... }
+
+@Transactional
+fun update(...): Mono<UpdateNoticeResponse> { ... }
+
+@Transactional
+fun uploadAttachment(...): Mono<NoticeAttachmentResponse> { ... }
+
+@Transactional
+fun deleteAttachment(...): Mono<Void> { ... }
+```
+
+읽기 전용 (`list`, `detail`, `getAttachmentFile`) 에는 부여하지 않음. 필요 시 `@Transactional(readOnly = true)` 로 나중에 튜닝.
+
+### R2DBC reactive transaction 메모
+
+- Spring Boot R2DBC autoconfigure 가 `ReactiveTransactionManager` 를 제공하므로 `@Transactional` 은 reactor `Mono`/`Flux` 체인에 그대로 적용됨 (transaction context 가 Reactor Context 로 전파).
+- 단 Mongo 호출 (`adminNoticeViewRepository.save(...)` 등) 은 **별도 TM (MongoDB)** 이라 같은 `@Transactional` 에 묶이지 않음 — 이건 현 프로젝트가 **CQRS + 2개 저장소** 구조라 원래 불가능. 이번 변경은 "R2DBC 트랜잭션 경계를 application 경계와 일치" 시키는 것이 목적이며, Mongo projection 은 기존처럼 after-save 로 수행 (실패 시 보정 로직은 별도 과제).
+
+### 검증
+
+- `./gradlew test` BUILD SUCCESSFUL (전 모듈)
+- admin-server 재기동 후 공지 lifecycle E2E (공인 IP `:5174`):
+  - POST /api/admin/notices → `code 100`
+  - PATCH /api/admin/notices/{id} (title only) → `100`
+  - PATCH state=published → `100`
+  - PATCH state=archived → `100`
+
+### 남은 것
+다른 도메인은 원래 application layer 에서 `@Transactional` 사용 중이거나 단일 save 만이라 annotation 없음. 이번 변경은 "Notice 만 어긋나 있던 것" 을 정합화한 수준. 유즈케이스가 복잡해져서 "하나의 원자 단위" 범위가 명확해지면 각 application service 의 `@Transactional` 을 재검토.
+
+---
+
 ## 공통 원칙 되짚기
 
 1. **SSOT**: StorageProperties(설정), noticeAttachmentDownloadUrl(URL).
@@ -444,6 +577,6 @@ fun regions(): Mono<List<SupplierRegionSummary>> =
 
 ## 남은 과제 (백엔드 리팩토링)
 
-- **#1 + #5**: `command-domain-*` 서비스의 `ResponseStatusException` 을 도메인 sealed exception 으로 교체 + `@Transactional` 을 domain → application layer 로 이관. 규모 L, 도메인별 pilot 방식 권장.
+- **#1**: `command-domain-*` 서비스의 `ResponseStatusException` 을 도메인 sealed exception 으로 교체. 규모 L, 도메인별 pilot 방식 권장 (Request → Quote → Notice → Supplier → Thread). `#5` (`@Transactional` 위치) 는 `09b4e46` 로 해결됨.
 - **#10**: `command-domain-*` 각 모듈에 순수 unit test 추가 (현재는 application layer 에 편중). 규모 L.
 - **listApproved aggregation 이관**: 데이터 증가 관찰 후 착수.
