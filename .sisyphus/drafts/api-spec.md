@@ -2841,7 +2841,7 @@ Content-Type: application/json
 ```json
 {
   "requestId": "req_01HQX...",
-  "supplierProfileId": "sprof_01HQX...",
+  "supplierId": "sprof_01HQX...",
   "rating": 5,
   "text": "품질·납기 모두 만족스러웠습니다."
 }
@@ -2852,7 +2852,7 @@ Content-Type: application/json
 | 필드 | 타입 | 필수 | 제약 |
 |------|------|------|------|
 | requestId | string | O | 대상 의뢰 ID |
-| supplierProfileId | string | O | 대상 공급자 프로필 ID |
+| supplierId | string | O | 대상 공급자 프로필 ID (외부 명칭, 내부 `supplierProfileId` 와 동치) |
 | rating | integer | O | 1..5 정수 |
 | text | string | X | 0-500자. 금칙어 포함 시 거부 |
 
@@ -2989,13 +2989,14 @@ Content-Type: application/json
 |----------|------|------|
 | supplierId | string | 공급자 프로필 ID |
 
-**Query Parameters:**
+**Query Parameters:** (§2.7 페이지네이션 규약 준수)
 
 | 파라미터 | 타입 | 필수 | 기본값 | 설명 |
 |----------|------|------|--------|------|
-| page | integer | X | 0 | 페이지 |
-| size | integer | X | 20 | 페이지 크기 (1-50) |
-| sort | string | X | `createdAt,desc` | 정렬 (현재는 `createdAt,desc` 만 허용) |
+| page | integer | X | 1 | 1-based 페이지 번호 |
+| size | integer | X | 20 | 페이지 크기 (1-100) |
+| sort | string | X | `createdAt` | 정렬 필드 (현재는 `createdAt` 만 허용) |
+| order | string | X | `desc` | `asc` / `desc` |
 
 **Success Response (200):**
 ```json
@@ -3013,7 +3014,7 @@ Content-Type: application/json
     }
   ],
   "meta": {
-    "page": 0,
+    "page": 1,
     "size": 20,
     "totalElements": 1,
     "totalPages": 1,
@@ -3979,6 +3980,7 @@ Authorization: Bearer <JWT>
 | 1.4 | 2026-04-16 | 타입 일관성 패스: desiredVolume, targetPriceRange.min/max를 string으로 변경. 견적 필드(unitPriceEstimate, moq, leadTime, sampleCost)를 string으로 변경. 공급자 프로필 monthlyCapacity, moq를 string으로 변경. POST /api/admin/auth/login 엔드포인트 추가. Data Type Reference price/quantity 타입 string으로 변경. |
 | 1.5 | 2026-04-17 | 코드-문서 audit 보강: GET /api/suppliers/categories, /api/suppliers/regions, POST /api/requests/{id}/publish, GET /api/supplier/requests, GET /api/supplier/requests/{id}, GET /api/supplier/quotes 신규 섹션 추가. 3.10 첨부파일 섹션 추가 (POST /api/attachments). GET /api/suppliers/{id} 응답에 logoUrl 명시. |
 | 1.6 | 2026-04-20 | Phase 2 Task 06 계약 선반영: §3.11 Review API (POST/PATCH/eligibility/list), §4.4 admin 공급자 리뷰 모더레이션 (hide/unhide) 신규. §5.1 코드 재의미 부여: 4031=Review update forbidden, 4036=Review eligibility failed, 4094=Review already exists, 4222=Review content violation (Phase 1 draft 예약 의미는 실제 구현 없어 폐기). admin 모더레이션은 기존 `/api/admin/reviews/*` (검수 큐) 와 분리하기 위해 `/api/admin/supplier-reviews/*` 경로 사용. |
+| 1.7 | 2026-04-20 | v1.6 자체 검증 후 수정: (1) POST /api/reviews body 의 `supplierProfileId` 를 `supplierId` 로 변경 (외부 명칭 일관성, 기존 `/api/suppliers/{supplierId}` 경로와 동일). (2) GET /api/suppliers/{supplierId}/reviews 페이지네이션이 §2.7 규약을 어기고 있어 1-based / max size 100 / sort·order 분리 형태로 정정. Pre-existing drift (§5.1 4001/4002/4003) 는 DOC-2 open-item 으로 분리. |
 
 ---
 
