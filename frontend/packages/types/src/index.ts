@@ -801,3 +801,55 @@ export interface GetStatsSummaryParams {
   fromDate?: string
   toDate?: string
 }
+
+// ---- Review (Task 06) ----
+export type ReviewEligibilityReason = "request_not_closed" | "not_request_owner" | "no_selected_quote" | "already_reviewed"
+
+export interface ReviewEligibility {
+  eligible: boolean
+  reason: ReviewEligibilityReason | null
+}
+
+export interface CreateReviewRequest {
+  requestId: string
+  supplierId: string
+  rating: number
+  text?: string | null
+}
+
+export interface UpdateReviewRequest {
+  rating?: number | null
+  text?: string | null
+}
+
+export interface CreateReviewResponse {
+  reviewId: string
+  rating: number
+  text: string | null
+  createdAt: string
+}
+
+export interface UpdateReviewResponse {
+  reviewId: string
+  rating: number
+  text: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SupplierReviewListItem {
+  reviewId: string
+  rating: number
+  text: string | null
+  authorDisplayName: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SupplierRecentReview {
+  reviewId: string
+  rating: number
+  text: string | null
+  authorDisplayName: string
+  createdAt: string
+}

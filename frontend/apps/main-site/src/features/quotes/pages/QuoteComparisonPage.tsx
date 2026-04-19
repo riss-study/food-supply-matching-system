@@ -6,6 +6,7 @@ import { useRequestQuotes } from "../hooks/useRequestQuotes"
 import { useSelectQuote } from "../hooks/useSelectQuote"
 import { useDeclineQuote } from "../hooks/useDeclineQuote"
 import { QuoteDialog } from "../components/QuoteDialog"
+import { ReviewActionButton } from "../../reviews"
 
 const quoteStateBadgeClass: Record<string, string> = {
   selected: "badge badge-green",
@@ -156,6 +157,13 @@ export function QuoteComparisonPage() {
                         <button className="btn btn-sm btn-primary" onClick={() => handleSelectClick(quote)} disabled={selectMutation.isPending}>{t("comparison.selectButton")}</button>
                         <button className="btn btn-sm btn-danger" onClick={() => handleDeclineClick(quote)}>{t("comparison.declineButton")}</button>
                       </>
+                    )}
+                    {quote.state === "selected" && (
+                      <ReviewActionButton
+                        requestId={requestId}
+                        supplierId={quote.supplierId}
+                        supplierCompanyName={quote.companyName}
+                      />
                     )}
                     <button className="btn btn-sm btn-secondary" onClick={() => navigate(`/threads/${quote.threadId}`)}>{t("comparison.messageButton")}</button>
                   </div>

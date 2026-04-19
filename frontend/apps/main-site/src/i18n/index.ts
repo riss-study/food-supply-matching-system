@@ -13,6 +13,7 @@ import supplierRequests from "./locales/ko/supplier-requests.json"
 import supplierQuotes from "./locales/ko/supplier-quotes.json"
 import businessProfile from "./locales/ko/business-profile.json"
 import app from "./locales/ko/app.json"
+import reviews from "./locales/ko/reviews.json"
 
 export const resources = {
   ko: {
@@ -28,6 +29,7 @@ export const resources = {
     "supplier-quotes": supplierQuotes,
     "business-profile": businessProfile,
     app,
+    reviews,
   },
 } as const
 
@@ -49,6 +51,7 @@ i18n.use(initReactI18next).init({
     "supplier-quotes",
     "business-profile",
     "app",
+    "reviews",
   ],
   interpolation: { escapeValue: false },
   returnNull: false,
