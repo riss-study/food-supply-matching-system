@@ -69,7 +69,6 @@ export function SupplierProfilePage() {
             }
             isPending={createMutation.isPending || updateMutation.isPending}
             contactOnly={contactOnlyEdit}
-            existingPortfolioImages={(profile as any)?.portfolioImages ?? []}
             onSubmit={(request) => {
               if (profile) {
                 updateMutation.mutate(

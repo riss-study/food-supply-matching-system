@@ -7,7 +7,7 @@ import { supplierQuoteKeys } from "../query-keys"
 
 interface WithdrawVariables {
   quoteId: string
-  requestId?: string
+  requestId: string
 }
 
 export function useWithdrawQuote() {
@@ -15,13 +15,11 @@ export function useWithdrawQuote() {
 
   return useMutation({
     mutationFn: ({ quoteId }: WithdrawVariables) => withdrawQuote(quoteId),
-    onSuccess: (_, variables) => {
+    onSuccess: (_, { requestId }) => {
       queryClient.invalidateQueries({ queryKey: supplierQuoteKeys.lists() })
-      if (variables.requestId) {
-        queryClient.invalidateQueries({ queryKey: quoteKeys.listsByRequest(variables.requestId) })
-        queryClient.invalidateQueries({ queryKey: requestKeys.detail(variables.requestId) })
-        queryClient.invalidateQueries({ queryKey: supplierRequestKeys.detail(variables.requestId) })
-      }
+      queryClient.invalidateQueries({ queryKey: quoteKeys.listsByRequest(requestId) })
+      queryClient.invalidateQueries({ queryKey: requestKeys.detail(requestId) })
+      queryClient.invalidateQueries({ queryKey: supplierRequestKeys.detail(requestId) })
     },
   })
 }
