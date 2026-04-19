@@ -29,3 +29,6 @@ backend/**/backend/local-storage/
 .idea/
 .vscode/
 backend/local-storage/
+
+# Claude memory (local-only)
+memories/
