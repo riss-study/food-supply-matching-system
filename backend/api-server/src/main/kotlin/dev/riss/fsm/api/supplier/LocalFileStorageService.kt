@@ -2,7 +2,7 @@ package dev.riss.fsm.api.supplier
 
 import dev.riss.fsm.shared.file.AttachmentMetadata
 import dev.riss.fsm.shared.file.FileStorageService
-import org.springframework.beans.factory.annotation.Value
+import dev.riss.fsm.shared.file.StorageProperties
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
@@ -15,8 +15,9 @@ import java.util.UUID
 
 @Service
 class LocalFileStorageService(
-    @Value("\${fsm.storage.local-root:backend/local-storage}") private val localRoot: String,
+    storageProperties: StorageProperties,
 ) : FileStorageService {
+    private val localRoot: String = storageProperties.localRoot
     private val defaultAllowedContentTypes = setOf("image/jpeg", "image/png", "application/pdf")
     private val threadAllowedContentTypes = defaultAllowedContentTypes + "image/gif"
     private val maxFileSize = 10L * 1024 * 1024

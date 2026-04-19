@@ -74,10 +74,10 @@ class QuoteCommandServiceTest {
                 SubmitQuoteCommand(
                     requestId = request.requestId,
                     supplierProfileId = "sprof_1",
-                    unitPriceEstimate = 800,
-                    moq = 2000,
-                    leadTime = 30,
-                    sampleCost = 50000,
+                    unitPriceEstimate = "800",
+                    moq = "2000",
+                    leadTime = "30",
+                    sampleCost = "50000",
                     note = "테스트 견적",
                 )
             )
@@ -97,7 +97,7 @@ class QuoteCommandServiceTest {
 
         StepVerifier.create(
             quoteCommandService.submit(
-                SubmitQuoteCommand(request.requestId, "sprof_1", 800, 2000, 30, null, null)
+                SubmitQuoteCommand(request.requestId, "sprof_1", "800", "2000", "30", null, null)
             )
         )
             .expectErrorSatisfies { error -> assertTrue(error is DuplicateActiveQuoteException) }
@@ -110,7 +110,7 @@ class QuoteCommandServiceTest {
 
         StepVerifier.create(
             quoteCommandService.submit(
-                SubmitQuoteCommand("req_1", "sprof_1", 800, 2000, 30, null, null)
+                SubmitQuoteCommand("req_1", "sprof_1", "800", "2000", "30", null, null)
             )
         )
             .expectErrorSatisfies { error -> assertTrue(error is QuoteSubmissionForbiddenException) }
@@ -127,11 +127,11 @@ class QuoteCommandServiceTest {
             quoteCommandService.update(
                 quote.quoteId,
                 quote.supplierProfileId,
-                UpdateQuoteCommand(unitPriceEstimate = 750)
+                UpdateQuoteCommand(unitPriceEstimate = "750")
             )
         )
             .assertNext { updated ->
-                assertEquals(750, updated.unitPriceEstimate)
+                assertEquals("750", updated.unitPriceEstimate)
                 assertEquals(2, updated.version)
             }
             .verifyComplete()
@@ -157,7 +157,7 @@ class QuoteCommandServiceTest {
             quoteCommandService.update(
                 quote.quoteId,
                 "sprof_other",
-                UpdateQuoteCommand(unitPriceEstimate = 750)
+                UpdateQuoteCommand(unitPriceEstimate = "750")
             )
         )
             .expectErrorSatisfies { error ->
@@ -236,10 +236,10 @@ class QuoteCommandServiceTest {
         quoteId = "quo_1",
         requestId = "req_1",
         supplierProfileId = "sprof_1",
-        unitPriceEstimate = 800,
-        moq = 2000,
-        leadTime = 30,
-        sampleCost = 50000,
+        unitPriceEstimate = "800",
+        moq = "2000",
+        leadTime = "30",
+        sampleCost = "50000",
         note = "기본 견적",
         state = "submitted",
         version = 1,

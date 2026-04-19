@@ -9,6 +9,7 @@ import dev.riss.fsm.query.admin.stats.notice.AdminNoticeViewRepository
 import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewDocument
 import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewRepository
 import dev.riss.fsm.shared.auth.UserRole
+import dev.riss.fsm.shared.file.StorageProperties
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.HttpStatus
@@ -34,13 +35,14 @@ data class NoticePageResult(
 
 @Service
 class NoticeApplicationService(
-    @org.springframework.beans.factory.annotation.Value("\${fsm.storage.local-root:backend/local-storage}") private val localRoot: String,
+    storageProperties: StorageProperties,
     private val noticeCommandService: NoticeCommandService,
     private val noticeRepository: NoticeRepository,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
     private val adminNoticeViewRepository: AdminNoticeViewRepository,
     private val publicNoticeViewRepository: PublicNoticeViewRepository,
 ) {
+    private val localRoot: String = storageProperties.localRoot
 
     fun list(
         principal: AuthenticatedUserPrincipal,

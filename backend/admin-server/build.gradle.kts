@@ -50,6 +50,7 @@ dependencies {
     testImplementation(libs.spring.boot.starter.webflux.test)
     testImplementation(libs.spring.security.test)
     testRuntimeOnly(libs.junit.platform.launcher)
+    testRuntimeOnly(libs.r2dbc.h2)
 }
 
 tasks.withType<Test> {

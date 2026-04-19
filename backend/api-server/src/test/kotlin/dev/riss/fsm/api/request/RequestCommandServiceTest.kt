@@ -355,7 +355,7 @@ class RequestCommandServiceTest {
         StepVerifier.create(requestCommandService.update(requestId, requesterUserId, updateCommand))
             .assertNext { result ->
                 assertEquals("Updated Title", result.title)
-                assertEquals(2000, result.desiredVolume)
+                assertEquals("2000", result.desiredVolume)
             }
             .verifyComplete()
     }

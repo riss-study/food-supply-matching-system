@@ -1,5 +1,6 @@
 package dev.riss.fsm.admin
 
+import dev.riss.fsm.shared.file.StorageProperties
 import dev.riss.fsm.shared.security.JwtProperties
 import dev.riss.fsm.shared.security.JwtTokenProvider
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -10,7 +11,7 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 
 @SpringBootApplication(scanBasePackages = ["dev.riss.fsm"])
-@EnableConfigurationProperties(JwtProperties::class)
+@EnableConfigurationProperties(JwtProperties::class, StorageProperties::class)
 @EnableR2dbcRepositories(basePackages = ["dev.riss.fsm.command"])
 @EnableReactiveMongoRepositories(basePackages = ["dev.riss.fsm.query"])
 class AdminServerApplication {

@@ -40,20 +40,20 @@ class QuoteApplicationServiceTest {
         val principal = AuthenticatedUserPrincipal("usr_sup", "sup@example.com", UserRole.SUPPLIER)
         val requestId = "req_1"
         val submitRequest = SubmitQuoteRequest(
-            unitPriceEstimate = 1000,
-            moq = 100,
-            leadTime = 7,
-            sampleCost = 10000,
+            unitPriceEstimate = "1000",
+            moq = "100",
+            leadTime = "7",
+            sampleCost = "10000",
             note = "note",
         )
         val quote = QuoteEntity(
             quoteId = "quo_1",
             requestId = requestId,
             supplierProfileId = "sprof_1",
-            unitPriceEstimate = 1000,
-            moq = 100,
-            leadTime = 7,
-            sampleCost = 10000,
+            unitPriceEstimate = "1000",
+            moq = "100",
+            leadTime = "7",
+            sampleCost = "10000",
             note = "note",
             state = "submitted",
             version = 1,
@@ -90,7 +90,7 @@ class QuoteApplicationServiceTest {
 
         `when`(requestAccessGuard.checkCanSubmitQuote(principal, requestId)).thenReturn(Mono.empty())
         `when`(requestAccessGuard.getSupplierProfileId(principal.userId)).thenReturn(Mono.just("sprof_1"))
-        `when`(quoteCommandService.submit(SubmitQuoteCommand(requestId, "sprof_1", 1000, 100, 7, 10000, "note")))
+        `when`(quoteCommandService.submit(SubmitQuoteCommand(requestId, "sprof_1", "1000", "100", "7", "10000", "note")))
             .thenReturn(Mono.just(SubmittedQuoteResult(quote, thread.threadId, thread, request)))
         `when`(threadProjectionService.projectThreadCreated(thread.copy(quoteId = quote.quoteId))).thenReturn(Mono.just(thread))
         `when`(quoteProjectionService.projectSubmitted(quote, thread.threadId)).thenReturn(Mono.just(quote))

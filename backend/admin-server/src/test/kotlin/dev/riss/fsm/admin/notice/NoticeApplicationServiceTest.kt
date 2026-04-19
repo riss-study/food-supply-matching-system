@@ -10,6 +10,7 @@ import dev.riss.fsm.query.admin.stats.notice.AdminNoticeViewRepository
 import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewDocument
 import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewRepository
 import dev.riss.fsm.shared.auth.UserRole
+import dev.riss.fsm.shared.file.StorageProperties
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -30,6 +31,7 @@ class NoticeApplicationServiceTest {
     private val adminNoticeViewRepository = mock(AdminNoticeViewRepository::class.java)
     private val publicNoticeViewRepository = mock(PublicNoticeViewRepository::class.java)
     private val service = NoticeApplicationService(
+        StorageProperties(localRoot = "backend/local-storage"),
         noticeCommandService,
         noticeRepository,
         attachmentMetadataRepository,
@@ -84,8 +86,9 @@ class NoticeApplicationServiceTest {
         val response = service.detail(principal, entity.noticeId).block()!!
 
         assertEquals(1, response.attachments.size)
-        assertEquals("ops-guide.pdf", response.attachments.first().fileName)
-        assertEquals("notice/${entity.noticeId}/ops-guide.pdf", response.attachments.first().url)
+        val attachment = response.attachments.first()
+        assertEquals("ops-guide.pdf", attachment.fileName)
+        assertEquals("/api/admin/notices/${entity.noticeId}/attachments/${attachment.attachmentId}/download", attachment.url)
     }
 
     private fun noticeEntity(state: String): NoticeEntity {

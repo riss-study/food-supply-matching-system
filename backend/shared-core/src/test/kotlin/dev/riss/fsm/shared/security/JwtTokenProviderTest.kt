@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 
 class JwtTokenProviderTest {
 
-    private val provider = JwtTokenProvider(JwtProperties())
+    private val provider = JwtTokenProvider(JwtProperties(secret = "jwt-test-secret-jwt-test-secret-32"))
 
     @Test
     fun `create and parse access token`() {
