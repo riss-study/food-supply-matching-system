@@ -1,5 +1,6 @@
 package dev.riss.fsm.api.supplier
 
+import dev.riss.fsm.api.review.ReviewQueryService
 import dev.riss.fsm.query.supplier.SupplierQueryService
 import dev.riss.fsm.query.supplier.SupplierSearchQuery
 import dev.riss.fsm.shared.api.ApiSuccessResponse
@@ -26,6 +27,7 @@ import reactor.core.publisher.Mono
 @Tag(name = "supplier-discovery")
 class SupplierDiscoveryController(
     private val supplierQueryService: SupplierQueryService,
+    private val reviewQueryService: ReviewQueryService,
 ) {
     @GetMapping
     @Operation(summary = "List approved suppliers", description = "Returns approved and visible supplier search view entries. 정렬/필터는 DB-side Mongo query 로 처리됨.")
@@ -86,6 +88,8 @@ class SupplierDiscoveryController(
                         verificationState = it.verificationState,
                         exposureState = it.exposureState,
                         logoUrl = it.logoUrl,
+                        ratingAvg = it.ratingAvg,
+                        ratingCount = it.ratingCount,
                     )
                 },
                 meta = PaginationMeta(
@@ -109,38 +113,56 @@ class SupplierDiscoveryController(
         ]
     )
     fun detail(@PathVariable supplierId: String): Mono<ApiSuccessResponse<SupplierDetailResponse>> {
-        return supplierQueryService.detail(supplierId)
+        val detailMono = supplierQueryService.detail(supplierId)
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Supplier not found")))
-            .map {
+        val recentReviewsMono = reviewQueryService.listForSupplier(supplierId, page = 1, size = 3, order = null)
+            .map { it.items }
+            .onErrorReturn(emptyList())
+
+        return detailMono.zipWith(recentReviewsMono)
+            .map { tuple ->
+                val doc = tuple.t1
+                val recent = tuple.t2
                 ApiSuccessResponse(
                     message = "Success",
                     data = SupplierDetailResponse(
-                        profileId = it.profileId,
-                        companyName = it.companyName,
-                        representativeName = it.representativeName,
-                        region = it.region,
-                        categories = it.categories,
-                        equipmentSummary = it.equipmentSummary,
-                        monthlyCapacity = it.monthlyCapacity,
-                        moq = it.moq,
-                        oemAvailable = it.oemAvailable,
-                        odmAvailable = it.odmAvailable,
-                        rawMaterialSupport = it.rawMaterialSupport,
-                        packagingLabelingSupport = it.packagingLabelingSupport,
-                        introduction = it.introduction,
-                        verificationState = it.verificationState,
-                        logoUrl = it.logoUrl,
-                        certifications = it.certifications.map { cert ->
+                        profileId = doc.profileId,
+                        companyName = doc.companyName,
+                        representativeName = doc.representativeName,
+                        region = doc.region,
+                        categories = doc.categories,
+                        equipmentSummary = doc.equipmentSummary,
+                        monthlyCapacity = doc.monthlyCapacity,
+                        moq = doc.moq,
+                        oemAvailable = doc.oemAvailable,
+                        odmAvailable = doc.odmAvailable,
+                        rawMaterialSupport = doc.rawMaterialSupport,
+                        packagingLabelingSupport = doc.packagingLabelingSupport,
+                        introduction = doc.introduction,
+                        verificationState = doc.verificationState,
+                        logoUrl = doc.logoUrl,
+                        certifications = doc.certifications.map { cert ->
                             SupplierCertificationSummaryResponse(
                                 type = cert.type,
                                 number = cert.number,
                                 valid = cert.valid,
                             )
                         },
-                        portfolioImages = it.portfolioImages.map { image ->
+                        portfolioImages = doc.portfolioImages.map { image ->
                             SupplierPortfolioImageResponse(
                                 imageId = image.imageId,
                                 url = image.url,
+                            )
+                        },
+                        ratingAvg = doc.ratingAvg,
+                        ratingCount = doc.ratingCount,
+                        recentReviews = recent.map { item ->
+                            SupplierRecentReviewResponse(
+                                reviewId = item.reviewId,
+                                rating = item.rating,
+                                text = item.text,
+                                authorDisplayName = item.authorDisplayName,
+                                createdAt = item.createdAt,
                             )
                         },
                     )

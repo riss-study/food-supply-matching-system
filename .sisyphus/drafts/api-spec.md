@@ -944,6 +944,8 @@ Authorization: Bearer <JWT>  (선택)
 | odmAvailable | boolean | ODM 가능 여부 |
 | verificationState | string | `approved` (목록에는 승인된 공급자만) |
 | logoUrl | string | 로고 이미지 URL |
+| ratingAvg | number | 리뷰 평균 평점 (0.0~5.0, 소수점 둘째자리). 리뷰 없으면 0.0 |
+| ratingCount | integer | visible 리뷰 수 (hidden 제외). 리뷰 없으면 0 |
 
 **Success Response Fields (meta):**
 
@@ -995,6 +997,17 @@ Authorization: Bearer <JWT>  (선택)
     ],
     "portfolioImages": [
       { "imageId": "img_01", "url": "https://..." }
+    ],
+    "ratingAvg": 4.33,
+    "ratingCount": 12,
+    "recentReviews": [
+      {
+        "reviewId": "rev_01HQX...",
+        "rating": 5,
+        "text": "품질·납기 모두 만족스러웠습니다.",
+        "authorDisplayName": "(주)달*****",
+        "createdAt": "2026-04-20T12:00:00Z"
+      }
     ]
   }
 }
@@ -1026,6 +1039,9 @@ Authorization: Bearer <JWT>  (선택)
 | portfolioImages[].imageId | string | 이미지 ID |
 | portfolioImages[].url | string | 이미지 URL |
 | logoUrl | string | 로고 이미지 URL (있는 경우) |
+| ratingAvg | number | 리뷰 평균 평점 (0.0~5.0, 소수점 둘째자리). hidden 제외 |
+| ratingCount | integer | visible 리뷰 수. hidden 제외 |
+| recentReviews | array | 최근 리뷰 3건 (createdAt desc, hidden 제외). §3.11 GET /api/suppliers/{id}/reviews item 과 동일 구조 (updatedAt 제외) |
 
 **Error Responses:**
 
@@ -3981,6 +3997,7 @@ Authorization: Bearer <JWT>
 | 1.5 | 2026-04-17 | 코드-문서 audit 보강: GET /api/suppliers/categories, /api/suppliers/regions, POST /api/requests/{id}/publish, GET /api/supplier/requests, GET /api/supplier/requests/{id}, GET /api/supplier/quotes 신규 섹션 추가. 3.10 첨부파일 섹션 추가 (POST /api/attachments). GET /api/suppliers/{id} 응답에 logoUrl 명시. |
 | 1.6 | 2026-04-20 | Phase 2 Task 06 계약 선반영: §3.11 Review API (POST/PATCH/eligibility/list), §4.4 admin 공급자 리뷰 모더레이션 (hide/unhide) 신규. §5.1 코드 재의미 부여: 4031=Review update forbidden, 4036=Review eligibility failed, 4094=Review already exists, 4222=Review content violation (Phase 1 draft 예약 의미는 실제 구현 없어 폐기). admin 모더레이션은 기존 `/api/admin/reviews/*` (검수 큐) 와 분리하기 위해 `/api/admin/supplier-reviews/*` 경로 사용. |
 | 1.7 | 2026-04-20 | v1.6 자체 검증 후 수정: (1) POST /api/reviews body 의 `supplierProfileId` 를 `supplierId` 로 변경 (외부 명칭 일관성, 기존 `/api/suppliers/{supplierId}` 경로와 동일). (2) GET /api/suppliers/{supplierId}/reviews 페이지네이션이 §2.7 규약을 어기고 있어 1-based / max size 100 / sort·order 분리 형태로 정정. Pre-existing drift (§5.1 4001/4002/4003) 는 DOC-2 open-item 으로 분리. |
+| 1.8 | 2026-04-20 | Phase 2 Task 06 SubTask 6.5 반영: §3.4 GET /api/suppliers 응답 item 과 GET /api/suppliers/{id} 상세 응답에 `ratingAvg` (number, 소수점 둘째자리), `ratingCount` (integer) 노출. 상세에는 최근 리뷰 3건 `recentReviews[]` 추가 (createdAt desc, hidden 제외, §3.11 목록 item 과 동일 구조에서 updatedAt 제외). |
 
 ---
 

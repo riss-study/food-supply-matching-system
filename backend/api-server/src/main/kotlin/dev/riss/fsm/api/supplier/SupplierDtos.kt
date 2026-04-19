@@ -133,6 +133,8 @@ data class SupplierSearchItemResponse(
     val verificationState: String,
     val exposureState: String,
     val logoUrl: String?,
+    val ratingAvg: Double,
+    val ratingCount: Int,
 )
 
 data class SupplierCertificationSummaryResponse(
@@ -164,6 +166,17 @@ data class SupplierDetailResponse(
     val logoUrl: String?,
     val certifications: List<SupplierCertificationSummaryResponse>,
     val portfolioImages: List<SupplierPortfolioImageResponse>,
+    val ratingAvg: Double,
+    val ratingCount: Int,
+    val recentReviews: List<SupplierRecentReviewResponse>,
+)
+
+data class SupplierRecentReviewResponse(
+    val reviewId: String,
+    val rating: Int,
+    val text: String?,
+    val authorDisplayName: String,
+    val createdAt: Instant,
 )
 
 data class SupplierCategorySummaryResponse(
