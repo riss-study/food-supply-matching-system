@@ -365,6 +365,62 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 
 ---
 
+### 사례 4 — SupplierQueryService in-memory filter/sort → Mongo Criteria 이관 (2026-04-19, Task 04)
+
+**증상**: `/api/suppliers?keyword=...&category=...&sort=...&page=...` 가 `supplierSearchViewRepository.findAll().collectList()` 로 **전체 문서** 를 끌어온 뒤 Kotlin `asSequence().filter{}.sortedBy{}.subList()` 로 메모리에서 처리. 현재 seed 3~8건이라 느리진 않으나 구조가 지침서 §3 위반 (DB 기능을 앱에서 흉내).
+
+**원인**: 초기 구현 시점에 필터 조합이 복잡 (keyword/category/region/oem/odm/numeric) 해서 Mongo pipeline 설계를 뒤로 미룸. 이후 categories/regions 집계만 `@Aggregation` 으로 옮기고 `listApproved` 는 방치.
+
+**조치**:
+- `ReactiveMongoTemplate` + `Criteria.andOperator(...)` + `Query.with(Sort).skip/limit` 로 재작성. keyword/category/region/oem/odm 은 DB-side, 정렬 (`updatedAt`/`companyName`/`monthlyCapacity`/`moq`) 도 DB-side, 페이지네이션도 Mongo `skip/limit`.
+- `supplier_search_view` 에 인덱스 7종 정의 (`01-init-read-store.js` 에 `createIndex`, idempotent). `seed-mongodb.sh` 가 `01` + `02` 둘 다 실행하도록 수정.
+- 남은 한계: `monthlyCapacity`/`moq` 가 자유 텍스트 ("1,000kg") 이므로 `minCapacity`/`maxMoq` 는 페이지 내 post-filter 로만 동작. 숫자 필드 정규화는 open-item BE-4 로 분리.
+
+**교훈**:
+1. **"데이터 적어서 괜찮다"는 구조 부채를 정당화하지 않는다**. Mongo 3건에서도 컨벤션이 어긋나면 팀원이 그 패턴을 복붙한다. 부채 가시화 (open-items) + 착수 (Task) 분리가 핵심.
+2. **모든 필터를 한 번에 DB-side 로 옮기려 하지 말 것**. 자유 텍스트 필드처럼 DB 로 못 옮기는 것은 post-filter 로 남기고 **분리해서 문서화**. 무리하게 정규식 파싱을 Mongo 로 밀어넣으면 성능도 가독성도 악화.
+3. **인덱스는 init 스크립트 한 파일에 집중**. annotation 기반 auto-creation 은 운영 예측성이 떨어짐. 재시드 규약 (사례 3) 과 연계되어 있어야 현장에서 동작.
+
+---
+
+### 사례 5 — OpenAPI 글로벌 `bearerAuth` 로 공개 endpoint 에 자물쇠 오표시 (2026-04-19, Task 05)
+
+**증상**: Swagger UI 에서 `/api/auth/login`, `/api/notices`, `/api/suppliers` 같은 **공개** endpoint 에 자물쇠 아이콘이 붙어 "JWT 필요" 로 보임. 실제 Spring Security 설정은 anonymous 허용이라 실행은 정상이나, 문서 계약이 틀림.
+
+**원인**: `ApiOpenApiConfig` / `AdminOpenApiConfig` 가 `.addSecurityItem(SecurityRequirement().addList("bearerAuth"))` 를 **전역** 에 적용. 개별 controller 는 이미 `@SecurityRequirement(name = "bearerAuth")` 를 필요한 곳에 선언했지만, 전역 security 는 모든 operation 에 기본값으로 상속되어 제거 불가. 외부 개발자가 공개 API 를 호출하려 할 때 "로그인부터 해야 하나?" 로 오해.
+
+**조치**:
+- 두 Config 에서 전역 `addSecurityItem` 제거.
+- 공개 controller (auth, notices, supplier discovery, swagger-ui) 는 @SecurityRequirement 없음 → 자물쇠 표시 안 됨.
+- 인증 필요 controller 는 기존 `@SecurityRequirement` 그대로 → 정확히 그 operation 에만 자물쇠 표시.
+- 덤으로 `ApiErrorResponse` 스키마 정확화 (`errors[]` 배열, traceId) + 도메인 exception code 기반 reusable examples 7종 등록. AdminReview action 3종 (`approve`/`hold`/`reject`) 에 `@Operation` + `@ApiResponses` 추가.
+
+**검증**: api 36/47, admin 13/16 endpoint 에서 `per-op security` 존재, 나머지는 실제 public. Swagger UI 자물쇠 표시가 실제 정책과 일치.
+
+**교훈**:
+1. **글로벌 기본값 + 개별 override 패턴은 "없음" 을 표현할 수 없다**. OpenAPI 의 global `security` 는 operation 레벨에서 `security: []` 로 비우지 않는 한 상속됨. 차라리 전역을 비우고 필요한 곳마다 명시하는 편이 의도가 명확.
+2. **"문서가 실제를 반영하지 않는다" 는 버그 수준 이슈**. 실행이 돌아간다고 무시하면 외부 consumer 가 엉뚱한 방향으로 구현. 계약 일관성은 기능 일관성만큼 중요.
+3. **에러 envelope 예제는 실제 도메인 code 로 채워야 가치 있다**. 더미 4000/traceId-1234 는 readers 가 무시하지만, `code=4041 Request not found` / `code=4091 Email already exists` 처럼 실제 매핑을 넣으면 문서가 곧 cheatsheet 가 됨 (`shared-core/error/*.kt` 의 code 와 동기화).
+
+---
+
+### 사례 6 — `packages/utils` 의 `import.meta.env` 타입 누락으로 CI 가 조용히 red (2026-04-20)
+
+**증상**: `frontend/packages/utils/src/index.ts` 가 `import.meta.env.VITE_API_BASE_URL` 를 쓰는데 `yarn type-check` (root, 전 워크스페이스) 실행 시 `TS2339: Property 'env' does not exist on type 'ImportMeta'`. 개별 앱 (`yarn workspace @fsm/main-site type-check`) 에서는 통과하므로 로컬 개발 중엔 드러나지 않음. Task 01 이후 `frontend-ci.yml` 이 `yarn type-check` 를 step 에 넣었지만 아무도 GitHub Actions 결과를 안 봐서 **9커밋 내내 CI red 방치**.
+
+**원인**: `import.meta.env` 는 Vite client types (`vite/client`) 가 선언. apps/* 는 Vite 를 devDependency 로 쓰고 `tsconfig.json` 이 `@types/` 를 주워가지만, `packages/utils` 는 Vite 에 의존하지 않는 공용 패키지로 설계되어 `ImportMeta.env` 타입이 없음.
+
+**조치**:
+- `packages/utils/src/env.d.ts` 신규: 로컬 `ImportMetaEnv` + `ImportMeta` 인터페이스 선언 (VITE_API_BASE_URL, VITE_ADMIN_API_BASE_URL). Vite 의존성 추가 없이 타입 shape 만 내부에서 정의.
+- CI 는 `462a43f` 에서 즉시 green.
+
+**교훈**:
+1. **모노레포 CI 는 "root-level 집계 명령" 을 기준으로 검증해야 한다**. 개별 워크스페이스만 테스트하면 workspace 간 타입 경계 문제가 누락. `yarn type-check` (`foreach -A -t`) 나 `./gradlew test` 같은 전사 명령을 CI 기본 step 으로.
+2. **CI red 가 지속되면 경보로 인식해야 한다**. "CI YAML 이 존재 = green" 이 아니다. PR 머지 직전에 GitHub Actions 탭을 반드시 본다. 못 본다면 branch protection (OP-3) 이 필요.
+3. **Vite-couple 된 공용 유틸은 shape 만이라도 명시**. `vite/client` 를 peer dependency 로 추가하는 건 과함. 작은 `env.d.ts` 로 패키지 내부 계약만 선언하면 `packages/utils` 의 독립성은 유지되고 타입 안전성도 확보.
+
+---
+
 ## §9. 관련 문서
 
 - `api-spec.md` — API 계약의 SSOT.
@@ -385,3 +441,4 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 | 1.4 | 2026-04-19 | §2.9 강화: 사용자 가시 텍스트는 i18n 리소스 강제, useTranslation + namespace 규약 명시. |
 | 1.5 | 2026-04-19 | §2.5.2 추가: AsyncBoundary 로 loading/error/empty 패턴 공통화. |
 | 1.6 | 2026-04-19 | §8 사례 3 추가: Mongo seed 누락 → 재시드 규약 운영 문서화 (LOCAL-RUN-GUIDE.ko.md §6). |
+| 1.7 | 2026-04-20 | §8 사례 4~6 추가: Supplier search Mongo Criteria 이관 (Task 04), OpenAPI 글로벌 security 제거 (Task 05), `packages/utils` env.d.ts 로 CI red 복구. |
