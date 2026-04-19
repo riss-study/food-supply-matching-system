@@ -32,4 +32,7 @@ data class SupplierSearchViewDocument(
     val exposureState: String,
     val logoUrl: String?,
     val updatedAt: Instant,
+    @Indexed
+    val ratingAvg: Double = 0.0,
+    val ratingCount: Int = 0,
 )

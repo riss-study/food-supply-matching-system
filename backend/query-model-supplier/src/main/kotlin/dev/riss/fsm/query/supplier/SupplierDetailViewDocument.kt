@@ -26,6 +26,8 @@ data class SupplierDetailViewDocument(
     val certifications: List<SupplierCertificationViewItem>,
     val portfolioImages: List<SupplierPortfolioImageViewItem>,
     val updatedAt: Instant,
+    val ratingAvg: Double = 0.0,
+    val ratingCount: Int = 0,
 )
 
 data class SupplierCertificationViewItem(
