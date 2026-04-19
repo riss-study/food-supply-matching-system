@@ -99,28 +99,13 @@ class SupplierQueryService(
         return if (order == "asc") sorted else sorted.reversed()
     }
 
-    fun categories(): Mono<List<SupplierCategorySummary>> {
-        return supplierSearchViewRepository.findAll()
+    fun categories(): Mono<List<SupplierCategorySummary>> =
+        supplierSearchViewRepository.aggregateCategoryCounts()
+            .map { SupplierCategorySummary(category = it.category, supplierCount = it.supplierCount) }
             .collectList()
-            .map { items ->
-                items.flatMap { it.categories }
-                    .groupingBy { it }
-                    .eachCount()
-                    .entries
-                    .sortedBy { it.key }
-                    .map { SupplierCategorySummary(category = it.key, supplierCount = it.value) }
-            }
-    }
 
-    fun regions(): Mono<List<SupplierRegionSummary>> {
-        return supplierSearchViewRepository.findAll()
+    fun regions(): Mono<List<SupplierRegionSummary>> =
+        supplierSearchViewRepository.aggregateRegionCounts()
+            .map { SupplierRegionSummary(region = it.region, supplierCount = it.supplierCount) }
             .collectList()
-            .map { items ->
-                items.groupingBy { it.region }
-                    .eachCount()
-                    .entries
-                    .sortedBy { it.key }
-                    .map { SupplierRegionSummary(region = it.key, supplierCount = it.value) }
-            }
-    }
 }
