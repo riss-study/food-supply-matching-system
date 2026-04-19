@@ -25,6 +25,39 @@ Phase 2의 유일한 product-extension slice. **완료된 request/quote 관계**
 
 ---
 
+## 정책 결정 기록 (2026-04-20 합의)
+
+SubTask 6.2 이전 게이트로 합의된 4가지 정책. 변경 시 여기와 구현을 동시 수정.
+
+### P1. 작성 자격
+
+- **규칙**: request 상태가 `closed` + 해당 공급사의 quote 가 `selected` 상태일 때만 작성 가능.
+- **제외**: contact-share 완료만 된 thread, quote `submitted`/`withdrawn`/`declined` 는 자격 없음.
+- **근거**: `selected` 는 명시적 단일 선택 이벤트 → "실제 거래 근거" 가 명확. contact-share 는 양방향 동의 플로우로 edge case 다수. MVP 엄격히 닫고 필요 시 완화.
+
+### P2. 수정 / 개수 제한
+
+- **규칙**: 1 (request, supplier) 쌍당 리뷰 1개. 작성 후 **7일 내 1회 수정** 가능.
+- **구현 힌트**: `Review.updatedAt > Review.createdAt` 이면 수정 이력 존재. 7일 체크는 `createdAt + 7d < now` 면 `PATCH` 거부 (도메인 exception).
+- **근거**: 오작성 교정 여지 + 장기 평판 조작 방지의 절충.
+
+### P3. 작성자 표시 (프라이버시)
+
+- **규칙**: 회사명 "앞글자 + 마스킹" (예: `(주)달콤베이커리` → `(주)달*****`).
+- **구현 힌트**: read view projection 시점에 마스킹 문자열 생성 후 `authorDisplayName` 필드로 저장 (raw 회사명은 노출 안 함). 관리자 상세 조회는 raw 허용.
+- **근거**: 공급자는 거래 상대 추정 가능 (signal 보존), 외부인은 특정 불가 (privacy). 한국 B2B 플랫폼 관행.
+
+### P4. 모더레이션 범위
+
+- **규칙**:
+  - 길이 제약 (text 0-500자, 별점 1-5 정수).
+  - **단순 금칙어 리스트** — `shared-core/moderation/ProfanityList.kt` 에 상수로 고정 (욕설 10-20개로 시작).
+  - admin hide 토글 API (admin-server) — hidden 리뷰는 `ratingAvg` 산출에서 제외 + 목록에서 숨김.
+- **제외**: 외부 API (Perspective 등) 미도입.
+- **근거**: 정책 간소화. 운영 중 금칙어가 부족하면 리스트에 append 로 대응.
+
+---
+
 ## 현재 진행 상태
 
 - 메인 Task 상태: 🔴 Not Started
@@ -32,7 +65,7 @@ Phase 2의 유일한 product-extension slice. **완료된 request/quote 관계**
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 6.1 | 🔴 Not Started | 리뷰 작성 자격 정의 (어떤 상태에서 가능한지) |
+| 6.1 | 🟢 Done (정책만) | 작성 자격 정책 합의 완료 (2026-04-20). 구현은 6.2 에서 |
 | 6.2 | 🔴 Not Started | `Review` 도메인 모델 + command 핸들러 |
 | 6.3 | 🔴 Not Started | 리뷰 CRUD API (생성/단일조회/목록) |
 | 6.4 | 🔴 Not Started | 공급자 평균 평점 read projection |
@@ -46,14 +79,15 @@ Phase 2의 유일한 product-extension slice. **완료된 request/quote 관계**
 
 ## SubTask 목록
 
-### 🔴 SubTask 6.1: 작성 자격 정책
+### 🟢 SubTask 6.1: 작성 자격 정책 — 결정 완료 (2026-04-20)
 
 **작업자:** Backend
-**예상 소요:** 0.25일
+**예상 소요:** 0.25일 (결정만, 구현은 6.2 에서)
 
-- [ ] 리뷰 작성 가능 조건: request 상태가 `closed` 이상 + quote가 `accepted` 또는 contact-share 완료
-- [ ] 1 (request, supplier) 쌍당 최대 1개 리뷰
-- [ ] 작성 후 7일 내 1회 수정 가능 (정책 결정)
+- [x] 작성 가능 조건: request `closed` + 해당 supplier 의 quote `selected`. (정책 P1)
+- [x] 1 (request, supplier) 쌍당 최대 1개 리뷰. (정책 P2)
+- [x] 작성 후 7일 내 1회 수정 가능, 이후 불가. (정책 P2)
+- [상단 "정책 결정 기록" 섹션 참조]
 
 ### 🔴 SubTask 6.2: 도메인 모델
 
@@ -110,7 +144,7 @@ Phase 2의 유일한 product-extension slice. **완료된 request/quote 관계**
 
 - [ ] 평균 평점·총 개수 헤더
 - [ ] 최근 리뷰 목록 (페이지네이션)
-- [ ] 작성자 표시 정책 결정 (회사명 마스킹/약식)
+- [ ] 작성자 표시: 앞글자 + 마스킹 (정책 P3 — read view projection 에서 `authorDisplayName` 생성)
 
 ### 🔴 SubTask 6.8: 모더레이션 가드
 
