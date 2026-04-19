@@ -2819,6 +2819,229 @@ Content-Type: multipart/form-data
 
 ---
 
+### 3.11 공급자 리뷰 (요청자)
+
+리뷰는 **요청자가 완료된 거래 상대 공급자에 대해 남기는 평점+짧은 텍스트**.
+검수(Verification Submission) 를 뜻하는 `/api/admin/reviews` 와 혼동되지 않도록,
+본 도메인은 api-server 에서 `/api/reviews`, admin-server 에서 `/api/admin/supplier-reviews` 로 분리한다.
+
+#### POST /api/reviews
+
+**설명:** 리뷰 작성. 작성 자격은 `request.state=closed` + 호출자가 `request.requesterUserId` + `(request, supplier)` 쌍의 quote 가 `selected` 상태 일 때만. 쌍당 1회.
+
+**인증:** 필요 (role=requester)
+
+**Request Headers:**
+```
+Authorization: Bearer <JWT>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "requestId": "req_01HQX...",
+  "supplierProfileId": "sprof_01HQX...",
+  "rating": 5,
+  "text": "품질·납기 모두 만족스러웠습니다."
+}
+```
+
+**Request Body Fields:**
+
+| 필드 | 타입 | 필수 | 제약 |
+|------|------|------|------|
+| requestId | string | O | 대상 의뢰 ID |
+| supplierProfileId | string | O | 대상 공급자 프로필 ID |
+| rating | integer | O | 1..5 정수 |
+| text | string | X | 0-500자. 금칙어 포함 시 거부 |
+
+**Success Response (201):**
+```json
+{
+  "code": 100,
+  "message": "Review created",
+  "data": {
+    "reviewId": "rev_01HQX...",
+    "rating": 5,
+    "text": "품질·납기 모두 만족스러웠습니다.",
+    "createdAt": "2026-04-20T12:00:00Z"
+  }
+}
+```
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 400 | 4000 | rating 범위 위반 / text 길이 초과 / 필드 누락 |
+| 403 | 4036 | 자격 미달 (request 미종료 / 비소유자 / selected quote 없음) |
+| 404 | 4041 | requestId 에 해당하는 의뢰 없음 |
+| 409 | 4094 | 이미 해당 (request, supplier) 쌍에 리뷰 존재 |
+| 422 | 4222 | 금칙어 포함 등 모더레이션 위반 |
+
+---
+
+#### PATCH /api/reviews/{reviewId}
+
+**설명:** 리뷰 수정. **작성 후 7일 이내, hidden=false, 본인만** 수정 가능. partial update.
+
+**인증:** 필요 (role=requester, 리뷰 작성자)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| reviewId | string | 리뷰 ID |
+
+**Request Body:**
+```json
+{
+  "rating": 4,
+  "text": "추가 주문 후에도 품질 유지됨."
+}
+```
+
+**Request Body Fields:**
+
+| 필드 | 타입 | 필수 | 제약 |
+|------|------|------|------|
+| rating | integer | X | 1..5 정수 |
+| text | string\|null | X | 0-500자. null 로 설정 시 본문 삭제 |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Review updated",
+  "data": {
+    "reviewId": "rev_01HQX...",
+    "rating": 4,
+    "text": "추가 주문 후에도 품질 유지됨.",
+    "createdAt": "2026-04-20T12:00:00Z",
+    "updatedAt": "2026-04-21T09:00:00Z"
+  }
+}
+```
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 400 | 4000 | rating 범위 / text 길이 위반 |
+| 403 | 4031 | 본인 아님 / 7일 경과 / hidden 상태 |
+| 404 | 4041 | 리뷰 없음 |
+| 422 | 4222 | 금칙어 포함 등 모더레이션 위반 |
+
+---
+
+#### GET /api/reviews/eligibility
+
+**설명:** 리뷰 작성 가능 여부 미리 조회. UI 가 CTA 비활성화를 판단하는 데 사용.
+
+**인증:** 필요 (role=requester)
+
+**Query Parameters:**
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| requestId | string | O | 대상 의뢰 ID |
+| supplierId | string | O | 대상 공급자 프로필 ID |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Eligibility resolved",
+  "data": {
+    "eligible": false,
+    "reason": "no_selected_quote"
+  }
+}
+```
+
+**Success Response Fields:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| eligible | boolean | 작성 가능 여부 |
+| reason | string\|null | 불가 사유 (eligible=true 면 null) |
+
+**reason 값**: `request_not_closed`, `not_request_owner`, `no_selected_quote`, `already_reviewed`
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 404 | 4041 | requestId 또는 supplierId 에 해당 리소스 없음 |
+
+---
+
+#### GET /api/suppliers/{supplierId}/reviews
+
+**설명:** 공급자 상세에 노출할 리뷰 목록. `hidden=true` 인 리뷰는 제외. 작성자 회사명은 마스킹된 표시명으로 내려간다.
+
+**인증:** 불필요 (공개)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| supplierId | string | 공급자 프로필 ID |
+
+**Query Parameters:**
+
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|----------|------|------|--------|------|
+| page | integer | X | 0 | 페이지 |
+| size | integer | X | 20 | 페이지 크기 (1-50) |
+| sort | string | X | `createdAt,desc` | 정렬 (현재는 `createdAt,desc` 만 허용) |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Reviews listed",
+  "data": [
+    {
+      "reviewId": "rev_01HQX...",
+      "rating": 5,
+      "text": "품질·납기 모두 만족스러웠습니다.",
+      "authorDisplayName": "(주)달*****",
+      "createdAt": "2026-04-20T12:00:00Z",
+      "updatedAt": "2026-04-20T12:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 0,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+**Success Response Fields (item):**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| reviewId | string | 리뷰 ID |
+| rating | integer | 1..5 |
+| text | string\|null | 본문 (선택) |
+| authorDisplayName | string | 작성자 회사명 마스킹 결과 (P3) |
+| createdAt | string | 작성 시각 |
+| updatedAt | string | 최종 수정 시각 |
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 404 | 4041 | supplier 없음 |
+
+---
+
 ## 4. admin-server Endpoints
 
 ### 4.0 관리자 인증
@@ -3599,6 +3822,80 @@ Authorization: Bearer <JWT>
 
 ---
 
+### 4.4 관리자 공급자 리뷰 모더레이션
+
+요청자가 남긴 공급자 리뷰의 가시성 토글. 검수(Verification) 리뷰 큐인 `/api/admin/reviews/*` 와 분리하기 위해 `/api/admin/supplier-reviews/*` 경로를 사용한다. 동작은 멱등 (이미 같은 상태면 변경 없이 현재값 반환).
+
+#### POST /api/admin/supplier-reviews/{reviewId}/hide
+
+**설명:** 리뷰를 숨김 처리. `hidden=true` 인 리뷰는 공개 목록과 `ratingAvg` 집계에서 제외된다.
+
+**인증:** 필요 (role=admin)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| reviewId | string | 리뷰 ID |
+
+**Request Body:** 없음
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Review hidden",
+  "data": {
+    "reviewId": "rev_01HQX...",
+    "hidden": true,
+    "updatedAt": "2026-04-20T14:00:00Z"
+  }
+}
+```
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 404 | 4041 | 리뷰 없음 |
+
+---
+
+#### POST /api/admin/supplier-reviews/{reviewId}/unhide
+
+**설명:** 숨김 해제. 멱등.
+
+**인증:** 필요 (role=admin)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| reviewId | string | 리뷰 ID |
+
+**Request Body:** 없음
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Review unhidden",
+  "data": {
+    "reviewId": "rev_01HQX...",
+    "hidden": false,
+    "updatedAt": "2026-04-20T14:05:00Z"
+  }
+}
+```
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 404 | 4041 | 리뷰 없음 |
+
+---
+
 ## 5. Error Code Reference
 
 ### 5.1 Common Error Codes (4xxx)
@@ -3610,12 +3907,12 @@ Authorization: Bearer <JWT>
 | 4003 | Thread already exists | 스레드 중복 생성 시도 |
 | 4004 | Empty message | body와 attachment 둘 다 없음 |
 | 4011 | Invalid credentials | 로그인 실패 |
-| 4031 | Wrong role | 역할 기반 접근 금지 |
+| 4031 | Review update forbidden | 리뷰 본인 아님 / 7일 경과 / hidden 상태 |
 | 4032 | Cannot modify approved profile | approved 상태 수정 시도 |
 | 4033 | Cannot modify approved supplier | approved 공급자 수정 시도 |
 | 4034 | Business approval required | 요청자 사업자 승인 필요 |
 | 4035 | Not owner or wrong state | 의뢰 수정 권한/상태 위반 |
-| 4036 | Invalid supplier target | 승인되지 않은 공급자 대상 |
+| 4036 | Review eligibility failed | 리뷰 작성 자격 미달 (request 미종료 / 비소유자 / selected quote 없음) |
 | 4037 | Quote permission denied | 견적 제출 권한 없음 |
 | 4038 | Cannot modify quote state | 견적 상태로 인한 수정 불가 |
 | 4039 | Thread access denied | 스레드 비참여자 접근 |
@@ -3623,12 +3920,12 @@ Authorization: Bearer <JWT>
 | 4091 | Duplicate email | 이미 존재하는 이메일 |
 | 4092 | Profile exists | 이미 존재하는 프로필 |
 | 4093 | Active submission exists | 이미 검수 중인 제출 |
-| 4094 | Thread exists (returned existing) | 기존 스레드 반환 |
+| 4094 | Review already exists | 같은 (request, supplier) 쌍에 리뷰 중복 |
 | 4095 | Active quote exists | 같은 의뢰에 active 견적 존재 |
 | 4096 | Already requested/approved | 연락처 공유 이미 요청/승인됨 |
 | 4099 | Cannot revoke after approval | mutually_approved 후 철회 시도 |
 | 4221 | Invalid field modification | 허용되지 않은 필드 수정 |
-| 4222 | Profile required | 프로필 없이 제출 시도 |
+| 4222 | Review content violation | 금칙어 포함 등 모더레이션 위반 |
 | 4223 | Non-patchable field | 수정 불가 필드 포함 |
 
 ### 5.2 System Error Codes (5xxx)
@@ -3681,6 +3978,7 @@ Authorization: Bearer <JWT>
 | 1.3 | 2026-04-02 | Public notice attachment: fileSize 필드 추가, 다운로드 엔드포인트 추가. Admin notice attachment download 엔드포인트 추가. Notice 상태 전이 규칙 명시 (archived -> published 포함). |
 | 1.4 | 2026-04-16 | 타입 일관성 패스: desiredVolume, targetPriceRange.min/max를 string으로 변경. 견적 필드(unitPriceEstimate, moq, leadTime, sampleCost)를 string으로 변경. 공급자 프로필 monthlyCapacity, moq를 string으로 변경. POST /api/admin/auth/login 엔드포인트 추가. Data Type Reference price/quantity 타입 string으로 변경. |
 | 1.5 | 2026-04-17 | 코드-문서 audit 보강: GET /api/suppliers/categories, /api/suppliers/regions, POST /api/requests/{id}/publish, GET /api/supplier/requests, GET /api/supplier/requests/{id}, GET /api/supplier/quotes 신규 섹션 추가. 3.10 첨부파일 섹션 추가 (POST /api/attachments). GET /api/suppliers/{id} 응답에 logoUrl 명시. |
+| 1.6 | 2026-04-20 | Phase 2 Task 06 계약 선반영: §3.11 Review API (POST/PATCH/eligibility/list), §4.4 admin 공급자 리뷰 모더레이션 (hide/unhide) 신규. §5.1 코드 재의미 부여: 4031=Review update forbidden, 4036=Review eligibility failed, 4094=Review already exists, 4222=Review content violation (Phase 1 draft 예약 의미는 실제 구현 없어 폐기). admin 모더레이션은 기존 `/api/admin/reviews/*` (검수 큐) 와 분리하기 위해 `/api/admin/supplier-reviews/*` 경로 사용. |
 
 ---
 
