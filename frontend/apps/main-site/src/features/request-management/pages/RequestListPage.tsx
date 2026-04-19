@@ -98,11 +98,11 @@ export function RequestListPage() {
 
           {data?.meta?.totalPages != null && data.meta.totalPages >= 1 && (
             <div className="pagination">
-              <button disabled={!data.meta.hasPrev} onClick={() => setSearchParams({ state: stateFilter, page: String(Math.max(1, page - 1)) })}>‹</button>
+              <button aria-label={t("common:previous")} disabled={!data.meta.hasPrev} onClick={() => setSearchParams({ state: stateFilter, page: String(Math.max(1, page - 1)) })}>‹</button>
               {Array.from({ length: Math.min(data.meta.totalPages ?? 1, 5) }, (_, i) => i + 1).map((p) => (
                 <button key={p} className={p === page ? "active" : ""} onClick={() => setSearchParams({ state: stateFilter, page: String(p) })}>{p}</button>
               ))}
-              <button disabled={!data.meta.hasNext} onClick={() => setSearchParams({ state: stateFilter, page: String(page + 1) })}>›</button>
+              <button aria-label={t("common:next")} disabled={!data.meta.hasNext} onClick={() => setSearchParams({ state: stateFilter, page: String(page + 1) })}>›</button>
             </div>
           )}
         </>

@@ -130,7 +130,7 @@ export function SupplierQuoteListPage() {
                       {quote.state === "submitted" && (
                         <>
                           <button className="btn btn-ghost btn-sm" onClick={() => openEdit(quote)}>{t("list.editButton")}</button>
-                          <button className="text-danger text-sm font-medium cursor-pointer" style={{ background: "none", border: "none" }} onClick={() => withdrawMutation.mutate(quote.quoteId)}>{t("list.withdrawButton")}</button>
+                          <button className="text-danger text-sm font-medium cursor-pointer" style={{ background: "none", border: "none" }} onClick={() => withdrawMutation.mutate({ quoteId: quote.quoteId, requestId: quote.requestId })}>{t("list.withdrawButton")}</button>
                         </>
                       )}
                       {quote.state === "declined" && <span className="text-muted text-sm">{t("list.declinedDash")}</span>}
@@ -186,11 +186,11 @@ export function SupplierQuoteListPage() {
 
       {data?.meta?.totalPages != null && data.meta.totalPages >= 1 && (
         <div className="pagination">
-          <button disabled={!data.meta.hasPrev} onClick={() => setPage((current) => Math.max(1, current - 1))}>‹</button>
+          <button aria-label={t("common:previous")} disabled={!data.meta.hasPrev} onClick={() => setPage((current) => Math.max(1, current - 1))}>‹</button>
           {Array.from({ length: Math.min(data.meta.totalPages ?? 1, 5) }, (_, i) => i + 1).map((p) => (
             <button key={p} className={p === page ? "active" : ""} onClick={() => setPage(p)}>{p}</button>
           ))}
-          <button disabled={!data.meta.hasNext} onClick={() => setPage((current) => current + 1)}>›</button>
+          <button aria-label={t("common:next")} disabled={!data.meta.hasNext} onClick={() => setPage((current) => current + 1)}>›</button>
         </div>
       )}
     </div>

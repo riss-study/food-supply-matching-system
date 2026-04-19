@@ -114,11 +114,11 @@ export function MemberListPage() {
 
       {totalPages >= 1 && (
         <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
+          <button aria-label={t("common:previous")} disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
           {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
             <button key={p} className={p === page ? "active" : ""} onClick={() => setPage(p)}>{p}</button>
           ))}
-          <button disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>›</button>
+          <button aria-label={t("common:next")} disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>›</button>
         </div>
       )}
     </div>

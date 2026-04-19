@@ -158,10 +158,8 @@ export default function App() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Close sidebar on route change
   const closeSidebar = () => setSidebarOpen(false)
 
-  // 비로그인 또는 관리자가 아닌 경우 로그인 페이지
   if (!adminUser || adminUser.role !== "admin") {
     return (
       <Routes>
@@ -176,7 +174,7 @@ export default function App() {
       <button
         className="admin-sidebar-toggle"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        aria-label={t("common:openMenu")}
+        aria-label={sidebarOpen ? t("common:closeMenu") : t("common:openMenu")}
       >
         {sidebarOpen ? "✕" : "☰"}
       </button>

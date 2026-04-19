@@ -269,6 +269,7 @@ export function NoticeCreateEditModal({
                         className="btn btn-sm btn-ghost"
                         onClick={() => handleRemoveNewFile(index)}
                         disabled={isSubmitting}
+                        aria-label={t("common:remove")}
                       >
                         ✕
                       </button>

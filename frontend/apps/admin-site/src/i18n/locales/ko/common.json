@@ -9,6 +9,7 @@
   "confirm": "확인",
   "edit": "수정",
   "close": "닫기",
+  "remove": "제거",
   "submit": "제출",
   "retry": "다시 시도",
   "select": "선택",
@@ -27,5 +28,6 @@
   "logout": "로그아웃",
   "admin": "관리자",
   "openMenu": "메뉴 열기",
+  "closeMenu": "메뉴 닫기",
   "notAvailable": "—"
 }

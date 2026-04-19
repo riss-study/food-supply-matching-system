@@ -57,11 +57,11 @@ export function NoticeListPage() {
 
       {meta?.totalPages != null && meta.totalPages >= 1 && (
         <div className="pagination">
-          <button disabled={!meta.hasPrev} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
+          <button aria-label={t("common:previous")} disabled={!meta.hasPrev} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
           {Array.from({ length: Math.min(meta.totalPages ?? 1, 5) }, (_, i) => i + 1).map((p) => (
             <button key={p} className={p === page ? "active" : ""} onClick={() => setPage(p)}>{p}</button>
           ))}
-          <button disabled={!meta.hasNext} onClick={() => setPage((p) => Math.min(meta.totalPages || p, p + 1))}>›</button>
+          <button aria-label={t("common:next")} disabled={!meta.hasNext} onClick={() => setPage((p) => Math.min(meta.totalPages || p, p + 1))}>›</button>
         </div>
       )}
     </div>

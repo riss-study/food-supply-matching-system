@@ -100,7 +100,7 @@ describe("SupplierQuoteListPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "철회" }))
 
-    expect(mockUseWithdrawQuote.mock.results[0]?.value.mutate).toHaveBeenCalledWith("quo_1")
+    expect(mockUseWithdrawQuote.mock.results[0]?.value.mutate).toHaveBeenCalledWith({ quoteId: "quo_1", requestId: "req_1" })
   })
 
   it("blocks invalid edit values before saving", () => {

@@ -315,7 +315,7 @@ export function ThreadDetailPage() {
           {pendingAttachments.map((attachment) => (
             <div key={attachment.attachmentId} className="flex items-center gap-8 p-8 bg-paper rounded text-sm">
               <span>📎 {attachment.fileName}</span>
-              <button className="btn btn-ghost btn-sm" onClick={() => removePendingAttachment(attachment.attachmentId)}>×</button>
+              <button className="btn btn-ghost btn-sm" aria-label={t("upload.removeAria")} onClick={() => removePendingAttachment(attachment.attachmentId)}>×</button>
             </div>
           ))}
         </div>

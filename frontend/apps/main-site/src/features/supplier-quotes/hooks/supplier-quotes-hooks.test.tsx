@@ -57,7 +57,7 @@ describe("supplier quotes hooks", () => {
     const { withdrawQuote } = await import("../api/supplier-quotes-api")
     vi.mocked(withdrawQuote).mockResolvedValueOnce({ quoteId: "quo_1", state: "withdrawn", withdrawnAt: "2026-03-20T00:00:00Z" })
     const { result } = renderHook(() => useWithdrawQuote(), { wrapper: createWrapper() })
-    result.current.mutate("quo_1")
+    result.current.mutate({ quoteId: "quo_1", requestId: "req_1" })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
 })
