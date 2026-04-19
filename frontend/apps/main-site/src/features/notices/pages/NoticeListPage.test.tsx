@@ -28,7 +28,7 @@ describe("Public NoticeListPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <NoticeListPage />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -56,7 +56,7 @@ describe("Public NoticeListPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <NoticeListPage />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -76,7 +76,7 @@ describe("Public NoticeListPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <NoticeListPage />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -94,7 +94,7 @@ describe("Public NoticeListPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <NoticeListPage />
         </MemoryRouter>
       </QueryClientProvider>,

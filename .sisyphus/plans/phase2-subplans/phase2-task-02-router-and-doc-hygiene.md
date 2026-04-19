@@ -10,7 +10,7 @@
 | **기간** | 1-1.5일 |
 | **스토리 포인트** | 3 |
 | **작업자** | Frontend |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done (2026-04-19) |
 | **Can Parallel** | YES (P2-01과 병렬 가능) |
 | **Blocks** | 없음 (cleanup 성격) |
 | **Blocked By** | 없음 |
@@ -30,16 +30,16 @@ Phase 1 종료 시점에 알려진 작은 hygiene 항목 두 개를 닫는다.
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🔴 Not Started
+- 메인 Task 상태: 🟢 Done (2026-04-19)
 - 메모: Phase 1 handoff 문서가 이 두 항목을 명시적으로 follow-up으로 열어둠.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 2.1 | 🔴 Not Started | React Router future flag opt-in 또는 라우터 설정 정렬 |
-| 2.2 | 🔴 Not Started | 테스트 console output에서 router warning 0건 확인 |
-| 2.3 | 🔴 Not Started | `frontend/README.md` 보강 (run/test/build/deploy posture) |
-| 2.4 | 🔴 Not Started | 각 app `apps/main-site/README.md`, `apps/admin-site/README.md`에 진입 안내 |
-| 2.5 | 🔴 Not Started | LOCAL-RUN-GUIDE와 README 간 cross-link 정리 |
+| 2.1 | 🟢 Done | `BrowserRouter future={{ v7_startTransition, v7_relativeSplatPath }}` 양 앱 적용 + 테스트 `MemoryRouter` 전체에도 future 주입 |
+| 2.2 | 🟢 Done | vitest (22+5 file, 105+15 test) console router warning 0건 확인 — `.sisyphus/evidence/phase2-task-02-router-and-doc-hygiene.txt` |
+| 2.3 | 🟢 Done | `frontend/README.md` 보강 (워크스페이스 구조, env, 명령, 크로스링크) |
+| 2.4 | 🟢 Done | main-site / admin-site README 재작성 (라우트 맵, 관리자 진입, 계정 안내) |
+| 2.5 | 🟢 Done | LOCAL-RUN-GUIDE §8 에 frontend README 링크 추가 |
 
 ---
 

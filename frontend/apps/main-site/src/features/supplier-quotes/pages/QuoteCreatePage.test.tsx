@@ -15,7 +15,7 @@ function renderPage() {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={["/quotes/create?requestId=req_1"]}>
+      <MemoryRouter initialEntries={["/quotes/create?requestId=req_1"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <QuoteCreatePage />
       </MemoryRouter>
     </QueryClientProvider>,

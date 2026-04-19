@@ -28,7 +28,7 @@ describe("ThreadListPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ThreadListPage />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -71,7 +71,7 @@ describe("ThreadListPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ThreadListPage />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -92,7 +92,7 @@ describe("ThreadListPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ThreadListPage />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -110,7 +110,7 @@ describe("ThreadListPage", () => {
   
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ThreadListPage />
         </MemoryRouter>
       </QueryClientProvider>,

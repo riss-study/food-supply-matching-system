@@ -7,7 +7,7 @@ import { useAuthStore } from "./features/auth/store/auth-store"
 function renderWithProviders(initialEntries: string[]) {
   return render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={initialEntries}>
+      <MemoryRouter initialEntries={initialEntries} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <App />
       </MemoryRouter>
     </QueryClientProvider>,

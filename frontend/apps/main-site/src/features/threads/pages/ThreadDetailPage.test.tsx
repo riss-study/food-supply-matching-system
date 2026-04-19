@@ -101,7 +101,7 @@ describe("ThreadDetailPage", () => {
   function renderPage() {
     return render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter initialEntries={["/threads/thread_01"]}>
+        <MemoryRouter initialEntries={["/threads/thread_01"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/threads/:threadId" element={<ThreadDetailPage />} />
           </Routes>
@@ -164,7 +164,7 @@ describe("ThreadDetailPage", () => {
 
     const view = render(
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={["/threads/thread_01"]}>
+        <MemoryRouter initialEntries={["/threads/thread_01"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/threads/:threadId" element={<ThreadDetailPage />} />
           </Routes>
@@ -174,7 +174,7 @@ describe("ThreadDetailPage", () => {
 
     view.rerender(
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={["/threads/thread_01"]}>
+        <MemoryRouter initialEntries={["/threads/thread_01"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/threads/:threadId" element={<ThreadDetailPage />} />
           </Routes>

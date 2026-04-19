@@ -28,7 +28,7 @@ describe("Public NoticeDetailPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter initialEntries={["/notices/notice_01"]}>
+        <MemoryRouter initialEntries={["/notices/notice_01"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
           </Routes>
@@ -64,7 +64,7 @@ describe("Public NoticeDetailPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter initialEntries={["/notices/notice_01"]}>
+        <MemoryRouter initialEntries={["/notices/notice_01"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
           </Routes>
@@ -87,7 +87,7 @@ describe("Public NoticeDetailPage", () => {
 
     render(
       <QueryClientProvider client={createTestQueryClient()}>
-        <MemoryRouter initialEntries={["/notices/notice_01"]}>
+        <MemoryRouter initialEntries={["/notices/notice_01"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
           </Routes>

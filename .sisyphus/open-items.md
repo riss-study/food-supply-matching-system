@@ -87,15 +87,11 @@
 
 ## 인프라 / 운영
 
-### OP-1. Mongo seed 재시드 가이드 운영 문서화
+### OP-1. Mongo seed 재시드 가이드 운영 문서화 ✅ 해결됨 (2026-04-19, `b92dc79`)
 
-- **배경**: 2026-04-19 세션에서 발견. Mongo volume 이 persisted 된 상태에서 `02-seed-read-models.js` 만 업데이트되면 자동 re-seed 가 안 일어나 seed 데이터가 stale 상태로 남음 (`requesterUserId` 필드 누락 등). 이번에는 `./scripts/local/seed-mongodb.sh` 수동 실행으로 복구.
-- **왜 지금 안 하는가**: 근본 원인은 Mongo 초기화 규약 (docker-entrypoint-initdb.d 가 한 번만 실행됨). 스크립트 자체는 이미 idempotent (`_id: /seed_/` deleteMany + re-insert). 남은 일은 **개발자 가이드 정비**.
-- **규모**: S (문서 업데이트)
-- **할 일**:
-  - `LOCAL-RUN-GUIDE.ko.md` 또는 `docs/TEST-GUIDE.md` 에 "seed 파일을 수정했으면 `./scripts/local/seed-mongodb.sh` 재실행 필요" 명시
-  - 지침서 §8 "실제 적용 사례" 에 사례 3 으로 기록 (증상/원인/조치/교훈)
-- **다시 검토 트리거**: 다른 개발자가 같은 이슈로 혼란 겪을 때 (즉시 기록하는 게 나음)
+- `LOCAL-RUN-GUIDE.ko.md §6` 에 재시드 규약, Colima 변형, 체크포인트 기록
+- `docs/REFACTORING-GUIDELINES.ko.md §8 case 3` 에 사례 기록 (증상/원인/조치/교훈 3)
+- 지침서 버전 1.6 으로 bump
 
 ---
 
@@ -154,3 +150,4 @@
 | 날짜 | 변경 |
 |------|------|
 | 2026-04-19 | 초판. 백엔드 리팩토링 세션 직후 미결사항 정리. |
+| 2026-04-19 | OP-1 해결 (b92dc79). |

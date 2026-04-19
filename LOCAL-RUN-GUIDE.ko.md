@@ -207,7 +207,7 @@ Swagger:
 
 ## 8. frontend 서버 실행
 
-프론트는 `frontend/`에서 실행합니다.
+프론트는 `frontend/`에서 실행합니다. 워크스페이스 구조·env·라우트 맵 등 프론트 자체 상세는 [`frontend/README.md`](./frontend/README.md) 와 각 앱의 README ([main-site](./frontend/apps/main-site/README.md) / [admin-site](./frontend/apps/admin-site/README.md)) 참조.
 
 ### 터미널 3 - main-site
 

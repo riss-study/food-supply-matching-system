@@ -10,7 +10,7 @@ describe("admin-site app", () => {
 
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <MemoryRouter initialEntries={["/"]}>
+        <MemoryRouter initialEntries={["/"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <App />
         </MemoryRouter>
       </QueryClientProvider>,

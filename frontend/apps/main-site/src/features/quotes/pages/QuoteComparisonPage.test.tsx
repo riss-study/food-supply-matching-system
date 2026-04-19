@@ -25,7 +25,7 @@ function renderPage(initialEntries = ["/requests/req_1/quotes"]) {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={initialEntries}>
+      <MemoryRouter initialEntries={initialEntries} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/requests/:requestId/quotes" element={<QuoteComparisonPage />} />
         </Routes>

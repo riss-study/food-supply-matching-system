@@ -1,0 +1,15 @@
+=== Sun Apr 19 22:41:34 KST 2026 ===
+
+## main-site vitest (warning filter)
+ Test Files  22 passed (22)
+      Tests  105 passed (105)
+
+## admin-site vitest (warning filter)
+ Test Files  5 passed (5)
+      Tests  15 passed (15)
+
+## main-site type-check
+[clean]
+
+## admin-site type-check
+[clean]
