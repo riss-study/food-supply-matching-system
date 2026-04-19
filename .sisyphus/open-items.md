@@ -97,15 +97,27 @@
 
 ### OP-2. CI 강화
 
-- **배경**: `.github/workflows/backend-ci.yml`, `frontend-ci.yml` 은 Phase 2 Task 01 에서 추가. 현재 단계는 build + test 중심.
+- **배경**: `.github/workflows/backend-ci.yml`, `frontend-ci.yml` 은 Phase 2 Task 01 에서 추가. 현재 단계는 build + test + type-check 중심.
 - **왜 지금 안 하는가**: 최소 baseline 이 안착되었고 로컬에서 `./gradlew test`, `yarn type-check`, vitest, e2e 가 전부 green. CI 레벨 추가 검증은 규모 작지만 PR 정책과 연동되어야 의미가 큼.
 - **규모**: S~M
 - **추가 후보**:
-  - type-check (`yarn workspace @fsm/main-site type-check`) 를 CI 에 포함
+  - ~~type-check (`yarn workspace @fsm/main-site type-check`) 를 CI 에 포함~~ ✅ 이미 `frontend-ci.yml` 에 `yarn type-check` (전 워크스페이스 topological) 포함. Task 01 단계에서 반영되어 있음. 재확인 2026-04-19.
   - `grep` 으로 리터럴 queryKey / `as any` / 하드코딩 URL 감지하는 lint step
   - `yarn e2e` 를 nightly 또는 PR 라벨 기반으로 실행
 - **다시 검토 트리거**: PR 프로세스 정착 이후, 또는 외부 협업자가 들어올 때
 - **참고**: `.github/workflows/*.yml`
+
+---
+
+### OP-4. 관리자 감사 검색 API
+
+- **배경**: Phase 2 Task 03 원래 SubTask 3.5 (`GET /api/admin/audit-logs?actor=&action=&target=&since=&until=`). 2026-04-19 재평가에서 "검수 상세 화면에 타임라인 렌더링" 이 실운영 가치 대부분을 커버한다고 판단해 축소·분리.
+- **왜 지금 안 하는가**: 실제 감사 요청이 들어오기 전까지는 `AuditLogRepository` 에 직접 SQL 로 조회하는 편이 비용이 더 낮음. 엔드포인트 스펙 (필터 조합, 페이지네이션, 접근 제어) 은 운영 요구가 형성된 후 결정하는 편이 정확함.
+- **규모**: S~M
+- **다시 검토 트리거**:
+  - 관리자가 과거 결정 이력을 cross-target 으로 조회할 필요가 실제로 발생할 때
+  - 규제/감사 요구 (법적 근거, 보존 기간 관련) 가 구체화될 때
+- **참고**: `.sisyphus/plans/phase2-subplans-reassessment-2026-04-19.md` §"Task 03 이관 제안"
 
 ---
 
@@ -151,3 +163,5 @@
 |------|------|
 | 2026-04-19 | 초판. 백엔드 리팩토링 세션 직후 미결사항 정리. |
 | 2026-04-19 | OP-1 해결 (b92dc79). |
+| 2026-04-19 | OP-2 type-check 항목은 Task 01 시점부터 이미 CI 에 포함됨을 확인 (022c887 이후). |
+| 2026-04-19 | Phase 2 Task 03~07 재평가: 03 축소, 04/05 진행, 06/07 이관. OP-4 (audit 검색 API) 신규. |
