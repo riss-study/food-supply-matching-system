@@ -28,16 +28,24 @@
 
 ---
 
-### BE-2. `SupplierQueryService.listApproved` Mongo aggregation 이관
+### BE-2. `SupplierQueryService.listApproved` Mongo aggregation 이관 ✅ 해결됨 (2026-04-19, Task 04)
 
-- **배경**: `3c4edc5` 에서 `categories()` / `regions()` 는 Mongo `@Aggregation` pipeline 으로 DB-side 집계. 그러나 `listApproved()` 는 여전히 `findAll().collectList()` 후 메모리 필터 + pagination.
-- **왜 지금 안 하는가**: 필터 조합이 복잡 (keyword / category / region / oem / odm / capacity(문자열 내 숫자 추출) / moq). aggregation pipeline 으로 옮기려면 stage 6~7개 필요 + MongoDB 텍스트 인덱스 고려 필요. **현재 seed 데이터는 supplier 8건** 수준이라 메모리 처리의 실제 비용이 없음.
-- **규모**: M (데이터 특성 파악·인덱스 설계 포함 시 L)
+- 필터 (keyword/category/region/oem/odm), 정렬 (updatedAt/companyName/monthlyCapacity/moq), 페이지네이션 모두 `ReactiveMongoTemplate` + `Criteria` + `Query.with(Sort).skip/limit` 으로 이관.
+- `supplier_search_view` 에 인덱스 7종 정의 (categories/region/oemAvailable/odmAvailable/updatedAt/companyName + compound categories+region). `01-init-read-store.js` 에 기록되어 재시드 시 자동 생성.
+- `seed-mongodb.sh` 가 init + seed 둘 다 실행하도록 업데이트.
+- 남은 한계: `minCapacity`/`maxMoq` 는 `monthlyCapacity`/`moq` 필드가 자유 텍스트 ("1,000kg") 이라 **페이지 내 post-filter** 로만 적용. 정규화된 숫자 컬럼 도입은 BE-4 (후속 open-item) 로 분리.
+
+---
+
+### BE-4. `supplier_search_view` 숫자 필드 정규화
+
+- **배경**: Task 04 에서 filter/sort 를 Mongo 로 이관했지만, `monthlyCapacity` / `moq` 가 자유 텍스트 ("1,000kg", "100kg") 라 `minCapacity` / `maxMoq` 파라미터는 페이지 내 post-filter 로만 동작. DB-side 필터링을 하려면 projection 시점에 정규화된 숫자 컬럼 (`monthlyCapacityNumeric: Int?`, `moqNumeric: Int?`) 을 계산해야 함.
+- **왜 지금 안 하는가**: 실제 현 데이터 (supplier 3~8건) 에선 "페이지 내에 걸리는 항목이 몇 개" 수준이라 UX 문제 없음. 정규화하려면 projection consumer 수정 + seed 데이터 일관성 재검사가 필요.
+- **규모**: S (projection) + S (seed 재생산) + S (인덱스 추가)
 - **다시 검토 트리거**:
-  - `supplier_search_view` 문서 수 1000건 이상
-  - 또는 `/api/suppliers` 응답 p95 > 300ms
-  - 또는 heap/GC 튐이 확인될 때
-- **참고**: `backend/query-model-supplier/src/main/kotlin/dev/riss/fsm/query/supplier/SupplierQueryService.kt:45` (listApproved)
+  - supplier 수 50건 이상 + 숫자 필터를 쓰는 UX 요구가 실제로 발생
+  - 또는 "페이지 내에 걸리는 항목만 반환된다" 가 사용자 혼란을 유발할 때
+- **참고**: `backend/query-model-supplier/src/main/kotlin/dev/riss/fsm/query/supplier/SupplierQueryService.kt` (post-filter 주석), `docs/backend-refactor-2026-04-19.md` 후속
 
 ---
 

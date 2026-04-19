@@ -13,6 +13,8 @@ export function SupplierSearchPage() {
   const odm = searchParams.get("odm") === "true"
   const minCapacity = searchParams.get("minCapacity") ?? ""
   const maxMoq = searchParams.get("maxMoq") ?? ""
+  const sort = searchParams.get("sort") ?? "updatedAt"
+  const order = searchParams.get("order") ?? "desc"
   const page = Number(searchParams.get("page") ?? "1")
 
   const { data } = useSupplierList({
@@ -23,6 +25,8 @@ export function SupplierSearchPage() {
     odm: odm || undefined,
     minCapacity: minCapacity ? Number(minCapacity) : undefined,
     maxMoq: maxMoq ? Number(maxMoq) : undefined,
+    sort,
+    order,
     page,
     size: 20,
   })
@@ -38,6 +42,8 @@ export function SupplierSearchPage() {
     if (odm && !("odm" in updates)) newParams.odm = "true"
     if (minCapacity && !("minCapacity" in updates)) newParams.minCapacity = minCapacity
     if (maxMoq && !("maxMoq" in updates)) newParams.maxMoq = maxMoq
+    if (sort !== "updatedAt" && !("sort" in updates)) newParams.sort = sort
+    if (order !== "desc" && !("order" in updates)) newParams.order = order
 
     Object.entries(updates).forEach(([key, value]) => {
       if (value !== undefined && value !== "") {
@@ -148,11 +154,36 @@ export function SupplierSearchPage() {
         <div className="supplier-result-area">
           {data?.items.length ? (
             <>
-            <div className="flex items-center gap-8">
-              <h1 className="font-bold" style={{ fontSize: 18 }}>
-                {t("search.resultTitle")}
-              </h1>
-              <span className="text-muted text-base">{t("search.resultCountSuffix", { count: data.meta.totalElements })}</span>
+            <div className="flex items-center gap-8" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+              <div className="flex items-center gap-8">
+                <h1 className="font-bold" style={{ fontSize: 18 }}>
+                  {t("search.resultTitle")}
+                </h1>
+                <span className="text-muted text-base">{t("search.resultCountSuffix", { count: data.meta.totalElements })}</span>
+              </div>
+              <div className="flex gap-8 items-center">
+                <label className="text-sm text-muted" htmlFor="supplier-sort">{t("search.sortLabel")}</label>
+                <select
+                  id="supplier-sort"
+                  className="select"
+                  value={sort}
+                  onChange={(e) => updateSearchParams({ sort: e.target.value })}
+                >
+                  <option value="updatedAt">{t("search.sortUpdatedAt")}</option>
+                  <option value="companyName">{t("search.sortCompanyName")}</option>
+                  <option value="monthlyCapacity">{t("search.sortMonthlyCapacity")}</option>
+                  <option value="moq">{t("search.sortMoq")}</option>
+                </select>
+                <select
+                  className="select"
+                  value={order}
+                  onChange={(e) => updateSearchParams({ order: e.target.value })}
+                  aria-label={t("search.sortLabel")}
+                >
+                  <option value="desc">{t("search.orderDesc")}</option>
+                  <option value="asc">{t("search.orderAsc")}</option>
+                </select>
+              </div>
             </div>
 
           <div className="grid gap-16" style={{ gridTemplateColumns: "1fr 1fr" }}>

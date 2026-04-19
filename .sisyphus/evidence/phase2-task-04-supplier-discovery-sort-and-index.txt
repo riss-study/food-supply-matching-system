@@ -1,0 +1,32 @@
+=== Phase 2 Task 04 evidence (2026-04-19) ===
+
+## Mongo indexes on supplier_search_view
+  _id_ => {"_id":1}
+  idx_categories => {"categories":1}
+  idx_region => {"region":1}
+  idx_oemAvailable => {"oemAvailable":1}
+  idx_odmAvailable => {"odmAvailable":1}
+  idx_updatedAt_desc => {"updatedAt":-1}
+  idx_companyName => {"companyName":1}
+  idx_category_region => {"categories":1,"region":1}
+
+## API smoke — default sort (updatedAt desc)
+total: 3 returned: 3
+  - (주)한맛식품
+  - 대한음료(주)
+  - (주)서울베이커리
+
+## API smoke — sort=companyName asc
+  - (주)서울베이커리
+  - (주)한맛식품
+  - 대한음료(주)
+
+## API smoke — filter category=bakery
+total: 1
+
+## Summary
+- Filters moved to Mongo: keyword, category, region, oem, odm
+- Sort moved to Mongo: updatedAt (default desc), companyName, monthlyCapacity, moq
+- Pagination: Mongo skip/limit
+- Known limitation: minCapacity/maxMoq applied as post-filter on already-paged items (string fields)
+- Tests: api-server + query-model-supplier BUILD SUCCESSFUL; frontend 22/105 passed

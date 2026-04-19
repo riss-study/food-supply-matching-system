@@ -1,5 +1,9 @@
 package dev.riss.fsm.query.supplier
 
+import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
@@ -41,45 +45,55 @@ data class SupplierRegionSummary(
 class SupplierQueryService(
     private val supplierSearchViewRepository: SupplierSearchViewRepository,
     private val supplierDetailViewRepository: SupplierDetailViewRepository,
+    private val mongoTemplate: ReactiveMongoTemplate,
 ) {
     fun listApproved(query: SupplierSearchQuery): Mono<SupplierSearchPage> {
         val safePage = query.page.coerceAtLeast(1)
         val safeSize = query.size.coerceIn(1, 100)
 
-        return supplierSearchViewRepository.findAll()
-            .collectList()
-            .map { list ->
-                list.asSequence()
-                    .filter { item -> query.keyword.isNullOrBlank() || item.companyName.contains(query.keyword, ignoreCase = true) }
-                    .filter { item -> query.category.isNullOrBlank() || item.categories.any { it.equals(query.category, ignoreCase = true) } }
-                    .filter { item -> query.region.isNullOrBlank() || item.region.contains(query.region, ignoreCase = true) }
-                    .filter { item -> query.oem == null || item.oemAvailable == query.oem }
-                    .filter { item -> query.odm == null || item.odmAvailable == query.odm }
-                    // 수량/단위가 자유 텍스트가 되면서 숫자 비교 불가 — 필터 비활성화
-                    .filter { item ->
-                        val min = query.minCapacity ?: return@filter true
-                        val n = item.monthlyCapacity.filter { it.isDigit() }.toIntOrNull() ?: 0
-                        n >= min
-                    }
-                    .filter { item ->
-                        val max = query.maxMoq ?: return@filter true
-                        val n = item.moq.filter { it.isDigit() }.toIntOrNull() ?: Int.MAX_VALUE
-                        n <= max
-                    }
-                    .toList()
+        val criteriaList = buildList {
+            query.keyword?.takeIf { it.isNotBlank() }?.let {
+                add(Criteria.where("companyName").regex(java.util.regex.Pattern.quote(it), "i"))
             }
-            .map { items -> sortItems(items, query.sort, query.order) }
-            .map { filtered ->
-                val total = filtered.size
-                val from = ((safePage - 1) * safeSize).coerceAtMost(total)
-                val to = (from + safeSize).coerceAtMost(total)
-                val items = filtered.subList(from, to)
-                val totalPages = if (total == 0) 0 else ((total - 1) / safeSize) + 1
+            query.category?.takeIf { it.isNotBlank() }?.let {
+                add(Criteria.where("categories").regex("^${java.util.regex.Pattern.quote(it)}$", "i"))
+            }
+            query.region?.takeIf { it.isNotBlank() }?.let {
+                add(Criteria.where("region").regex(java.util.regex.Pattern.quote(it), "i"))
+            }
+            query.oem?.let { add(Criteria.where("oemAvailable").`is`(it)) }
+            query.odm?.let { add(Criteria.where("odmAvailable").`is`(it)) }
+        }
+
+        val baseCriteria = if (criteriaList.isEmpty()) Criteria() else Criteria().andOperator(*criteriaList.toTypedArray())
+        val sortOrder = buildSort(query.sort, query.order)
+
+        val countQuery = Query(baseCriteria)
+        val pagedQuery = Query(baseCriteria).with(sortOrder).skip(((safePage - 1) * safeSize).toLong()).limit(safeSize)
+
+        return mongoTemplate.count(countQuery, SupplierSearchViewDocument::class.java)
+            .zipWith(mongoTemplate.find(pagedQuery, SupplierSearchViewDocument::class.java).collectList())
+            .map { tuple ->
+                val total = tuple.t1
+                val pagedItems = tuple.t2
+                // 수량/단위가 자유 텍스트 (예: "1,000kg") 인 한계로 minCapacity / maxMoq 는 페이지 내 post-filter 로 적용.
+                // 실제 정규화된 숫자 컬럼은 BE-future 에 기록됨 (open-items.md BE-5 후보).
+                val postFiltered = pagedItems.filter { item: SupplierSearchViewDocument ->
+                    val capOk = query.minCapacity?.let { min ->
+                        (item.monthlyCapacity.filter { it.isDigit() }.toIntOrNull() ?: 0) >= min
+                    } ?: true
+                    val moqOk = query.maxMoq?.let { max ->
+                        (item.moq.filter { it.isDigit() }.toIntOrNull() ?: Int.MAX_VALUE) <= max
+                    } ?: true
+                    capOk && moqOk
+                }
+                val totalInt = total.toInt()
+                val totalPages = if (totalInt == 0) 0 else ((totalInt - 1) / safeSize) + 1
                 SupplierSearchPage(
-                    items = items,
+                    items = postFiltered,
                     page = safePage,
                     size = safeSize,
-                    totalElements = total,
+                    totalElements = totalInt,
                     totalPages = totalPages,
                     hasNext = safePage < totalPages,
                     hasPrev = safePage > 1 && totalPages > 0,
@@ -89,14 +103,17 @@ class SupplierQueryService(
 
     fun detail(profileId: String): Mono<SupplierDetailViewDocument> = supplierDetailViewRepository.findById(profileId)
 
-    private fun sortItems(items: List<SupplierSearchViewDocument>, sort: String?, order: String?): List<SupplierSearchViewDocument> {
-        val sorted = when (sort) {
-            "monthlyCapacity" -> items.sortedBy { it.monthlyCapacity }
-            "moq" -> items.sortedBy { it.moq }
-            "companyName" -> items.sortedBy { it.companyName.lowercase() }
-            else -> items.sortedBy { it.updatedAt }
+    private fun buildSort(sort: String?, order: String?): Sort {
+        val direction = if (order == "asc") Sort.Direction.ASC else Sort.Direction.DESC
+        val field = when (sort) {
+            "companyName" -> "companyName"
+            "monthlyCapacity" -> "monthlyCapacity"
+            "moq" -> "moq"
+            "updatedAt" -> "updatedAt"
+            null, "" -> "updatedAt"
+            else -> "updatedAt"
         }
-        return if (order == "asc") sorted else sorted.reversed()
+        return Sort.by(direction, field)
     }
 
     fun categories(): Mono<List<SupplierCategorySummary>> =

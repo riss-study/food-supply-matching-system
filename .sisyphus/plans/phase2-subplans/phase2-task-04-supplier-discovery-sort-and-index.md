@@ -10,7 +10,7 @@
 | **기간** | 2-3일 |
 | **스토리 포인트** | 8 |
 | **작업자** | Full-stack |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done (2026-04-19) |
 | **Can Parallel** | YES (P2-03, P2-05와 병렬 가능) |
 | **Blocks** | 없음 |
 | **Blocked By** | P2-01 (CI baseline) |
@@ -30,13 +30,13 @@
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 4.1 | 🔴 Not Started | 현재 `/api/suppliers` 구현/정렬/필터 재감사 |
-| 4.2 | 🔴 Not Started | 정렬 키 정의 (예: companyName, monthlyCapacity, recentlyApprovedAt) |
-| 4.3 | 🔴 Not Started | 필터 정의 (region, categories, oem/odm, moq 범위) |
-| 4.4 | 🔴 Not Started | Mongo 인덱스 추가 (`docker/mongodb/init/01-init-read-store.js`) |
-| 4.5 | 🔴 Not Started | Backend API 페이지네이션·정렬·필터 일치화 |
-| 4.6 | 🔴 Not Started | main-site 탐색 UI 정렬/필터 위젯 |
-| 4.7 | 🔴 Not Started | 테스트/evidence |
+| 4.1 | 🟢 Done | `SupplierQueryService.listApproved` 재감사: `findAll().collectList()` → in-memory filter/sort/paginate. 도메인 관점 확인. |
+| 4.2 | 🟢 Done | 정렬 키: `updatedAt` (default desc), `companyName`, `monthlyCapacity`, `moq`. Order: `asc`/`desc`. |
+| 4.3 | 🟢 Done | 필터: keyword (companyName regex), category (정확 매치 regex), region (regex), oemAvailable, odmAvailable. |
+| 4.4 | 🟢 Done | `01-init-read-store.js` 에 index 7종 추가 (idempotent). `seed-mongodb.sh` 가 01+02 둘 다 실행. |
+| 4.5 | 🟢 Done | `ReactiveMongoTemplate` + `Criteria` + `Sort` + `skip/limit` 로 이관. post-filter 는 숫자 파라미터만 (제약 문서화). |
+| 4.6 | 🟢 Done | main-site `SupplierSearchPage` 에 정렬 드롭다운 + 방향 드롭다운 추가 + URL sync. 기존 필터 UI 유지. |
+| 4.7 | 🟢 Done | Evidence: `.sisyphus/evidence/phase2-task-04-*.txt`. gradle test + vitest 통과. curl smoke 포함. |
 
 ---
 

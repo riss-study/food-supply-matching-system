@@ -15,7 +15,14 @@
     "certifiedBadge": "인증",
     "capacityPrefix": "월 {{capacity}}",
     "moqPrefix": "MOQ {{moq}}",
-    "emptyMessage": "조건에 맞는 공급자가 없습니다."
+    "emptyMessage": "조건에 맞는 공급자가 없습니다.",
+    "sortLabel": "정렬",
+    "sortUpdatedAt": "최신 등록순",
+    "sortCompanyName": "업체명",
+    "sortMonthlyCapacity": "월 생산능력",
+    "sortMoq": "MOQ",
+    "orderAsc": "오름차순",
+    "orderDesc": "내림차순"
   },
   "detail": {
     "title": "공급자 상세",
