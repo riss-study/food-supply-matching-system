@@ -67,10 +67,9 @@ class NoticeApplicationService(
                     .collectList()
             }
         }).map { documents ->
-            var filtered = documents
-            if (parsedFrom != null) filtered = filtered.filter { it.createdAt >= parsedFrom }
-            if (parsedTo != null) filtered = filtered.filter { it.createdAt < parsedTo }
-            filtered
+            documents
+                .filter { parsedFrom == null || it.createdAt >= parsedFrom }
+                .filter { parsedTo == null || it.createdAt < parsedTo }
         }.map { documents ->
             val sorted = documents.sortedWith(adminComparator(sort, order))
             val totalElements = sorted.size.toLong()
@@ -271,7 +270,7 @@ class NoticeApplicationService(
                                 fileName = saved.fileName,
                                 contentType = saved.contentType,
                                 fileSize = saved.fileSize,
-                                url = "/api/admin/notices/$noticeId/attachments/${saved.attachmentId}/download",
+                                url = noticeAttachmentDownloadUrl(noticeId, saved.attachmentId),
                                 createdAt = saved.createdAt.toInstant(ZoneOffset.UTC),
                             )
                         }
@@ -283,6 +282,9 @@ class NoticeApplicationService(
     private fun resolveStoragePath(storageKey: String): Path {
         return Path.of(localRoot, storageKey)
     }
+
+    private fun noticeAttachmentDownloadUrl(noticeId: String, attachmentId: String): String =
+        "/api/admin/notices/$noticeId/attachments/$attachmentId/download"
 
     fun getAttachmentFile(
         principal: AuthenticatedUserPrincipal,
@@ -326,7 +328,7 @@ class NoticeApplicationService(
                     fileName = it.fileName,
                     contentType = it.contentType,
                     fileSize = it.fileSize,
-                    url = "/api/admin/notices/${it.ownerId}/attachments/${it.attachmentId}/download",
+                    url = noticeAttachmentDownloadUrl(it.ownerId, it.attachmentId),
                     createdAt = it.createdAt.toInstant(ZoneOffset.UTC),
                 )
             }

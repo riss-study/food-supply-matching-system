@@ -57,16 +57,14 @@ class SupplierQueryService(
                     .filter { item -> query.odm == null || item.odmAvailable == query.odm }
                     // 수량/단위가 자유 텍스트가 되면서 숫자 비교 불가 — 필터 비활성화
                     .filter { item ->
-                        query.minCapacity == null || run {
-                            val n = item.monthlyCapacity.filter { it.isDigit() }.toIntOrNull() ?: 0
-                            n >= query.minCapacity!!
-                        }
+                        val min = query.minCapacity ?: return@filter true
+                        val n = item.monthlyCapacity.filter { it.isDigit() }.toIntOrNull() ?: 0
+                        n >= min
                     }
                     .filter { item ->
-                        query.maxMoq == null || run {
-                            val n = item.moq.filter { it.isDigit() }.toIntOrNull() ?: Int.MAX_VALUE
-                            n <= query.maxMoq!!
-                        }
+                        val max = query.maxMoq ?: return@filter true
+                        val n = item.moq.filter { it.isDigit() }.toIntOrNull() ?: Int.MAX_VALUE
+                        n <= max
                     }
                     .toList()
             }
