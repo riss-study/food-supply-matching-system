@@ -15,6 +15,7 @@
 | 4 | `3c4edc5` | supplier category/region count → Mongo aggregation | M (perf) |
 | 5 | `09b4e46` | `@Transactional` 을 domain → application layer 로 이동 | M |
 | 6 | `6b536a5` | `command-domain-*` 의 `ResponseStatusException` → 도메인 sealed exception | L |
+| 7 | (이 커밋) | command-domain-* 도메인 unit test 자리 확립 (#10) | M |
 
 검증 공통: `./gradlew test` 전 모듈 **BUILD SUCCESSFUL** + 공인 IP × 3역할 E2E curl 전부 200.
 
@@ -744,6 +745,112 @@ HTTP status 비교 코드는 삭제. HTTP 관심사는 `GlobalApiExceptionHandle
 
 ---
 
+## 7. command-domain-* 도메인 unit test 자리 확립 (#10)
+
+### 배경
+
+지금까지 `command-domain-*` 모듈의 테스트 상황은 불균형했다:
+
+| 모듈 | 테스트 |
+|---|---|
+| command-domain-request | ❌ 없음 (`api-server/src/test/.../RequestCommandServiceTest` 가 도메인 로직을 테스트 중이었음 — 위치 오류) |
+| command-domain-quote | ✅ QuoteCommandServiceTest |
+| command-domain-notice | ❌ 없음 |
+| command-domain-supplier | ✅ SupplierProfileCommandServiceTest |
+| command-domain-thread | ✅ ThreadCommandServiceTest |
+| command-domain-user | ✅ AuthCommandServiceTest / RequesterBusinessProfileCommandServiceTest |
+
+§6 에서 도메인 서비스가 Spring WebFlux (`ResponseStatusException`) 의존성에서 벗어났으므로 **순수 도메인 unit test 가 처음으로 의미 있게 작성 가능**. 이번 커밋은 빠진 두 모듈을 채우고 위치 오류를 교정.
+
+### 변경 A: `RequestCommandServiceTest` 를 command-domain-request 로 이동
+
+**Before**: `backend/api-server/src/test/kotlin/dev/riss/fsm/api/request/RequestCommandServiceTest.kt`
+- package: `dev.riss.fsm.api.request`
+- `api-server` 모듈 테스트로 등록됨
+- 실제로는 `api-server` 무관하게 `RequestCommandService` 를 mock repository 로 테스트 (= 순수 domain test)
+- 심지어 쓰지 않는 `SupplierProfileRepository` mock 선언 (dead field)
+
+**After**: `backend/command-domain-request/src/test/kotlin/dev/riss/fsm/command/request/RequestCommandServiceTest.kt`
+- package: `dev.riss.fsm.command.request`
+- `command-domain-request` 모듈 테스트로 등록
+- unused `SupplierProfileRepository` / `SupplierProfileEntity` import·field 정리
+- assertion 은 이미 §6 에서 domain exception (`RequestAccessForbiddenException`, `RequestStateTransitionException`) 으로 갱신된 상태
+
+**왜 이동인가**
+- 테스트 대상은 `command-domain-request` 의 service 이고 의존하는 모든 것도 같은 모듈에 있다. 테스트가 `api-server` 에 있으면 **모듈 경계 위반** 이고, 다른 앱 (admin-server 등) 이 같은 command 를 재사용할 때 테스트 체계가 따라오지 않는다.
+- 이동 후 `:command-domain-request:test` 만 돌려도 도메인 가드 검증이 완료.
+
+**build 보강**
+
+`command-domain-request/build.gradle.kts`:
+- `kotlin.spring` 플러그인 추가 — 다른 모든 command-domain-* 모듈과 일관.
+- `testImplementation("io.projectreactor:reactor-test")` 추가 — StepVerifier 사용 가능하도록 (기존엔 없어서 이동 시 compile 실패했음).
+
+### 변경 B: `NoticeCommandServiceTest` 신규 작성
+
+`NoticeCommandService` 는 §5 에서 `@Transactional` 을 제거한 직후라 **완전히 순수 함수**. 이제 Spring context 없이 mock repository 만으로 테스트 가능.
+
+**파일**: `backend/command-domain-notice/src/test/kotlin/dev/riss/fsm/command/notice/NoticeCommandServiceTest.kt` (신규)
+
+커버리지 (10 test cases):
+
+```kotlin
+@Test fun `createNotice defaults to draft state with no publishedAt`()
+@Test fun `createNotice with publishImmediately sets published state and publishedAt`()
+@Test fun `createNotice with initialState published is treated as published`()
+@Test fun `createNotice rejects unsupported initialState with IllegalArgumentException`()
+@Test fun `updateNotice replaces only provided fields`()
+@Test fun `publishNotice transitions draft to published and sets publishedAt when null`()
+@Test fun `publishNotice preserves existing publishedAt when re-published`()
+@Test fun `archiveNotice transitions to archived state`()
+@Test fun `changeState to draft clears publishedAt`()
+@Test fun `changeState rejects unknown target state`()
+```
+
+핵심 케이스:
+- **상태 전이의 원자성**: draft→published 시 `publishedAt` 자동 세팅. 이미 publishedAt 이 있으면 보존 (재-publish 시 원래 발행 시점 유지).
+- **partial update**: `updateNotice` 에 `body = null` 을 넘기면 기존 body 유지 (`title ?: existing.title` 의 fallback).
+- **draft 복귀 시 publishedAt 초기화**: 공지를 draft 로 되돌리면 "아직 발행 안 됨" 상태라 `publishedAt` 을 `null` 로 리셋.
+- **invalid input rejection**: `initialState = "archived"`, `changeState(id, "bogus")` 모두 `IllegalArgumentException`.
+
+**사용 패턴**:
+```kotlin
+private fun mockSavePassthrough() {
+    `when`(noticeRepository.save(any())).thenAnswer { invocation ->
+        Mono.just(invocation.getArgument<NoticeEntity>(0))
+    }
+}
+
+StepVerifier.create(service.publishNotice("notc_1"))
+    .assertNext { entity ->
+        assertEquals("published", entity.state)
+        assertNotNull(entity.publishedAt)
+    }
+    .verifyComplete()
+```
+
+Reactor 체인을 `StepVerifier` 로 assertion, repository 는 Mockito mock 하나만 쓴다. Spring context 로드 불필요.
+
+### 왜 이게 중요한가
+
+1. **도메인 불변식이 계약이 된다**: "draft→published 시 publishedAt 자동 세팅" 같은 business rule 이 테스트로 문서화됨. 나중에 이 규칙을 깨는 리팩토링이 들어오면 빨간 불로 경고.
+2. **회귀 탐지 비용 하락**: 도메인 레이어는 DB·HTTP 의존이 없으니 테스트가 **밀리초** 단위로 실행됨. `./gradlew :command-domain-notice:test` 가 거의 즉시 끝난다.
+3. **리팩토링 안전망**: §6 에서 exception 을 도메인으로 옮긴 효과를 즉시 체감. `@Transactional` / `ResponseStatusException` 의존성이 있었다면 이 테스트들은 Spring Boot context 로드 + 10초+ 대기가 필요했을 것.
+
+### 의도적으로 안 한 것
+
+- **`api-server` 에 남은 `RequestCommandServiceTest` placeholder**: 파일을 이동했으니 `api-server/.../request/` 디렉토리는 현재 테스트 없음. `api-server` 의 테스트는 **application layer 테스트** (예: `RequestApplicationServiceTest` 가 있다면) 가 들어갈 자리. 새로 만들지는 않음 — 스코프 밖.
+- **커버리지 100%**: 모든 edge case 를 쓰지 않음. 각 메소드 당 happy + 대표 edge 1~2개. 커버리지 수치 집착보다 **business rule 문서화** 가 목적.
+
+### 검증
+
+- `./gradlew :command-domain-request:test` BUILD SUCCESSFUL
+- `./gradlew :command-domain-notice:test` BUILD SUCCESSFUL
+- `./gradlew test` (전 모듈) BUILD SUCCESSFUL
+- 공인 IP smoke (buyer `/me`, public notices, admin notices) 200/200/200 — 이동·신규 테스트가 프로덕션 동작에 영향 없음을 확인.
+
+---
+
 ## 공통 원칙 되짚기
 
 1. **SSOT**: StorageProperties(설정), noticeAttachmentDownloadUrl(URL).
@@ -758,6 +865,6 @@ HTTP status 비교 코드는 삭제. HTTP 관심사는 `GlobalApiExceptionHandle
 ## 남은 과제 (백엔드 리팩토링)
 
 - ~~**#1**: `command-domain-*` 서비스의 `ResponseStatusException` 을 도메인 sealed exception 으로 교체~~ — `6b536a5` 로 해결됨.
+- ~~**#10**: `command-domain-*` 각 모듈에 순수 unit test 추가~~ — 이번 커밋 (§7) 으로 request/notice 채움, 나머지 4개 모듈은 원래 존재. 커버리지 추가 확장은 각 feature 작업 시 Boy Scout.
 - **Application layer 의 `ResponseStatusException` 일관화** (선택): `RequestAccessGuard`, `PublicNoticeApplicationService`, `NoticeApplicationService` 등도 도메인 exception 으로 묶을지 판단.
-- **#10**: `command-domain-*` 각 모듈에 순수 unit test 추가 (현재는 application layer 에 편중). 규모 L.
 - **listApproved aggregation 이관**: 데이터 증가 관찰 후 착수.

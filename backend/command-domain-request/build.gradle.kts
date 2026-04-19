@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.spring.dependency.management)
 }
 
@@ -15,6 +16,7 @@ dependencies {
     implementation(libs.spring.boot.starter.webflux)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation("io.projectreactor:reactor-test")
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

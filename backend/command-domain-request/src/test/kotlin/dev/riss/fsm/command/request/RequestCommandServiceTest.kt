@@ -1,11 +1,9 @@
-package dev.riss.fsm.api.request
+package dev.riss.fsm.command.request
 
 import dev.riss.fsm.command.request.CreateRequestCommand
 import dev.riss.fsm.command.request.RequestCommandService
 import dev.riss.fsm.command.request.RequestRepository
 import dev.riss.fsm.command.request.TargetedSupplierLinkRepository
-import dev.riss.fsm.command.supplier.SupplierProfileEntity
-import dev.riss.fsm.command.supplier.SupplierProfileRepository
 import dev.riss.fsm.shared.error.RequestAccessForbiddenException
 import dev.riss.fsm.shared.error.RequestStateTransitionException
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
@@ -29,9 +27,6 @@ class RequestCommandServiceTest {
 
     @Mock
     private lateinit var targetedSupplierLinkRepository: TargetedSupplierLinkRepository
-
-    @Mock
-    private lateinit var supplierProfileRepository: SupplierProfileRepository
 
     private lateinit var requestCommandService: RequestCommandService
 
