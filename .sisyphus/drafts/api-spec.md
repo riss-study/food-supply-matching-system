@@ -3031,7 +3031,7 @@ Content-Type: application/json
 | reviewId | string | 리뷰 ID |
 | rating | integer | 1..5 |
 | text | string\|null | 본문 (선택) |
-| authorDisplayName | string | 작성자 회사명 마스킹 결과 (P3) |
+| authorDisplayName | string | 작성자 회사명 마스킹 결과 (P3). 규칙: 법인 접두어 (`(주)` / `㈜` / `주식회사 ` 등) 유지 + 첫 1음절 + `*****`. 예: `(주)달콤베이커리` → `(주)달*****` |
 | createdAt | string | 작성 시각 |
 | updatedAt | string | 최종 수정 시각 |
 
