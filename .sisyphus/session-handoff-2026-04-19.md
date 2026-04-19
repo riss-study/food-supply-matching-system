@@ -1,26 +1,25 @@
 # Session Handoff — 2026-04-19
 
-> 2026-04-17 핸드오프 이후 진행된 프론트 리팩토링 대장정 + E2E 검증 + 백엔드 seed 이슈 조치까지 정리.
+> 2026-04-17 핸드오프 이후 진행된 프론트 리팩토링 대장정 → 백엔드 리팩토링 사이클 → 미결 항목 정리까지 총 23 커밋.
 > 이전 세션 기록: `.sisyphus/session-handoff-2026-04-17.md`
+> 미결 항목 (다음 세션 이후 후보): `.sisyphus/open-items.md`
+> 백엔드 리팩토링 상세 노트: `docs/backend-refactor-2026-04-19.md`
 
 ---
 
 ## 0. 30초 요약
 
-이번 세션 핵심 4줄:
+이번 세션 핵심 5줄:
 
-1. **인프라/환경** — Vite dev server 를 **same-origin proxy** 방식으로 바꾸고, backend CORS 를 `allowedOriginPatterns` 로 전환해 공인 IP 외부 접속 시에도 하드코딩 0 으로 동작하게 정리. 공유기 UPnP 로 5173/5174 포트 매핑, api 8080 은 공유기 포트 충돌로 외부 18080 로 매핑.
-2. **리팩토링 지침서** `docs/REFACTORING-GUIDELINES.ko.md` **v1.5** 로 정착. 공통 원칙 7 + FE/BE 가이드 + PR 체크리스트 + §8 사례 2건 기록.
-3. **프론트엔드 리팩토링 9커밋 완료** — queryKey factory, 500+줄 페이지 분해, 인라인 스타일 → utility class, i18next 전면 도입, optional chain/fixture 복원, polish (aria/invalidate/주석), supplier-profile + discovery hook 테스트, AsyncBoundary 도입, as-any 제거.
-4. **E2E 검증** Playwright 45/45 + vitest 105+15/120 + 공인 IP × 3역할 read/write flow + 권한 가드 모두 green. 백엔드 Mongo seed 누락 이슈 1건 발견 후 즉시 복구.
+1. **인프라/환경** — Vite dev server 를 **same-origin proxy** 방식으로 바꾸고, backend CORS 를 `allowedOriginPatterns` 로 전환해 공인 IP 외부 접속 시에도 하드코딩 0 으로 동작. 공유기 UPnP 로 5173/5174 매핑.
+2. **리팩토링 지침서** `docs/REFACTORING-GUIDELINES.ko.md` **v1.5** 로 정착. 공통 원칙 + FE/BE 가이드 + PR 체크리스트 + §8 사례 2건.
+3. **프론트엔드 리팩토링 9커밋** — queryKey factory, 500+줄 페이지 분해, 인라인 스타일 → utility class, i18next 전면 도입, fixture 복원, polish, hook 테스트, AsyncBoundary, as-any 제거.
+4. **백엔드 리팩토링 7커밋** — `StorageProperties` 외부화 + 누적 test drift 청소, `var`/`!!`/URL 하드코딩 정리, Mongo aggregation 이관, `@Transactional` 위치 교정, command-domain 28곳의 `ResponseStatusException` → 도메인 sealed exception, command-domain-* unit test 자리 확립. 모든 상세는 `docs/backend-refactor-2026-04-19.md`.
+5. **E2E 검증** Playwright 45/45 + vitest 105+15 + `./gradlew test` 전 모듈 SUCCESSFUL + 공인 IP × 3역할 read/write 전부 green. 백엔드 Mongo seed 누락 이슈 1건 발견 후 즉시 복구.
 
-**다음 액션 (우선순위)**
+**다음 액션**: `.sisyphus/open-items.md` 에 10 항목 정리. 우선 후보는 Phase 2 Task 02~07 착수, 또는 OP-1 Mongo 재시드 운영 가이드, OP-2 CI 강화.
 
-- (A) **백엔드 리팩토링** — 지침서 §3 기반. `@Value → @ConfigurationProperties`, `!!` 제거, CQRS projection 경계 점검, N+1 감지, domain 예외 sealed class, Kotlin 관용. 이번 세션에서 프론트에 쓴 밀도와 동일하게. 규모 L.
-- (B) Phase 2 Task 02~07 — 원래 로드맵. 프론트 리팩토링이 Task 02(router warning, README) 일부를 흡수했으나 별도 task 로 정리 필요할 수 있음.
-- (C) 운영 가이드 보강 — 이번에 만난 Mongo seed 사고 재발 방지용 "스키마 변경 후 재시드" 안내 + CI 강화.
-
-사용자 발화 마지막: **"추천대로 ㄱㄱ"** → 즉 B(handoff) 진행 중. 다음은 A(백엔드 리팩토링) 예정.
+사용자 발화 마지막 시점: 리팩토링 사이클 매듭 + 미결사항 문서화 완료. 새 세션은 기능 작업 (Phase 2 Task 03~07) 으로 복귀 가능.
 
 ---
 
@@ -33,6 +32,16 @@
 3. 리팩토링 지침서 최초 작성 (v1.0) + Vite proxy, CORS allowedOriginPatterns 2사례 §8 에 기록.
 4. 프론트 전수 리팩토링 분석 → 권장 순서 (#2 쿼리키 → #4 페이지 → #3 스타일 → #1 i18n → #5/#7/#8 polish → #10 테스트 → #11 AsyncBoundary) 대로 전부 실행.
 5. E2E + 리뷰 실행. 백엔드 Mongo seed 누락 발견 → 복구.
+6. 백엔드 리팩토링 사이클 (지침서 §3 기반, 원래 권장안 재정렬 후 bottom-up):
+   - `StorageProperties` @ConfigurationProperties + 누적 test drift 청소 (`./gradlew test` 최초로 전 모듈 green)
+   - polish: `var` 제거, `!!` 제거, URL 하드코딩을 private helper 로
+   - `api-spec.md §2.5` 에 에러 code fallback 규약 (`status × 10`) 명시
+   - `SupplierQueryService.categories/regions` 를 Mongo `@Aggregation` pipeline 으로
+   - `@Transactional` 을 domain (NoticeCommandService) → application layer 로 이동
+   - command-domain 6개 서비스 28곳의 `ResponseStatusException` → 17개 도메인 sealed exception + `GlobalApiExceptionHandler` 매핑 추가
+   - `RequestCommandServiceTest` 를 api-server → command-domain-request 로 이동 + `NoticeCommandServiceTest` 신규
+   - 상세 문서 `docs/backend-refactor-2026-04-19.md` 에 §1~§7 기록
+7. 미결 항목 10개 `.sisyphus/open-items.md` 로 정리 (backend 3 / frontend 3 / 운영 3 / 로드맵 1).
 
 ---
 
@@ -40,24 +49,45 @@
 
 이전 세션 마지막: `b5e4cca docs(phase2): record task 01 evidence + handoff`
 
-이후 추가된 커밋:
+이후 추가된 커밋 (시간순):
 
+**프론트 리팩토링 사이클**
 ```
-e0c16b2 refactor(fe): introduce Vite proxy for same-origin API calls
-d9e8132 refactor(be): switch CORS to allowedOriginPatterns, drop yml list
-d07d2d0 docs(refactor): add refactoring guidelines with applied cases
-df682b8 refactor(fe): centralize TanStack Query keys in per-feature factories
-04d4158 refactor(fe): split oversized pages into focused components
-0b71239 refactor(fe): replace inline styles with shared.css utility classes
-4b022c5 refactor(fe): introduce i18next with per-feature namespaces
-38f77c6 fix(fe): restore optional chains and align test fixtures for string typing
-dfbcc98 refactor(fe): polish — aria-label, tighter invalidation, comment cleanup
-4546c44 test(fe): add hook unit tests for supplier-profile and discovery
-0faaa1c refactor(fe): introduce AsyncBoundary for loading/error/empty states
-3c31eaa refactor(fe): drop as-any and tighten useWithdrawQuote signature
+e0c16b2  refactor(fe): introduce Vite proxy for same-origin API calls
+d9e8132  refactor(be): switch CORS to allowedOriginPatterns, drop yml list
+d07d2d0  docs(refactor): add refactoring guidelines with applied cases
+df682b8  refactor(fe): centralize TanStack Query keys in per-feature factories
+04d4158  refactor(fe): split oversized pages into focused components
+0b71239  refactor(fe): replace inline styles with shared.css utility classes
+4b022c5  refactor(fe): introduce i18next with per-feature namespaces
+38f77c6  fix(fe): restore optional chains and align test fixtures for string typing
+dfbcc98  refactor(fe): polish — aria-label, tighter invalidation, comment cleanup
+4546c44  test(fe): add hook unit tests for supplier-profile and discovery
+0faaa1c  refactor(fe): introduce AsyncBoundary for loading/error/empty states
+3c31eaa  refactor(fe): drop as-any and tighten useWithdrawQuote signature
 ```
 
-**12개 커밋**, main HEAD = `3c31eaa`.
+**중간 handoff 스냅샷**
+```
+392c094  docs(phase2): session handoff for 2026-04-19  (이 파일의 v1.0)
+```
+
+**백엔드 리팩토링 사이클**
+```
+8ec62ab  refactor(be): externalize storage config and fix accumulated test drift
+b86294d  refactor(be): polish — drop var, remove !!, extract URL builder
+676566c  docs(api): document error code convention and HTTP-status fallback
+3c4edc5  perf(be): move category/region counts to Mongo aggregation
+634f3a7  docs: backend refactor notes for 2026-04-19 session
+09b4e46  refactor(be): move @Transactional from domain to application layer
+1601a49  docs(be): add §5 @Transactional relocation notes to refactor doc
+6b536a5  refactor(be): replace ResponseStatusException with domain exceptions in command domains
+de78901  docs(be): add §6 domain exception relocation notes to refactor doc
+65cc79f  test(be): establish command-domain unit test seats for request and notice
+133a93d  docs: track open follow-ups in .sisyphus/open-items.md
+```
+
+**총 23개 커밋** (프론트 12 + handoff 1 + 백엔드 10 + open-items 1). 본 파일 최신판은 별도 커밋.
 
 ---
 
@@ -78,17 +108,20 @@ dfbcc98 refactor(fe): polish — aria-label, tighter invalidation, comment clean
 
 | 항목 | 값 |
 |---|---|
-| type-check main-site | **0** (이전 세션 시작 시 40) |
-| type-check admin-site | **0** (이전 세션 시작 시 5) |
+| FE type-check main-site | **0** (이전 세션 시작 시 40) |
+| FE type-check admin-site | **0** (이전 세션 시작 시 5) |
 | vitest main-site | **105/105** (기존 92 + 신규 13) |
 | vitest admin-site | **15/15** |
 | Playwright e2e | **45/45** |
+| BE `./gradlew test` 전 모듈 | **BUILD SUCCESSFUL** (이번 세션 전엔 한 번도 통과 못 하던 상태) |
 | 공인 IP 읽기 smoke | **21/21** |
 | 권한 가드 | **6/6** |
-| 리터럴 queryKey (production) | **0** |
-| 사용자 가시 한국어 인라인 | **0** (주석 제외) |
-| production `as any` | **0** |
+| 리터럴 queryKey (production FE) | **0** |
+| 사용자 가시 한국어 인라인 (FE) | **0** (주석 제외) |
+| production `as any` (FE) | **0** |
 | 하드코딩 URL/IP/CORS origin | **0** |
+| command-domain `ResponseStatusException` | **0곳** (이전 28곳) |
+| command-domain `@Transactional` 잘못된 위치 | **0곳** (이전 Notice 에 5곳) |
 
 ---
 
@@ -105,9 +138,17 @@ dfbcc98 refactor(fe): polish — aria-label, tighter invalidation, comment clean
 
 ### 5.2 백엔드 (이번 세션 변경분)
 
-- `ApiSecurityConfig.kt`, `AdminSecurityConfig.kt`: `allowedOrigins(String)` → `allowedOriginPatterns(String)`. 기본값 `http://*:5173,http://*:5174`. property key 도 `fsm.cors.allowed-origin-patterns` 로 변경.
-- `application-local.yml` (api-server, admin-server): `fsm.cors.*` 섹션 전체 삭제 (기본값으로 충분).
-- 나머지 백엔드 로직은 미변경.
+- **CORS**: `ApiSecurityConfig.kt`, `AdminSecurityConfig.kt` — `allowedOrigins` → `allowedOriginPatterns`. 기본값 `http://*:5173,http://*:5174`. yml 의 `fsm.cors.*` 섹션 전체 삭제.
+- **설정 외부화**: `shared-core/.../StorageProperties.kt` (`@ConfigurationProperties("fsm.storage")`). `LocalFileStorageService` + `NoticeApplicationService` 의 `@Value` 단건 주입 제거 → `StorageProperties` 생성자 주입. 각 Application 에 `@EnableConfigurationProperties(..., StorageProperties::class)`.
+- **Query 최적화**: `SupplierSearchViewRepository` 에 `@Aggregation` pipeline 2개 (`aggregateCategoryCounts`, `aggregateRegionCounts`) + projection DTO. `SupplierQueryService.categories/regions` 는 DB-side 집계로.
+- **Transactional**: `NoticeCommandService` 의 5 `@Transactional` 제거 → `NoticeApplicationService` 의 쓰기 유즈케이스 (create/update/uploadAttachment/deleteAttachment) 에 부여. 도메인은 Spring 의존성에서 해방.
+- **Exception 경계**: `shared-core/error/` 에 17 개 도메인 exception 추가 (Request 3 / QuoteOwnership 2 / SupplierProfile 4 / BusinessProfile 4 / Auth 3 / Message 1). `GlobalApiExceptionHandler` 에 매핑 추가. 6 command-domain 서비스 전수 교체. 테스트 assertion 도 `is <DomainException>` 으로 전환.
+- **Kotlin polish**: `NoticeApplicationService` 의 `var filtered` → filter 체인 / `SupplierQueryService` 의 `!!` → `?: return@filter true` / admin notice attachment URL → `private fun noticeAttachmentDownloadUrl(...)` helper.
+- **도메인 unit test 자리 확립**: `command-domain-request` 에 `RequestCommandServiceTest` 이동 (원래 api-server 에 있던 것, package + unused import 정리) + build.gradle 에 `kotlin.spring` + `reactor-test` 보강. `command-domain-notice/NoticeCommandServiceTest` 신규 (10 케이스). Spring context 불필요, StepVerifier + mock repository.
+- **Admin-server 테스트 인프라 수리**: `src/test/resources/application.yml` 신규 (H2 r2dbc + JWT test secret 32자 + Mongo autoconfigure exclude) + build.gradle 에 `testRuntimeOnly(libs.r2dbc.h2)`. 이번 이전엔 Admin 테스트가 한 번도 돌지 않던 상태.
+- **test fixture 누적 drift 청소**: string ↔ integer typing pass 이후 반영 안 됐던 `desiredVolume/monthlyCapacity/moq/unitPriceEstimate/leadTime/sampleCost/targetPriceMin/targetPriceMax` 필드 전부 정리 (sed 일괄).
+
+상세는 `docs/backend-refactor-2026-04-19.md` 참고 (§1~§7 + 공통 원칙 + 남은 과제).
 
 ---
 
@@ -173,30 +214,17 @@ dfbcc98 refactor(fe): polish — aria-label, tighter invalidation, comment clean
 
 ## 9. 미결 / 후속 작업
 
-### High (다음 세션 착수 후보)
+**전량 `.sisyphus/open-items.md` 로 이관**. 각 항목 형식: 배경 / 왜 지금 안 하는가 / 규모 / 다시 검토 트리거 / 참고.
 
-- **백엔드 리팩토링 (지침서 §3)**  
-  - `@Value("${x}")` → `@ConfigurationProperties` 이관
-  - `!!` non-null assertion 0 달성
-  - CQRS 경계 점검 (projection 이 application layer 에 있는지 등)
-  - N+1 감지 + projection 사용 명시
-  - Domain 예외 sealed class 분류
-  - `@ControllerAdvice` 전역 에러 매핑
-  - Kotlin 관용 (val 우선, extension 남발 금지 등)
-  - 테스트: domain/application/integration 3층 커버리지 상태 확인
+현재 10 항목 요약:
 
-### Medium
+- **백엔드**: BE-1 application layer ResponseStatusException 일관화, BE-2 listApproved aggregation 이관, BE-3 domain test 커버리지 확장
+- **프론트**: FE-1 AsyncBoundary admin-site 확장, FE-2 남은 페이지 Boy Scout, FE-3 packages/ui 승격
+- **운영**: OP-1 Mongo seed 재시드 가이드, OP-2 CI 강화 (type-check/lint/e2e), OP-3 GitHub branch protection
+- **로드맵**: PH-1 Phase 2 Task 02~07 재평가
+- **지침서**: DOC-1 §8 사례 누적 구조 정리
 
-- **운영 가이드 보강**: Mongo seed 재시드 규약을 `LOCAL-RUN-GUIDE.ko.md` 나 `docs/REFACTORING-GUIDELINES.ko.md §8` 에 기록.
-- **Phase 2 Task 02~07** 재평가: 프론트 리팩토링이 흡수한 범위 확인 후 남은 task 재계획.
-- **CI 강화**: 현재 workflow 가 type-check/lint 포함하는지 검토. 없다면 추가.
-- **AsyncBoundary 확장**: admin-site 에 동일 패턴 적용 + `packages/ui` 승격.
-
-### Low
-
-- GitHub branch protection (Pro 업그레이드 시)
-- 프론트 남은 페이지들의 AsyncBoundary 마이그레이션 (Boy Scout)
-- packages/ui 에 spacing/typography 토큰 scale 추가 (기본 utility class 로 이미 커버됨, 추가 토큰 필요한지 판단 후)
+해결된 High 는 전부 이번 세션에서 처리 (백엔드 리팩토링 #3/#4/#5/#6/#7/#8/#9/#1/#10 완결). 남은 것은 현 시점 필수 아님.
 
 ---
 
@@ -230,4 +258,5 @@ dfbcc98 refactor(fe): polish — aria-label, tighter invalidation, comment clean
 
 | 버전 | 날짜 | 변경 |
 |---|---|---|
-| 1.0 | 2026-04-19 | 초판. 2026-04-17 이후 세션 전체 기록. |
+| 1.0 | 2026-04-19 | 초판. 2026-04-17 이후 프론트 리팩토링 + E2E 까지 기록. |
+| 1.1 | 2026-04-19 | 백엔드 리팩토링 사이클 (7커밋) + open-items 분리 반영. §0/§1/§2/§4/§5.2/§9/§12 갱신. |
