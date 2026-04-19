@@ -117,6 +117,13 @@ HTTP 4xx/5xx 상태코드와 함께:
 |------|------|------|
 | field | string | 입력 필드 경로 |
 | message | string | 사용자 친화 메시지 |
+
+**Code 규약**:
+- 성공: `code = 100` (고정)
+- 4자리 정수. 도메인별 specific code 는 §5 에 정의
+- 매핑되지 않은 `ResponseStatusException` 은 fallback 으로 `HTTP status × 10`
+  을 사용 (예: 404 → `4040`, 500 → `5000`). 새 도메인 code 추가 시 이 범위와
+  겹치지 않도록 할당 (예: 403 대역은 `4031~4039`, fallback `4030` 은 예약).
 | reason | string | 서버 검증 사유 키 또는 설명 |
 | rejectedValue | any | 필요 시 잘못된 입력값 |
 
