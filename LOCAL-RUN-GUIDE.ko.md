@@ -143,6 +143,31 @@ export DOCKER_CONTEXT=colima
 - 현재 `02-mock-data.sql`은 최소한의 marker 성격이 강합니다.
 - 즉, “완성된 데모 계정 세트”가 자동으로 깔리는 구조는 아닙니다.
 
+### 시드 파일을 수정했다면 **반드시** 재시드
+
+MongoDB 의 `docker-entrypoint-initdb.d/` 는 **컨테이너 초기화 시 한 번만** 실행됩니다. 따라서:
+
+- `backend/docker/mongodb/init/02-seed-read-models.js` 를 수정해도,
+- Docker volume (`backend_mongodb-data`) 이 이미 초기화된 상태라면 **자동으로 재실행되지 않습니다**.
+
+스크립트 자체는 idempotent (`_id: /seed_/` 패턴으로 기존 문서 `deleteMany` 후 재삽입) 하므로, 아래 명령을 **수동 실행** 해야 최신 seed 가 반영됩니다:
+
+```bash
+cd backend
+./scripts/local/seed-mongodb.sh
+# Colima 를 쓰는 경우
+DOCKER_CONTEXT=colima ./scripts/local/seed-mongodb.sh
+```
+
+**체크 포인트** (재시드 필요 신호):
+- 백엔드가 "Failed to instantiate … Document" 류 5xxx 에러를 뱉을 때
+- seed 스크립트에 새 필드가 추가됐을 때 (예: `requesterUserId`, `updatedAt` 등)
+- 새 view collection 추가 / 기존 collection schema 변경 시
+
+MariaDB 쪽 seed 도 동일 원리. `02-mock-data.sql` 수정 시 `./scripts/local/seed-mariadb.sh` 재실행.
+
+> 2026-04-19 세션에 실제로 `requester_request_summary_view` 문서에 `requesterUserId/updatedAt` 필드 누락으로 견적 제출 API 가 code 5000 에러를 냈고, `./scripts/local/seed-mongodb.sh` 수동 재실행으로 복구. 상세는 `docs/REFACTORING-GUIDELINES.ko.md §8` 사례 3.
+
 ---
 
 ## 7. backend 서버 실행

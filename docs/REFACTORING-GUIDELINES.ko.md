@@ -348,6 +348,23 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 
 ---
 
+### 사례 3 — Mongo seed 누락 → 재시드 규약 명시화 (2026-04-19)
+
+**증상**: supplier 가 `POST /api/requests/{id}/quotes` (견적 제출) 호출 시 HTTP 200 + 바디 `code: 5000 / message: "Failed to instantiate RequesterRequestSummaryDocument ... requesterUserId null"`. 모든 open 의뢰에서 일관 재현.
+
+**원인**: Mongo volume (`backend_mongodb-data`) 이 persisted 된 상태에서 seed 스크립트 (`02-seed-read-models.js`) 만 업데이트되고 **재실행되지 않음**. `docker-entrypoint-initdb.d/` 는 컨테이너 초기화 시 한 번만 실행. 결과적으로 `requester_request_summary_view` 문서에 후에 추가된 `requesterUserId`, `updatedAt` 필드가 누락된 상태로 남음 → Kotlin data class 생성자가 non-null `String` 기대하나 null 이 넘어와 500.
+
+스크립트 자체는 이미 idempotent 했음 (`_id: /seed_/` deleteMany + re-insert). 코드 변경 불필요.
+
+**조치**: `./scripts/local/seed-mongodb.sh` 수동 실행 → seed 복구 → 견적 제출 flow 200. 운영 규약 한 단락을 `LOCAL-RUN-GUIDE.ko.md §6` 에 추가 ("시드 파일 수정 시 반드시 재시드" + 체크 포인트).
+
+**교훈**:
+1. **Init-once 스크립트를 수정했다면 "자동 재실행" 을 기대하지 말 것.** Docker `initdb.d` / DB 마이그레이션 등 일회성 초기화 메커니즘은 수정해도 기존 상태를 덮지 않는다.
+2. **스크립트의 멱등성 != 자동 적용**. "다시 돌리면 같은 결과" 라는 것은 운영자가 명시적으로 돌릴 때의 이야기. 재실행 조건을 운영 문서에 명시해야 한다.
+3. **에러 스택에서 "생성자 인스턴스화 실패 + null 필드" 는 schema-code drift 를 의심하는 신호**. 최근 코드/DTO 변경이 있었는지 + seed 가 최신인지 둘 다 체크.
+
+---
+
 ## §9. 관련 문서
 
 - `api-spec.md` — API 계약의 SSOT.
@@ -367,3 +384,4 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 | 1.3 | 2026-04-19 | §2.6 강화: 정적 style 값은 utility class 우선, 동적만 인라인 허용. |
 | 1.4 | 2026-04-19 | §2.9 강화: 사용자 가시 텍스트는 i18n 리소스 강제, useTranslation + namespace 규약 명시. |
 | 1.5 | 2026-04-19 | §2.5.2 추가: AsyncBoundary 로 loading/error/empty 패턴 공통화. |
+| 1.6 | 2026-04-19 | §8 사례 3 추가: Mongo seed 누락 → 재시드 규약 운영 문서화 (LOCAL-RUN-GUIDE.ko.md §6). |
