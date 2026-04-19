@@ -6,6 +6,11 @@ import dev.riss.fsm.shared.api.ApiSuccessResponse
 import dev.riss.fsm.shared.api.PaginationMeta
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,7 +28,12 @@ class SupplierDiscoveryController(
     private val supplierQueryService: SupplierQueryService,
 ) {
     @GetMapping
-    @Operation(summary = "List approved suppliers", description = "Returns approved and visible supplier search view entries")
+    @Operation(summary = "List approved suppliers", description = "Returns approved and visible supplier search view entries. 정렬/필터는 DB-side Mongo query 로 처리됨.")
+    @ApiResponse(
+        responseCode = "200",
+        description = "Supplier list",
+        content = [Content(examples = [ExampleObject(value = "{\"code\":100,\"message\":\"Success\",\"data\":[{\"profileId\":\"sprof_1\",\"companyName\":\"Example Foods\",\"region\":\"수도권\",\"categories\":[\"bakery\"],\"monthlyCapacity\":\"1,000kg\",\"moq\":\"100kg\",\"oemAvailable\":true,\"odmAvailable\":false,\"verificationState\":\"approved\",\"exposureState\":\"visible\",\"logoUrl\":null}],\"meta\":{\"page\":1,\"size\":20,\"totalElements\":8,\"totalPages\":1,\"hasNext\":false,\"hasPrev\":false}}")])]
+    )
     fun list(
         @Parameter(description = "Company name keyword")
         @RequestParam(required = false) keyword: String?,
@@ -92,6 +102,12 @@ class SupplierDiscoveryController(
 
     @GetMapping("/{supplierId}")
     @Operation(summary = "Get supplier detail", description = "Returns supplier detail read model")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Supplier detail"),
+            ApiResponse(responseCode = "404", description = "Supplier not found", content = [Content(schema = Schema(ref = "#/components/schemas/ApiErrorResponse"))])
+        ]
+    )
     fun detail(@PathVariable supplierId: String): Mono<ApiSuccessResponse<SupplierDetailResponse>> {
         return supplierQueryService.detail(supplierId)
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Supplier not found")))

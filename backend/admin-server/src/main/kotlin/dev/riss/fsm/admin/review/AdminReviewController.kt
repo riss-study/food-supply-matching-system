@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -96,16 +97,53 @@ class AdminReviewController(
     }
 
     @PostMapping("/{reviewId}/approve")
+    @Operation(summary = "Approve review", description = "공급사 검수 제출 건을 승인. exposureState 는 approved 로 변경되고 audit_log 에 기록됨.")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Review approved",
+                content = [Content(examples = [ExampleObject(value = "{\"code\":100,\"message\":\"Review approved\",\"data\":{\"reviewId\":\"vsub_1\",\"state\":\"approved\"}}")])]
+            ),
+            ApiResponse(responseCode = "403", description = "관리자 권한 없음", content = [Content(schema = Schema(ref = "#/components/schemas/ApiErrorResponse"))]),
+            ApiResponse(responseCode = "404", description = "리뷰 없음", content = [Content(schema = Schema(ref = "#/components/schemas/ApiErrorResponse"))]),
+            ApiResponse(responseCode = "409", description = "이미 결정됨", content = [Content(schema = Schema(ref = "#/components/schemas/ApiErrorResponse"))])
+        ]
+    )
     fun approve(@AuthenticationPrincipal principal: AuthenticatedUserPrincipal, @PathVariable reviewId: String, @RequestBody request: ReviewDecisionRequest): Mono<ApiSuccessResponse<ReviewDecisionResponse>> {
         return service.approve(principal, reviewId, request).map { ApiSuccessResponse(message = "Review approved", data = it) }
     }
 
     @PostMapping("/{reviewId}/hold")
+    @Operation(summary = "Hold review", description = "검수를 보류 처리. 사유는 request body 의 note 에 기록되며 audit_log 에 반영.")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Review put on hold",
+                content = [Content(examples = [ExampleObject(value = "{\"code\":100,\"message\":\"Review put on hold\",\"data\":{\"reviewId\":\"vsub_1\",\"state\":\"hold\"}}")])]
+            ),
+            ApiResponse(responseCode = "403", description = "관리자 권한 없음", content = [Content(schema = Schema(ref = "#/components/schemas/ApiErrorResponse"))]),
+            ApiResponse(responseCode = "404", description = "리뷰 없음", content = [Content(schema = Schema(ref = "#/components/schemas/ApiErrorResponse"))])
+        ]
+    )
     fun hold(@AuthenticationPrincipal principal: AuthenticatedUserPrincipal, @PathVariable reviewId: String, @RequestBody request: ReviewDecisionRequest): Mono<ApiSuccessResponse<ReviewDecisionResponse>> {
         return service.hold(principal, reviewId, request).map { ApiSuccessResponse(message = "Review put on hold", data = it) }
     }
 
     @PostMapping("/{reviewId}/reject")
+    @Operation(summary = "Reject review", description = "검수를 반려 처리. 사유는 request body 의 note 에 기록되며 audit_log 에 반영.")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Review rejected",
+                content = [Content(examples = [ExampleObject(value = "{\"code\":100,\"message\":\"Review rejected\",\"data\":{\"reviewId\":\"vsub_1\",\"state\":\"rejected\"}}")])]
+            ),
+            ApiResponse(responseCode = "403", description = "관리자 권한 없음", content = [Content(schema = Schema(ref = "#/components/schemas/ApiErrorResponse"))]),
+            ApiResponse(responseCode = "404", description = "리뷰 없음", content = [Content(schema = Schema(ref = "#/components/schemas/ApiErrorResponse"))])
+        ]
+    )
     fun reject(@AuthenticationPrincipal principal: AuthenticatedUserPrincipal, @PathVariable reviewId: String, @RequestBody request: ReviewDecisionRequest): Mono<ApiSuccessResponse<ReviewDecisionResponse>> {
         return service.reject(principal, reviewId, request).map { ApiSuccessResponse(message = "Review rejected", data = it) }
     }

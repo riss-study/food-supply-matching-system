@@ -10,7 +10,7 @@
 | **기간** | 1.5-2일 |
 | **스토리 포인트** | 5 |
 | **작업자** | Backend |
-| **상태** | 🔴 Not Started |
+| **상태** | 🟢 Done (2026-04-19) |
 | **Can Parallel** | YES (P2-03, P2-04와 병렬 가능) |
 | **Blocks** | 없음 |
 | **Blocked By** | P2-01 (CI baseline) |
@@ -27,17 +27,17 @@ Phase 1은 code-first OpenAPI baseline에서 의도적으로 멈췄다. 본 task
 
 ## 현재 진행 상태
 
-- 메인 Task 상태: 🔴 Not Started
-- 메모: api-server / admin-server 모두 `/swagger-ui.html` 가용. v3/api-docs 200. 본문 품질 점검은 미실시.
+- 메인 Task 상태: 🟢 Done (2026-04-19)
+- 메모: 전후 dump 저장 (`.sisyphus/evidence/phase2-task-05-before/after-*.json`). 전후 차이: global security 제거, version 0.1.0→0.2.0, examples 6~7개 등록, AdminReviewController action 3종 annotation 보강.
 
 | SubTask | 상태 | 메모 |
 |---------|------|------|
-| 5.1 | 🔴 Not Started | 두 서버 OpenAPI 스펙 dump 후 누락/모호 항목 audit |
-| 5.2 | 🔴 Not Started | 공개 API (`/api/notices`, `/api/suppliers` 등) 예제 보강 |
-| 5.3 | 🔴 Not Started | 인증 필요 API에 JWT scheme 일관 표시 |
-| 5.4 | 🔴 Not Started | 에러 응답 envelope 표준 예제 |
-| 5.5 | 🔴 Not Started | Tag 정리 + summary/description 한글화 일관성 |
-| 5.6 | 🔴 Not Started | (선택) OpenAPI snapshot test |
+| 5.1 | 🟢 Done | 전후 JSON dump 저장. 주요 gap: 글로벌 security bug, action endpoint annotation 부족, 예제 부재 확인. |
+| 5.2 | 🟢 Done | `/api/notices`, `/api/suppliers` list/detail 에 realistic example 추가. pagination meta 예제 포함. |
+| 5.3 | 🟢 Done | 글로벌 `addSecurityItem(bearerAuth)` 제거. 인증 endpoint 는 기존 `@SecurityRequirement` 로 유지 (api 36/11, admin 13/3). |
+| 5.4 | 🟢 Done | `ApiErrorResponse` 스키마 + `errors[]` 배열 + 7개 표준 예제 (4000/4011/4030-4035/4041/409x/4221/5000). |
+| 5.5 | 🟢 Done | Info description 한글화, 실 도메인 exception code 로 예제 맞춤. Tag 는 기존 @Tag 유지. |
+| 5.6 | ⚪ Skipped | 선택 항목. OpenAPI snapshot test 는 현 단계 noise-to-signal 이 낮다고 판단. Task 07 이후 재검토. |
 
 ---
 

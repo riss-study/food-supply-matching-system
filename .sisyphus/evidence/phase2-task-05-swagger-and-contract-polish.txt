@@ -1,0 +1,36 @@
+=== Phase 2 Task 05 Swagger polish evidence (2026-04-19) ===
+
+## Before (baseline, stored as phase2-task-05-before-{api,admin}.json)
+
+- api-server version 0.1.0, admin-server version 0.1.0
+- Global `security: [bearerAuth]` applied to ALL endpoints including public ones (bug)
+- ApiErrorResponse schema minimal (code + message + traceId, no errors[] array)
+- No reusable examples
+- AdminReviewController: approve/hold/reject without @Operation or @ApiResponse
+
+## After
+
+- api-server version 0.2.0, admin-server version 0.2.0
+- Global security REMOVED from both configs — per-controller/method @SecurityRequirement only
+  - api: 36 endpoints with per-op security, 11 public (auth/signup/login, notices list/detail, suppliers list/detail/categories/regions, bootstrap, swagger-ui)
+  - admin: 13 endpoints with per-op security, 3 public (admin login, bootstrap, swagger-ui)
+- Schemas registered: ApiErrorResponse, ApiErrorDetail, ApiSuccessResponse, PaginationMeta
+- Reusable examples: ValidationError (4000), UnauthorizedError (4011), ForbiddenError (4035/4030), NotFoundError (4041), ConflictError (4091/4092), UnprocessableError (4221), InternalError (5000)
+- AdminReviewController approve/hold/reject: @Operation + @ApiResponses (200 + 403/404/409) added
+- SupplierDiscoveryController.detail / PublicNoticeController.detail: 404 @ApiResponse referencing ApiErrorResponse schema
+- SupplierDiscoveryController.list / PublicNoticeController.list: 200 @ApiResponse with realistic payload examples
+
+## Remaining (not done per subplan scope)
+
+- SubTask 5.6 OpenAPI snapshot test — marked optional; skipped
+- Per-controller tag naming polish (kebab-case auto-generated is acceptable; explicit @Tag already applied on main controllers)
+- swagger-ui.html itself has no summary (library-provided endpoint, out of scope)
+
+## Commands
+
+- Dump: curl -sf http://localhost:8080/v3/api-docs > phase2-task-05-after-api.json
+- Dump: curl -sf http://localhost:8081/v3/api-docs > phase2-task-05-after-admin.json
+
+## Build
+
+- ./gradlew :api-server:compileKotlin :admin-server:compileKotlin — BUILD SUCCESSFUL
