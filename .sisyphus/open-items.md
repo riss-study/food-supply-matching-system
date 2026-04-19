@@ -109,7 +109,7 @@
 - **왜 지금 안 하는가**: 최소 baseline 이 안착되었고 로컬에서 `./gradlew test`, `yarn type-check`, vitest, e2e 가 전부 green. CI 레벨 추가 검증은 규모 작지만 PR 정책과 연동되어야 의미가 큼.
 - **규모**: S~M
 - **추가 후보**:
-  - ~~type-check (`yarn workspace @fsm/main-site type-check`) 를 CI 에 포함~~ ✅ 이미 `frontend-ci.yml` 에 `yarn type-check` (전 워크스페이스 topological) 포함. Task 01 단계에서 반영되어 있음. 재확인 2026-04-19.
+  - ~~type-check (`yarn workspace @fsm/main-site type-check`) 를 CI 에 포함~~ ✅ 이미 `frontend-ci.yml` 에 `yarn type-check` (전 워크스페이스 topological) 포함. Task 01 단계에서 반영. **단, 2026-04-20 검증 시 `packages/utils` 가 `import.meta.env` 를 쓰는데 vite types 가 워크스페이스 밖이어서 TS2339 로 실패해 오던 것을 `462a43f` 에서 env.d.ts 추가로 수정.** 개별 앱 type-check 만 돌리던 과거에는 드러나지 않았음.
   - `grep` 으로 리터럴 queryKey / `as any` / 하드코딩 URL 감지하는 lint step
   - `yarn e2e` 를 nightly 또는 PR 라벨 기반으로 실행
 - **다시 검토 트리거**: PR 프로세스 정착 이후, 또는 외부 협업자가 들어올 때
@@ -173,3 +173,4 @@
 | 2026-04-19 | OP-1 해결 (b92dc79). |
 | 2026-04-19 | OP-2 type-check 항목은 Task 01 시점부터 이미 CI 에 포함됨을 확인 (022c887 이후). |
 | 2026-04-19 | Phase 2 Task 03~07 재평가: 03 축소, 04/05 진행, 06/07 이관. OP-4 (audit 검색 API) 신규. |
+| 2026-04-20 | CI 검증: frontend-ci `462a43f` (utils env.d.ts) 로 복구, backend-ci `5c3e03a` (docker exec) 로 복구. OP-2 note 보정. |
