@@ -1,7 +1,6 @@
 package dev.riss.fsm.command.notice
 
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.UUID
@@ -11,7 +10,6 @@ class NoticeCommandService(
     private val noticeRepository: NoticeRepository,
 ) {
 
-    @Transactional
     fun createNotice(
         title: String,
         body: String,
@@ -43,7 +41,6 @@ class NoticeCommandService(
         return noticeRepository.save(notice)
     }
 
-    @Transactional
     fun updateNotice(
         noticeId: String,
         title: String?,
@@ -60,7 +57,6 @@ class NoticeCommandService(
             }
     }
 
-    @Transactional
     fun publishNotice(noticeId: String): Mono<NoticeEntity> {
         return noticeRepository.findById(noticeId)
             .flatMap { existing ->
@@ -73,7 +69,6 @@ class NoticeCommandService(
             }
     }
 
-    @Transactional
     fun archiveNotice(noticeId: String): Mono<NoticeEntity> {
         return noticeRepository.findById(noticeId)
             .flatMap { existing ->
@@ -85,7 +80,6 @@ class NoticeCommandService(
             }
     }
 
-    @Transactional
     fun changeState(noticeId: String, newState: String): Mono<NoticeEntity> {
         return when (newState) {
             "draft" -> noticeRepository.findById(noticeId)

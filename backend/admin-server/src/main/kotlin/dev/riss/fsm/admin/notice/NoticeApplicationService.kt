@@ -15,6 +15,7 @@ import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
@@ -125,6 +126,7 @@ class NoticeApplicationService(
         })
     }
 
+    @Transactional
     fun create(
         principal: AuthenticatedUserPrincipal,
         request: CreateNoticeRequest,
@@ -171,6 +173,7 @@ class NoticeApplicationService(
         })
     }
 
+    @Transactional
     fun update(
         principal: AuthenticatedUserPrincipal,
         noticeId: String,
@@ -234,6 +237,7 @@ class NoticeApplicationService(
         })
     }
 
+    @Transactional
     fun uploadAttachment(
         principal: AuthenticatedUserPrincipal,
         noticeId: String,
@@ -303,6 +307,7 @@ class NoticeApplicationService(
         })
     }
 
+    @Transactional
     fun deleteAttachment(
         principal: AuthenticatedUserPrincipal,
         noticeId: String,
