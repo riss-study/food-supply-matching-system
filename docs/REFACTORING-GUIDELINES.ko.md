@@ -111,6 +111,28 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 - `invalidateQueries({ queryKey: ['quotes'] })` — factory 거치지 않은 광범위 invalidate. 의도면 `quoteKeys.all`로.
 - 파라미터 순서 다른 두 객체로 같은 요청 2회 캐시됨 — query function 내부 또는 factory 단계에서 정규화.
 
+#### 2.5.2 비동기 상태 렌더링 — AsyncBoundary
+
+- `shared/components/AsyncBoundary` 로 loading/error/empty/success 4상태 분기 공통화.
+- 각 페이지에서 `if (isLoading) ... if (error) ...` 같은 조기 반환 반복 제거.
+
+```tsx
+<AsyncBoundary
+  isLoading={isLoading}
+  error={error}
+  data={data}
+  loadingFallback={<p>{t("common:loading")}</p>}
+  errorFallback={<p>{t("common:errorOccurred")}</p>}
+  isEmpty={(d) => d.items.length === 0}
+  emptyFallback={<EmptyState />}
+>
+  {(data) => <Content data={data} />}
+</AsyncBoundary>
+```
+
+- `children` 은 render-function — 진입 시 `data` 는 non-nullable 로 narrowing.
+- 지금은 main-site 내부에만 존재. admin-site 도 필요해지면 `packages/ui` 로 승격.
+
 ### 2.6 스타일링
 - 색상/간격/폰트는 `packages/ui`의 토큰(`var(--xxx)`)만. 인라인 `#fff`, `16px` 금지.
 - **정적 style 값은 `shared.css`의 utility class 우선** — 예: `flex`, `flex-col`, `gap-8`, `mb-16`, `p-24`, `text-muted`, `text-base`, `font-bold`, `cursor-pointer`, `text-center`, `items-center`. 매핑 없는 경우에만 utility class 추가하거나 `var(--xxx)` 토큰 활용.
@@ -344,3 +366,4 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 | 1.2 | 2026-04-18 | §2.5에 Query Key Factory 규약 추가. 리터럴 queryKey 금지, feature별 factory 강제. |
 | 1.3 | 2026-04-19 | §2.6 강화: 정적 style 값은 utility class 우선, 동적만 인라인 허용. |
 | 1.4 | 2026-04-19 | §2.9 강화: 사용자 가시 텍스트는 i18n 리소스 강제, useTranslation + namespace 규약 명시. |
+| 1.5 | 2026-04-19 | §2.5.2 추가: AsyncBoundary 로 loading/error/empty 패턴 공통화. |
