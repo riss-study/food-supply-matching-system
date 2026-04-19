@@ -14,6 +14,7 @@
 | 3 | `676566c` | API 에러 코드 fallback 규약 문서화 | S (docs) |
 | 4 | `3c4edc5` | supplier category/region count → Mongo aggregation | M (perf) |
 | 5 | `09b4e46` | `@Transactional` 을 domain → application layer 로 이동 | M |
+| 6 | `6b536a5` | `command-domain-*` 의 `ResponseStatusException` → 도메인 sealed exception | L |
 
 검증 공통: `./gradlew test` 전 모듈 **BUILD SUCCESSFUL** + 공인 IP × 3역할 E2E curl 전부 200.
 
@@ -564,6 +565,185 @@ fun deleteAttachment(...): Mono<Void> { ... }
 
 ---
 
+## 6. `6b536a5` — `command-domain-*` 의 `ResponseStatusException` → 도메인 sealed exception
+
+### 배경
+- 6개 command-domain 서비스 (`RequestCommandService`, `QuoteCommandService`, `SupplierProfileCommandService`, `ThreadCommandService`, `RequesterBusinessProfileCommandService`, `AuthCommandService`) 가 총 **28 곳** 에서 `org.springframework.web.server.ResponseStatusException` 을 `throw` 하고 있었다.
+- 지침서 §3.1 "CQRS 경계 위반 — 도메인 서비스에서 HTTP/응답 타입 직접 사용" 에 직접 해당. 도메인 모듈이 Spring WebFlux 타입을 알면 순수 단위 테스트가 불가능해지고, 도메인 불변식 위반을 "HTTP status" 로만 표현하게 된다.
+- 일부 도메인 (Quote / Thread) 은 이미 `shared-core/error/` 에 sealed exception 을 쓰고 있었지만 **부분적**. Request / Supplier / Business / Auth / Message 부분은 전부 `ResponseStatusException`.
+- 문제는 도메인뿐 아니라 **테스트** 도 `assertTrue(error is ResponseStatusException)` + `HttpStatus.FORBIDDEN` 비교로 얽혀 있어 일괄 교체 필요.
+
+### 설계 원칙
+1. **의미 단위로 클래스**: "NotFound / OwnershipMismatch / StateTransition / AlreadyExists / InvalidCredentials" 같이 **무엇이 틀렸는가** 를 이름에 담는다.
+2. **Handler 한 곳 집중**: `GlobalApiExceptionHandler` (`shared-core`) 에만 exception → (HTTP status + code + message) 매핑을 둔다. 도메인은 exception 을 던질 뿐.
+3. **Code 는 기존 `api-spec.md §5.1` 재활용**: 이미 문서화된 code 숫자 (4011, 4032, 4033, 4035, 4041, 4091~4093, 4221, 4223, 5001, 4004) 에 exception 을 매핑. 새 숫자 추가 없음.
+
+### 변경 A: 신규 exception 파일 5개 + Thread 확장 (`shared-core/error/`)
+
+```kotlin
+// RequestExceptions.kt
+class RequestNotFoundException(override val message: String = "Request not found") : RuntimeException(message)
+class RequestAccessForbiddenException(override val message: String = "Not the request owner") : RuntimeException(message)
+class RequestStateTransitionException(override val message: String) : RuntimeException(message)
+
+// QuoteOwnershipExceptions.kt (기존 QuoteSubmission/UpdateForbidden 은 유지)
+class QuoteNotFoundException(override val message: String = "Quote not found") : RuntimeException(message)
+class QuoteOwnerMismatchException(override val message: String = "Not the quote owner") : RuntimeException(message)
+
+// SupplierProfileExceptions.kt
+class SupplierProfileAlreadyExistsException(...)
+class SupplierProfileNotFoundException(...)
+class ApprovedSupplierProfileImmutableException(...)
+class SupplierProfileStateImmutableException(...)
+
+// BusinessProfileExceptions.kt
+class BusinessProfileNotFoundException(...)
+class BusinessProfileAlreadySubmittedException(...)
+class ApprovedBusinessProfileImmutableException(...)
+class BusinessProfilePartialUpdateNotAllowedException(...)
+
+// AuthExceptions.kt
+class EmailAlreadyExistsException(...)
+class InvalidCredentialsException(...)
+class PasswordEncodingException(...)
+
+// ThreadExceptions.kt 에 추가
+class MessageContentRequiredException(...)
+```
+
+공통 부모 (`sealed class DomainException`) 는 **일부러 도입하지 않음** — 기존 thread/quote 가 평평한 구조였고 handler 매핑이 exception 별이라 부모가 불필요. 추후 공통 로깅/메타데이터 요구가 생기면 sealed hierarchy 로 승격.
+
+### 변경 B: `GlobalApiExceptionHandler` 에 17 개 매핑
+
+| Exception | HTTP | Code | §5.1 의미 |
+|---|---|---|---|
+| RequestNotFoundException | 404 | 4041 | Resource not found |
+| RequestAccessForbiddenException | 403 | 4035 | Not owner or wrong state |
+| RequestStateTransitionException | 403 | 4035 | 동일 (owner/state 통합) |
+| QuoteNotFoundException | 404 | 4041 | Resource not found |
+| QuoteOwnerMismatchException | 403 | 4035 | Quote ownership |
+| SupplierProfileAlreadyExistsException | 409 | 4092 | Profile exists |
+| SupplierProfileNotFoundException | 404 | 4041 | Resource not found |
+| ApprovedSupplierProfileImmutableException | 403 | 4033 | Cannot modify approved supplier |
+| SupplierProfileStateImmutableException | 422 | 4221 | Invalid field modification |
+| BusinessProfileNotFoundException | 404 | 4041 | Resource not found |
+| BusinessProfileAlreadySubmittedException | 409 | 4093 | Active submission exists |
+| ApprovedBusinessProfileImmutableException | 403 | 4032 | Cannot modify approved profile |
+| BusinessProfilePartialUpdateNotAllowedException | 422 | 4223 | Non-patchable field |
+| EmailAlreadyExistsException | 409 | 4091 | Duplicate email |
+| InvalidCredentialsException | 401 | 4011 | Invalid credentials |
+| PasswordEncodingException | 500 | 5001 | Internal server error |
+| MessageContentRequiredException | 400 | 4004 | Empty message |
+
+handler 예시:
+```kotlin
+@ExceptionHandler(RequestNotFoundException::class)
+fun handleRequestNotFound(e: RequestNotFoundException) =
+    ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+        ApiErrorResponse(code = 4041, message = e.message ?: "Request not found")
+    )
+
+@ExceptionHandler(RequestStateTransitionException::class)
+fun handleRequestStateTransition(e: RequestStateTransitionException) =
+    ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+        ApiErrorResponse(code = 4035, message = e.message ?: "Invalid request state")
+    )
+```
+
+### 변경 C: command service `throw` 교체 (Before/After 예시)
+
+**`RequestCommandService.kt`**
+
+Before:
+```kotlin
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
+...
+return requestRepository.findById(requestId)
+    .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+    .flatMap { request ->
+        if (request.requesterUserId != requesterUserId) {
+            return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+        }
+        if (request.state != "draft") {
+            return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Only draft requests can be published"))
+        }
+        ...
+    }
+```
+
+After:
+```kotlin
+import dev.riss.fsm.shared.error.RequestAccessForbiddenException
+import dev.riss.fsm.shared.error.RequestNotFoundException
+import dev.riss.fsm.shared.error.RequestStateTransitionException
+...
+return requestRepository.findById(requestId)
+    .switchIfEmpty(Mono.error(RequestNotFoundException()))
+    .flatMap { request ->
+        if (request.requesterUserId != requesterUserId) {
+            return@flatMap Mono.error(RequestAccessForbiddenException())
+        }
+        if (request.state != "draft") {
+            return@flatMap Mono.error(
+                RequestStateTransitionException("Only draft requests can be published")
+            )
+        }
+        ...
+    }
+```
+
+나머지 5개 서비스도 동일 패턴. `HttpStatus` / `ResponseStatusException` import 전부 제거.
+
+### 변경 D: 테스트 assertion 교체
+
+Before (예: `QuoteCommandServiceTest`):
+```kotlin
+.expectErrorSatisfies { error ->
+    assertTrue(error is ResponseStatusException)
+    assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+}
+```
+
+After:
+```kotlin
+.expectErrorSatisfies { error ->
+    assertTrue(error is QuoteOwnerMismatchException)
+}
+```
+
+대상 테스트 파일:
+- `command-domain-quote/QuoteCommandServiceTest` — update-not-owner / select-non-owner
+- `command-domain-supplier/SupplierProfileCommandServiceTest` — approvedProfileCannotBeUpdated
+- `command-domain-thread/ThreadCommandServiceTest` — sendMessage-empty-payload
+- `command-domain-user/AuthCommandServiceTest` — register-duplicate / authenticate-invalid-password
+- `command-domain-user/RequesterBusinessProfileCommandServiceTest` — update-approved
+- `api-server/request/RequestCommandServiceTest` — publish-non-draft / close-non-open / cancel-closed / non-owner-cannot-update
+
+HTTP status 비교 코드는 삭제. HTTP 관심사는 `GlobalApiExceptionHandler` 단위 테스트 몫.
+
+### 의도적으로 *안* 건드린 범위
+
+- **Application layer 의 `ResponseStatusException`**: `RequestAccessGuard`, `PublicNoticeApplicationService`, `NoticeApplicationService` 등 `api-server` / `admin-server` 내부 application layer 는 그대로. 이 레이어는 HTTP 경계에 가까워 `ResponseStatusException` 이 허용 범위. 일관성 원하면 별도 커밋 라운드.
+- **Handler 의 `status × 10` fallback**: 기존 fallback 룰 유지. 매핑되지 않은 `ResponseStatusException` 은 여전히 `code = HTTP status × 10` (§3 문서화) 으로 응답.
+
+### 검증
+
+- `./gradlew test` (전 모듈) **BUILD SUCCESSFUL**
+- 공인 IP E2E smoke:
+  - 읽기 4/4 ✓, 3역할 인증 3/3 ✓
+  - `POST /api/auth/login { password: wrong }` → `http 401, code 4011, message "Invalid credentials"` ← `InvalidCredentialsException` 실전 매핑 확인
+  - `POST /api/requests/{closed}/publish` → `http 403, code 4035, message "Only draft requests can be published"` ← `RequestStateTransitionException` 실전 매핑 확인
+  - admin 공지 lifecycle `create → publish → archive` 전부 `code 100`
+
+### 이 리팩토링이 열어주는 것
+
+- **순수 단위 테스트 가능**: 도메인 서비스가 Spring WebFlux 타입을 몰라도 됨 → §10 ("command-domain-* 단위 테스트 추가") 가 실제로 가능해짐.
+- **의미 중심의 에러 계약**: API 클라이언트가 "403" 외에 code / 구체 exception message 로 처리 가능.
+- **일관성**: 여러 도메인에 걸친 "소유자 아님 / 상태 전이 실패 / 찾을 수 없음" 이 동일한 code 로 응답.
+
+---
+
 ## 공통 원칙 되짚기
 
 1. **SSOT**: StorageProperties(설정), noticeAttachmentDownloadUrl(URL).
@@ -577,6 +757,7 @@ fun deleteAttachment(...): Mono<Void> { ... }
 
 ## 남은 과제 (백엔드 리팩토링)
 
-- **#1**: `command-domain-*` 서비스의 `ResponseStatusException` 을 도메인 sealed exception 으로 교체. 규모 L, 도메인별 pilot 방식 권장 (Request → Quote → Notice → Supplier → Thread). `#5` (`@Transactional` 위치) 는 `09b4e46` 로 해결됨.
+- ~~**#1**: `command-domain-*` 서비스의 `ResponseStatusException` 을 도메인 sealed exception 으로 교체~~ — `6b536a5` 로 해결됨.
+- **Application layer 의 `ResponseStatusException` 일관화** (선택): `RequestAccessGuard`, `PublicNoticeApplicationService`, `NoticeApplicationService` 등도 도메인 exception 으로 묶을지 판단.
 - **#10**: `command-domain-*` 각 모듈에 순수 unit test 추가 (현재는 application layer 에 편중). 규모 L.
 - **listApproved aggregation 이관**: 데이터 증가 관찰 후 착수.
