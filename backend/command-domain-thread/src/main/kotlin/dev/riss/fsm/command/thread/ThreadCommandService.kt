@@ -6,9 +6,8 @@ import dev.riss.fsm.shared.error.ContactShareAlreadyRequestedException
 import dev.riss.fsm.shared.error.ContactShareApprovalConflictException
 import dev.riss.fsm.shared.error.ContactShareNotRequestedException
 import dev.riss.fsm.shared.error.ContactShareRevokeForbiddenException
-import org.springframework.http.HttpStatus
+import dev.riss.fsm.shared.error.MessageContentRequiredException
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.UUID
@@ -44,7 +43,7 @@ class ThreadCommandService(
 
     fun sendMessage(command: SendMessageCommand): Mono<MessageEntity> {
         if (command.body.isNullOrBlank() && command.attachmentIds.isNullOrEmpty()) {
-            return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Message body or attachmentIds is required"))
+            return Mono.error(MessageContentRequiredException())
         }
 
         return messageThreadRepository.findById(command.threadId)

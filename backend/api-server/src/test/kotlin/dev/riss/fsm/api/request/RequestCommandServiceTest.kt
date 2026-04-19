@@ -6,6 +6,8 @@ import dev.riss.fsm.command.request.RequestRepository
 import dev.riss.fsm.command.request.TargetedSupplierLinkRepository
 import dev.riss.fsm.command.supplier.SupplierProfileEntity
 import dev.riss.fsm.command.supplier.SupplierProfileRepository
+import dev.riss.fsm.shared.error.RequestAccessForbiddenException
+import dev.riss.fsm.shared.error.RequestStateTransitionException
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -14,8 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -170,8 +170,7 @@ class RequestCommandServiceTest {
 
         StepVerifier.create(requestCommandService.publish(requestId, requesterUserId))
             .expectErrorSatisfies { error ->
-                assertTrue(error is ResponseStatusException)
-                assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+                assertTrue(error is RequestStateTransitionException)
             }
             .verify()
     }
@@ -238,8 +237,7 @@ class RequestCommandServiceTest {
 
         StepVerifier.create(requestCommandService.close(requestId, requesterUserId))
             .expectErrorSatisfies { error ->
-                assertTrue(error is ResponseStatusException)
-                assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+                assertTrue(error is RequestStateTransitionException)
             }
             .verify()
     }
@@ -306,8 +304,7 @@ class RequestCommandServiceTest {
 
         StepVerifier.create(requestCommandService.cancel(requestId, requesterUserId, null))
             .expectErrorSatisfies { error ->
-                assertTrue(error is ResponseStatusException)
-                assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+                assertTrue(error is RequestStateTransitionException)
             }
             .verify()
     }
@@ -390,8 +387,7 @@ class RequestCommandServiceTest {
 
         StepVerifier.create(requestCommandService.update(requestId, differentUserId, updateCommand))
             .expectErrorSatisfies { error ->
-                assertTrue(error is ResponseStatusException)
-                assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+                assertTrue(error is RequestAccessForbiddenException)
             }
             .verify()
     }

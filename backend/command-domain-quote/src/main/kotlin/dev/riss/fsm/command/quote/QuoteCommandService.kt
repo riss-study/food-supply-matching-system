@@ -6,11 +6,13 @@ import dev.riss.fsm.command.thread.CreateThreadCommand
 import dev.riss.fsm.command.thread.MessageThreadEntity
 import dev.riss.fsm.command.thread.ThreadCommandService
 import dev.riss.fsm.shared.error.DuplicateActiveQuoteException
+import dev.riss.fsm.shared.error.QuoteNotFoundException
+import dev.riss.fsm.shared.error.QuoteOwnerMismatchException
 import dev.riss.fsm.shared.error.QuoteSubmissionForbiddenException
 import dev.riss.fsm.shared.error.QuoteUpdateForbiddenException
-import org.springframework.http.HttpStatus
+import dev.riss.fsm.shared.error.RequestAccessForbiddenException
+import dev.riss.fsm.shared.error.RequestNotFoundException
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
@@ -24,7 +26,7 @@ class QuoteCommandService(
 ) {
     fun submit(command: SubmitQuoteCommand): Mono<SubmittedQuoteResult> {
         return requestRepository.findById(command.requestId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .switchIfEmpty(Mono.error(RequestNotFoundException()))
             .flatMap { request ->
                 if (request.state != "open") {
                     return@flatMap Mono.error(QuoteSubmissionForbiddenException("Closed or cancelled requests cannot accept quotes"))
@@ -75,7 +77,7 @@ class QuoteCommandService(
         }
 
         return quoteRepository.findById(quoteId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Quote not found")))
+            .switchIfEmpty(Mono.error(QuoteNotFoundException()))
             .flatMap { quote ->
                 ensureQuoteOwnership(quote, supplierProfileId)
                 ensureSubmittedState(quote)
@@ -96,7 +98,7 @@ class QuoteCommandService(
 
     fun withdraw(quoteId: String, supplierProfileId: String): Mono<QuoteEntity> {
         return quoteRepository.findById(quoteId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Quote not found")))
+            .switchIfEmpty(Mono.error(QuoteNotFoundException()))
             .flatMap { quote ->
                 ensureQuoteOwnership(quote, supplierProfileId)
                 ensureSubmittedState(quote)
@@ -155,23 +157,23 @@ class QuoteCommandService(
 
     private fun loadQuoteWithRequest(quoteId: String): Mono<QuoteWithRequest> {
         return quoteRepository.findById(quoteId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Quote not found")))
+            .switchIfEmpty(Mono.error(QuoteNotFoundException()))
             .flatMap { quote ->
                 requestRepository.findById(quote.requestId)
-                    .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+                    .switchIfEmpty(Mono.error(RequestNotFoundException()))
                     .map { request -> QuoteWithRequest(quote, request) }
             }
     }
 
     private fun ensureQuoteOwnership(quote: QuoteEntity, supplierProfileId: String) {
         if (quote.supplierProfileId != supplierProfileId) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Not the quote owner")
+            throw QuoteOwnerMismatchException()
         }
     }
 
     private fun ensureRequestOwnership(request: RequestEntity, requesterUserId: String) {
         if (request.requesterUserId != requesterUserId) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner")
+            throw RequestAccessForbiddenException()
         }
     }
 

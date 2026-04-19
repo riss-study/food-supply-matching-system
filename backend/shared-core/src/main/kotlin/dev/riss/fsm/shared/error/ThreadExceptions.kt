@@ -23,3 +23,7 @@ class ContactShareRevokeForbiddenException(
 class ContactShareNotRequestedException(
     override val message: String = "Contact share has not been requested",
 ) : RuntimeException(message)
+
+class MessageContentRequiredException(
+    override val message: String = "Message body or attachmentIds is required",
+) : RuntimeException(message)

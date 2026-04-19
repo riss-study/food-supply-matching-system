@@ -1,9 +1,10 @@
 package dev.riss.fsm.command.request
 
+import dev.riss.fsm.shared.error.RequestAccessForbiddenException
+import dev.riss.fsm.shared.error.RequestNotFoundException
+import dev.riss.fsm.shared.error.RequestStateTransitionException
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -53,13 +54,13 @@ class RequestCommandService(
 
     fun update(requestId: String, requesterUserId: String, command: UpdateRequestCommand): Mono<RequestEntity> {
         return requestRepository.findById(requestId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .switchIfEmpty(Mono.error(RequestNotFoundException()))
             .flatMap { request ->
                 if (request.requesterUserId != requesterUserId) {
-                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+                    return@flatMap Mono.error(RequestAccessForbiddenException())
                 }
                 if (request.state !in setOf("draft", "open")) {
-                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Request can only be updated in draft or open state"))
+                    return@flatMap Mono.error(RequestStateTransitionException("Request can only be updated in draft or open state"))
                 }
 
                 val updatedEntity = request.copy(
@@ -80,13 +81,13 @@ class RequestCommandService(
 
     fun publish(requestId: String, requesterUserId: String): Mono<RequestEntity> {
         return requestRepository.findById(requestId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .switchIfEmpty(Mono.error(RequestNotFoundException()))
             .flatMap { request ->
                 if (request.requesterUserId != requesterUserId) {
-                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+                    return@flatMap Mono.error(RequestAccessForbiddenException())
                 }
                 if (request.state != "draft") {
-                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Only draft requests can be published"))
+                    return@flatMap Mono.error(RequestStateTransitionException("Only draft requests can be published"))
                 }
 
                 val publishedEntity = request.copy(
@@ -99,13 +100,13 @@ class RequestCommandService(
 
     fun close(requestId: String, requesterUserId: String): Mono<RequestEntity> {
         return requestRepository.findById(requestId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .switchIfEmpty(Mono.error(RequestNotFoundException()))
             .flatMap { request ->
                 if (request.requesterUserId != requesterUserId) {
-                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+                    return@flatMap Mono.error(RequestAccessForbiddenException())
                 }
                 if (request.state != "open") {
-                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Only open requests can be closed"))
+                    return@flatMap Mono.error(RequestStateTransitionException("Only open requests can be closed"))
                 }
 
                 val closedEntity = request.copy(
@@ -118,13 +119,13 @@ class RequestCommandService(
 
     fun cancel(requestId: String, requesterUserId: String, reason: String?): Mono<RequestEntity> {
         return requestRepository.findById(requestId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found")))
+            .switchIfEmpty(Mono.error(RequestNotFoundException()))
             .flatMap { request ->
                 if (request.requesterUserId != requesterUserId) {
-                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not the request owner"))
+                    return@flatMap Mono.error(RequestAccessForbiddenException())
                 }
                 if (request.state !in setOf("draft", "open")) {
-                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Only draft or open requests can be cancelled"))
+                    return@flatMap Mono.error(RequestStateTransitionException("Only draft or open requests can be cancelled"))
                 }
 
                 val cancelledEntity = request.copy(

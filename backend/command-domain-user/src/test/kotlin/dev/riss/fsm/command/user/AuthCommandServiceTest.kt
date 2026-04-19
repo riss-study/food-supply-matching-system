@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.any
 import org.mockito.Mockito.`when`
-import org.springframework.http.HttpStatus
+import dev.riss.fsm.shared.error.EmailAlreadyExistsException
+import dev.riss.fsm.shared.error.InvalidCredentialsException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
@@ -43,11 +43,9 @@ class AuthCommandServiceTest {
     fun `register rejects duplicate email`() {
         `when`(userAccountRepository.existsByEmail("dup@example.com")).thenReturn(Mono.just(true))
 
-        val error = assertThrows(ResponseStatusException::class.java) {
+        assertThrows(EmailAlreadyExistsException::class.java) {
             service.register("dup@example.com", "SecurePass123!", UserRole.SUPPLIER, "Example Supplier").block()
         }
-
-        assertEquals(HttpStatus.CONFLICT, error.statusCode)
     }
 
     @Test
@@ -61,10 +59,8 @@ class AuthCommandServiceTest {
         )
         `when`(userAccountRepository.findByEmail("user@example.com")).thenReturn(Mono.just(user))
 
-        val error = assertThrows(ResponseStatusException::class.java) {
+        assertThrows(InvalidCredentialsException::class.java) {
             service.authenticate("user@example.com", "wrong-password").block()
         }
-
-        assertEquals(HttpStatus.UNAUTHORIZED, error.statusCode)
     }
 }

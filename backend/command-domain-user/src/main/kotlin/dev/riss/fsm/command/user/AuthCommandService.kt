@@ -1,10 +1,11 @@
 package dev.riss.fsm.command.user
 
 import dev.riss.fsm.shared.auth.UserRole
-import org.springframework.http.HttpStatus
+import dev.riss.fsm.shared.error.EmailAlreadyExistsException
+import dev.riss.fsm.shared.error.InvalidCredentialsException
+import dev.riss.fsm.shared.error.PasswordEncodingException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.UUID
@@ -20,10 +21,10 @@ class AuthCommandService(
         return userAccountRepository.existsByEmail(email)
             .flatMap { exists ->
                 if (exists) {
-                    Mono.error(ResponseStatusException(HttpStatus.CONFLICT, "Email already exists"))
+                    Mono.error(EmailAlreadyExistsException())
                 } else {
                     val encodedPassword = passwordEncoder.encode(rawPassword)
-                        ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Password encoding failed")
+                        ?: throw PasswordEncodingException()
                     val entity = UserAccountEntity(
                         userId = "usr_${UUID.randomUUID()}",
                         email = email,
@@ -63,12 +64,12 @@ class AuthCommandService(
 
     fun authenticate(email: String, rawPassword: String): Mono<UserAccountEntity> {
         return userAccountRepository.findByEmail(email)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials")))
+            .switchIfEmpty(Mono.error(InvalidCredentialsException()))
             .flatMap { user ->
                 if (passwordEncoder.matches(rawPassword, user.passwordHash)) {
                     Mono.just(user)
                 } else {
-                    Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"))
+                    Mono.error(InvalidCredentialsException())
                 }
             }
     }

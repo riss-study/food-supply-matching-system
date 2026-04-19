@@ -8,7 +8,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.any
 import reactor.core.publisher.Mono
-import org.springframework.web.server.ResponseStatusException
+import dev.riss.fsm.shared.error.ApprovedSupplierProfileImmutableException
 import java.time.LocalDateTime
 
 class SupplierProfileCommandServiceTest {
@@ -76,7 +76,7 @@ class SupplierProfileCommandServiceTest {
             )
         )
 
-        assertThrows(ResponseStatusException::class.java) {
+        assertThrows(ApprovedSupplierProfileImmutableException::class.java) {
             service.update("usr_supplier", UpdateSupplierProfileCommand(companyName = "Updated Supplier")).block()
         }
     }

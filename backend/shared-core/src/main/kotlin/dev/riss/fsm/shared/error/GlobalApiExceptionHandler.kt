@@ -113,6 +113,114 @@ class GlobalApiExceptionHandler {
         )
     }
 
+    // ---- Request domain ----
+    @ExceptionHandler(RequestNotFoundException::class)
+    fun handleRequestNotFound(exception: RequestNotFoundException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            ApiErrorResponse(code = 4041, message = exception.message ?: "Request not found")
+        )
+
+    @ExceptionHandler(RequestAccessForbiddenException::class)
+    fun handleRequestAccessForbidden(exception: RequestAccessForbiddenException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(code = 4035, message = exception.message ?: "Not the request owner")
+        )
+
+    @ExceptionHandler(RequestStateTransitionException::class)
+    fun handleRequestStateTransition(exception: RequestStateTransitionException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(code = 4035, message = exception.message ?: "Invalid request state")
+        )
+
+    // ---- Quote ownership ----
+    @ExceptionHandler(QuoteNotFoundException::class)
+    fun handleQuoteNotFound(exception: QuoteNotFoundException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            ApiErrorResponse(code = 4041, message = exception.message ?: "Quote not found")
+        )
+
+    @ExceptionHandler(QuoteOwnerMismatchException::class)
+    fun handleQuoteOwnerMismatch(exception: QuoteOwnerMismatchException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(code = 4035, message = exception.message ?: "Not the quote owner")
+        )
+
+    // ---- Supplier profile ----
+    @ExceptionHandler(SupplierProfileAlreadyExistsException::class)
+    fun handleSupplierProfileAlreadyExists(exception: SupplierProfileAlreadyExistsException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4092, message = exception.message ?: "Supplier profile already exists")
+        )
+
+    @ExceptionHandler(SupplierProfileNotFoundException::class)
+    fun handleSupplierProfileNotFound(exception: SupplierProfileNotFoundException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            ApiErrorResponse(code = 4041, message = exception.message ?: "Supplier profile not found")
+        )
+
+    @ExceptionHandler(ApprovedSupplierProfileImmutableException::class)
+    fun handleApprovedSupplierProfileImmutable(exception: ApprovedSupplierProfileImmutableException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(code = 4033, message = exception.message ?: "Cannot modify approved supplier")
+        )
+
+    @ExceptionHandler(SupplierProfileStateImmutableException::class)
+    fun handleSupplierProfileStateImmutable(exception: SupplierProfileStateImmutableException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+            ApiErrorResponse(code = 4221, message = exception.message ?: "Profile not editable in current state")
+        )
+
+    // ---- Business profile ----
+    @ExceptionHandler(BusinessProfileNotFoundException::class)
+    fun handleBusinessProfileNotFound(exception: BusinessProfileNotFoundException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            ApiErrorResponse(code = 4041, message = exception.message ?: "Business profile not found")
+        )
+
+    @ExceptionHandler(BusinessProfileAlreadySubmittedException::class)
+    fun handleBusinessProfileAlreadySubmitted(exception: BusinessProfileAlreadySubmittedException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4093, message = exception.message ?: "Business profile already submitted or approved")
+        )
+
+    @ExceptionHandler(ApprovedBusinessProfileImmutableException::class)
+    fun handleApprovedBusinessProfileImmutable(exception: ApprovedBusinessProfileImmutableException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiErrorResponse(code = 4032, message = exception.message ?: "Cannot modify approved profile")
+        )
+
+    @ExceptionHandler(BusinessProfilePartialUpdateNotAllowedException::class)
+    fun handleBusinessProfilePartialUpdateNotAllowed(exception: BusinessProfilePartialUpdateNotAllowedException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+            ApiErrorResponse(code = 4223, message = exception.message ?: "Partial update not allowed")
+        )
+
+    // ---- Auth ----
+    @ExceptionHandler(EmailAlreadyExistsException::class)
+    fun handleEmailAlreadyExists(exception: EmailAlreadyExistsException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4091, message = exception.message ?: "Email already exists")
+        )
+
+    @ExceptionHandler(InvalidCredentialsException::class)
+    fun handleInvalidCredentials(exception: InvalidCredentialsException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+            ApiErrorResponse(code = 4011, message = exception.message ?: "Invalid credentials")
+        )
+
+    @ExceptionHandler(PasswordEncodingException::class)
+    fun handlePasswordEncoding(exception: PasswordEncodingException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            ApiErrorResponse(code = 5001, message = exception.message ?: "Password encoding failed")
+        )
+
+    // ---- Thread message ----
+    @ExceptionHandler(MessageContentRequiredException::class)
+    fun handleMessageContentRequired(exception: MessageContentRequiredException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            ApiErrorResponse(code = 4004, message = exception.message ?: "Message body or attachmentIds is required")
+        )
+
     @ExceptionHandler(WebExchangeBindException::class)
     fun handleValidation(exception: WebExchangeBindException): ResponseEntity<ApiErrorResponse> {
         val details = exception.bindingResult.allErrors.map { error ->

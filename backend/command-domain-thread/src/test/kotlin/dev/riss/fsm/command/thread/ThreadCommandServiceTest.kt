@@ -1,5 +1,6 @@
 package dev.riss.fsm.command.thread
 
+import dev.riss.fsm.shared.error.MessageContentRequiredException
 import dev.riss.fsm.shared.error.ThreadAccessDeniedException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -10,8 +11,6 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.any
 import org.mockito.junit.jupiter.MockitoExtension
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.time.LocalDateTime
@@ -74,8 +73,7 @@ class ThreadCommandServiceTest {
             )
         )
             .expectErrorSatisfies { error ->
-                assertTrue(error is ResponseStatusException)
-                assertEquals(HttpStatus.BAD_REQUEST, (error as ResponseStatusException).statusCode)
+                assertTrue(error is MessageContentRequiredException)
             }
             .verify()
     }

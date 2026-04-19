@@ -1,8 +1,10 @@
 package dev.riss.fsm.command.supplier
 
-import org.springframework.http.HttpStatus
+import dev.riss.fsm.shared.error.ApprovedSupplierProfileImmutableException
+import dev.riss.fsm.shared.error.SupplierProfileAlreadyExistsException
+import dev.riss.fsm.shared.error.SupplierProfileNotFoundException
+import dev.riss.fsm.shared.error.SupplierProfileStateImmutableException
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.UUID
@@ -15,7 +17,7 @@ class SupplierProfileCommandService(
         return supplierProfileRepository.existsBySupplierUserId(userId)
             .flatMap { exists ->
                 if (exists) {
-                    Mono.error(ResponseStatusException(HttpStatus.CONFLICT, "Supplier profile already exists"))
+                    Mono.error(SupplierProfileAlreadyExistsException())
                 } else {
                     supplierProfileRepository.save(
                         SupplierProfileEntity(
@@ -47,7 +49,7 @@ class SupplierProfileCommandService(
 
     fun update(userId: String, request: UpdateSupplierProfileCommand): Mono<SupplierProfileEntity> {
         return supplierProfileRepository.findBySupplierUserId(userId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Supplier profile not found")))
+            .switchIfEmpty(Mono.error(SupplierProfileNotFoundException()))
             .flatMap { profile ->
                 val contactOnlyUpdate =
                     request.companyName == null &&
@@ -65,9 +67,9 @@ class SupplierProfileCommandService(
                     (request.contactPhone != null || request.contactEmail != null)
 
                 if (profile.verificationState == "approved" && !contactOnlyUpdate) {
-                    Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Approved supplier profile cannot be updated"))
+                    Mono.error(ApprovedSupplierProfileImmutableException())
                 } else if (profile.verificationState !in setOf("draft", "hold", "rejected", "approved")) {
-                    Mono.error(ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Supplier profile is not editable in the current state"))
+                    Mono.error(SupplierProfileStateImmutableException())
                 } else {
                     supplierProfileRepository.save(
                         profile.copy(

@@ -1,8 +1,10 @@
 package dev.riss.fsm.command.user
 
-import org.springframework.http.HttpStatus
+import dev.riss.fsm.shared.error.ApprovedBusinessProfileImmutableException
+import dev.riss.fsm.shared.error.BusinessProfileAlreadySubmittedException
+import dev.riss.fsm.shared.error.BusinessProfileNotFoundException
+import dev.riss.fsm.shared.error.BusinessProfilePartialUpdateNotAllowedException
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
@@ -13,10 +15,10 @@ class RequesterBusinessProfileCommandService(
 
     fun submit(userId: String, request: SubmitBusinessProfileCommand): Mono<BusinessProfileEntity> {
         return businessProfileRepository.findByUserAccountId(userId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Business profile not found")))
+            .switchIfEmpty(Mono.error(BusinessProfileNotFoundException()))
             .flatMap { profile ->
                 if (profile.approvalState == "submitted" || profile.approvalState == "approved") {
-                    Mono.error(ResponseStatusException(HttpStatus.CONFLICT, "Business profile already submitted or approved"))
+                    Mono.error(BusinessProfileAlreadySubmittedException())
                 } else {
                     businessProfileRepository.save(
                         profile.copy(
@@ -39,12 +41,12 @@ class RequesterBusinessProfileCommandService(
 
     fun update(userId: String, request: UpdateBusinessProfileCommand): Mono<BusinessProfileEntity> {
         return businessProfileRepository.findByUserAccountId(userId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Business profile not found")))
+            .switchIfEmpty(Mono.error(BusinessProfileNotFoundException()))
             .flatMap { profile ->
                 if (profile.approvalState == "approved") {
-                    Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Approved business profile cannot be updated"))
+                    Mono.error(ApprovedBusinessProfileImmutableException())
                 } else if (profile.approvalState !in setOf("submitted", "rejected")) {
-                    Mono.error(ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Business profile must be submitted or rejected before partial update"))
+                    Mono.error(BusinessProfilePartialUpdateNotAllowedException())
                 } else {
                     businessProfileRepository.save(
                         profile.copy(

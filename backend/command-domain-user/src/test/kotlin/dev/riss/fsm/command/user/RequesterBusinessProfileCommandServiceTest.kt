@@ -7,7 +7,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
-import org.springframework.web.server.ResponseStatusException
+import dev.riss.fsm.shared.error.ApprovedBusinessProfileImmutableException
 
 class RequesterBusinessProfileCommandServiceTest {
 
@@ -60,7 +60,7 @@ class RequesterBusinessProfileCommandServiceTest {
     fun `update rejects approved profile`() {
         `when`(businessProfileRepository.findByUserAccountId("usr_1")).thenReturn(Mono.just(profile("approved")))
 
-        assertThrows(ResponseStatusException::class.java) {
+        assertThrows(ApprovedBusinessProfileImmutableException::class.java) {
             service.update("usr_1", UpdateBusinessProfileCommand(contactEmail = "new@example.com")).block()
         }
     }

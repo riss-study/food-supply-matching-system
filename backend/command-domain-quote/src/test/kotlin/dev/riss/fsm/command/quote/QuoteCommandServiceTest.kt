@@ -8,8 +8,10 @@ import dev.riss.fsm.command.thread.MessageThreadEntity
 import dev.riss.fsm.command.thread.ThreadParticipantReadStateRepository
 import dev.riss.fsm.command.thread.ThreadCommandService
 import dev.riss.fsm.shared.error.DuplicateActiveQuoteException
+import dev.riss.fsm.shared.error.QuoteOwnerMismatchException
 import dev.riss.fsm.shared.error.QuoteSubmissionForbiddenException
 import dev.riss.fsm.shared.error.QuoteUpdateForbiddenException
+import dev.riss.fsm.shared.error.RequestAccessForbiddenException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -19,8 +21,6 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.any
 import org.mockito.junit.jupiter.MockitoExtension
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -161,8 +161,7 @@ class QuoteCommandServiceTest {
             )
         )
             .expectErrorSatisfies { error ->
-                assertTrue(error is ResponseStatusException)
-                assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+                assertTrue(error is QuoteOwnerMismatchException)
             }
             .verify()
     }
@@ -195,8 +194,7 @@ class QuoteCommandServiceTest {
 
         StepVerifier.create(quoteCommandService.select(quote.quoteId, "usr_other"))
             .expectErrorSatisfies { error ->
-                assertTrue(error is ResponseStatusException)
-                assertEquals(HttpStatus.FORBIDDEN, (error as ResponseStatusException).statusCode)
+                assertTrue(error is RequestAccessForbiddenException)
             }
             .verify()
     }
