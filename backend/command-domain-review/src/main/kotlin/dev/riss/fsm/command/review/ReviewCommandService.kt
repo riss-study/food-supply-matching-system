@@ -23,9 +23,8 @@ class ReviewCommandService(
     private val profanityFilter: ProfanityFilter,
 ) {
     fun create(command: CreateReviewCommand): Mono<ReviewEntity> {
-        ensureContentAllowed(command.text)
-
-        return requestRepository.findById(command.requestId)
+        return ensureContentAllowed(command.text).then(Mono.defer {
+            requestRepository.findById(command.requestId)
             .switchIfEmpty(Mono.error(RequestNotFoundException()))
             .flatMap { request ->
                 if (request.state != "closed") {
@@ -74,12 +73,12 @@ class ReviewCommandService(
                         }
                 }
             }
+        })
     }
 
     fun update(reviewId: String, requesterUserId: String, command: UpdateReviewCommand): Mono<ReviewEntity> {
-        ensureContentAllowed(command.text)
-
-        return reviewRepository.findById(reviewId)
+        return ensureContentAllowed(command.text).then(Mono.defer {
+            reviewRepository.findById(reviewId)
             .switchIfEmpty(Mono.error(ReviewNotFoundException()))
             .flatMap { review ->
                 if (review.requesterUserId != requesterUserId) {
@@ -101,6 +100,7 @@ class ReviewCommandService(
                     )
                 )
             }
+        })
     }
 
     fun hide(reviewId: String): Mono<ReviewEntity> = toggleHidden(reviewId, targetHidden = true)
@@ -124,9 +124,11 @@ class ReviewCommandService(
             }
     }
 
-    private fun ensureContentAllowed(text: String?) {
-        if (text != null && profanityFilter.containsProfanity(text)) {
-            throw ReviewContentViolationException("Text contains prohibited language")
+    private fun ensureContentAllowed(text: String?): Mono<Void> {
+        return if (text != null && profanityFilter.containsProfanity(text)) {
+            Mono.error(ReviewContentViolationException("Text contains prohibited language"))
+        } else {
+            Mono.empty()
         }
     }
 

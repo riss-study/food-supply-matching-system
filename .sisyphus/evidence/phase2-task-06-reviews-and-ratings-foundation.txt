@@ -1,0 +1,151 @@
+Phase 2 Task 06 — Reviews & Ratings Foundation · Evidence
+==========================================================
+
+Period: 2026-04-20 (single-session implementation)
+Policy decisions: 2576d75 (P1 엄격 / P2 쌍당 1+7일 / P3 법인접두어+1음절 / P4 길이+금칙어+hide)
+
+Commits (origin/main, reverse chronological from Task 06 entry point)
+---------------------------------------------------------------------
+2576d75 docs(phase2): record Task 06 policy decisions
+8be41f3 feat(review): add Review aggregate, command handlers, moderation (SubTask 6.2)
+1809069 docs(api-spec): add §3.11 Review + §4.4 admin moderation (v1.6)
+21dfb80 docs(api-spec): v1.7 review-section self-verification fixes
+ad6687a feat(review): add api-server review endpoints (SubTask 6.3)
+1c620a9 feat(review): project ratingAvg/ratingCount into supplier views (SubTask 6.4)
+520d8b2 feat(supplier): expose ratingAvg/ratingCount/recentReviews on discovery (SubTask 6.5)
+fade13e feat(main-site): add review writing UI (SubTask 6.6)
+0e36772 feat(main-site): show rating summary + reviews on supplier detail (SubTask 6.7)
+8285ad0 feat(admin): add supplier review moderation + audit (SubTask 6.8)
+(+ 본 파일 commit: 6.9)
+
+SubTask 완료 상태
+------------------
+| SubTask | 상태 | Commit |
+|---------|------|--------|
+| 6.1 작성 자격 정책 | 🟢 | 2576d75 |
+| 6.2 도메인 모델 | 🟢 | 8be41f3 |
+| 6.3 리뷰 API (POST/PATCH/eligibility/list) | 🟢 | ad6687a |
+| 6.4 평균 평점 projection | 🟢 | 1c620a9 |
+| 6.5 탐색/상세 응답 확장 | 🟢 | 520d8b2 |
+| 6.6 main-site 작성 UI | 🟢 | fade13e |
+| 6.7 공급자 상세 리뷰 UI | 🟢 | 0e36772 |
+| 6.8 admin 모더레이션 + audit | 🟢 | 8285ad0 |
+| 6.9 테스트 / evidence | 🟢 | 본 파일 |
+
+테스트 결과
+-----------
+Backend (./gradlew test, 전 모듈)
+  BUILD SUCCESSFUL — 60 actionable tasks, 7 executed, 53 up-to-date
+  신규 ReviewCommandServiceTest (command-domain-review): 13 tests pass
+    - create happy path
+    - create rejects request not closed (P1)
+    - create rejects non-owner caller (P1)
+    - create rejects no selected quote (P1)
+    - create rejects duplicate for (request, supplier) (P2)
+    - create rejects profanity text (P4)
+    - update succeeds within 7-day window
+    - update rejects non-author
+    - update rejects hidden review
+    - update rejects after 7-day edit window
+    - update clears text when textProvided and blank
+    - hide is idempotent when already hidden
+    - hide changes visible to hidden and bumps version
+    - hide rejects non-existent review
+
+Frontend (yarn type-check / test / build)
+  yarn type-check: clean (root, 전 워크스페이스)
+  vitest main-site: 22 files / 105 tests pass (회귀 없음)
+  vitest admin-site: 5 files / 15 tests pass
+  yarn build main-site production: 446.67 kB / gzip 133.57 kB
+
+E2E smoke (curl, live infra)
+----------------------------
+api-server 8080 · admin-server 8081 · mariadb (review 테이블 신규) · mongo supplier_*_view
+
+1) Setup
+   buyer@test.com 로그인, req_seed_06 (closed) + quo_seed_05 (selected) for sprof_seed_04
+   POST /api/reviews {rating:5, text:"좋음"} → 201, reviewId=rev_...
+
+2) 중복 방지 (P2)
+   동일 (req, sup) 재POST → 409 code=4094
+
+3) eligibility 상태 전이
+   작성 전: eligible=true, reason=null
+   작성 후: eligible=false, reason=already_reviewed
+
+4) PATCH 검증
+   rating=3 → 200, rating=3 반영
+   text=null → 본문 삭제, text=null
+   text="" → 본문 삭제
+   rating만 변경 → text 기존 유지 (textProvided=false 경로)
+   타 사용자 PATCH → 403 code=4031
+   7일 경과 PATCH → 403 code=4031
+   hidden 리뷰 PATCH → 403 code=4031
+
+5) 검증 (validation)
+   rating=0 → 400 code=4000 (@Min 위반)
+   text 500자 초과 → 400 code=4000 (@Size 위반)
+   금칙어 포함 → 422 code=4222
+
+6) 공개 조회
+   GET /api/suppliers/{id}/reviews (unauth) → 200, hidden 제외
+   authorDisplayName: "(주)푸*****" (P3: 법인 접두어 + 첫 1음절 + 5 asterisk)
+
+7) Projection (ratingAvg/ratingCount)
+   create rating=5 → detail_view ratingAvg=5.0, count=1
+   PATCH rating=3 → ratingAvg=3.0
+   PATCH rating=4 → ratingAvg=4.0
+   supplier_search_view 에 존재하는 경우 양쪽 동기화 확인
+
+8) Admin 모더레이션 (6.8)
+   admin@test.com 로그인
+   POST /api/admin/supplier-reviews/{id}/hide → 200, hidden=true
+     → 공개 목록 0건, ratingAvg=0.0 (recompute 확인)
+     → audit_log: action_type="review_hide", target_type="review", target_id, payload_snapshot 기록
+   POST /api/admin/supplier-reviews/{id}/unhide → 200, hidden=false
+     → 공개 목록 1건 복귀, ratingAvg=5.0
+   Non-admin (buyer) hide 시도 → 403
+
+9) Supplier discovery 응답 필드 노출
+   GET /api/suppliers: 각 item 에 ratingAvg, ratingCount 노출
+   GET /api/suppliers/{id}: ratingAvg, ratingCount, recentReviews[] (최근 3, hidden 제외)
+
+정책 이행 매트릭스
+------------------
+| 정책 | 반영 위치 | 커버 테스트 |
+|------|----------|-------------|
+| P1 작성 자격 (request closed + selected quote + 소유자 일치) | ReviewCommandService.create | 도메인 테스트 4건 + eligibility smoke |
+| P2 쌍당 1개 | review 테이블 UNIQUE uk_review_request_supplier + create pre-check | 도메인 테스트 1건 + 409 smoke |
+| P2 7일 내 1회 수정 | update 경로의 EDIT_WINDOW=Duration.ofDays(7) | 도메인 테스트 1건 |
+| P3 작성자 표시 마스킹 | ReviewQueryService.maskCompanyName (법인 접두어 보존 + 첫 1음절) | 공개 목록 smoke: "(주)푸*****" |
+| P4 길이 제약 | DTO @Size(max=500), @Min(1)@Max(5) | validation smoke (400/4000) |
+| P4 금칙어 | shared-core/moderation/ProfanityFilter.kt | 도메인 테스트 + smoke (422/4222) |
+| P4 admin hide | ReviewCommandService.hide + AdminSupplierReviewModerationController | E2E admin hide/unhide smoke |
+| hidden 집계 제외 | ReviewProjectionService.recomputeFor 에서 hidden=false 필터 | E2E: hide 후 ratingAvg=0 |
+
+신규 에러 코드 (v1.6/v1.7 spec 재의미 부여)
+------------------------------------------
+4031 ReviewUpdateForbidden (403)
+4036 ReviewEligibilityFailed (403)
+4094 DuplicateReview (409)
+4222 ReviewContentViolation (422)
+4041 재사용 (ReviewNotFound)
+
+미결 / 트리거 대기
+-----------------
+- admin 측 hide 시 audit_log fk/인덱스 성능: volume 성장 시 재평가
+- ReviewProjectionService.recomputeFor: 현재 collectList 전체 메모리. 공급사당 1000+ 리뷰 발생 시 SQL AGG 로 최적화 (Task 07 hot-query 와 묶어 검토)
+- supplier 검색에서 sort=ratingAvg 미지원 — 필요 시 SupplierQueryService.buildSort 확장 (s.6.5 에 추가하면 1줄)
+- 외부 API 소비자 위한 code=4000 vs spec §5.1 의 4001 drift 는 DOC-2 로 분리 기록됨
+
+아키텍처 확인
+-------------
+- CQRS 경계: command-domain-review 는 read 모듈에 의존 없음. projection 이 역방향으로 command → read 반영.
+- ResponseStatusException 비사용 (command-domain 측). application layer 의 admin ensureAdmin 은 convention 상 허용.
+- @Transactional 위치: application layer. R2DBC + Mongo cross-TX 아님 (프로젝션은 eventually consistent).
+- Persistable + newEntity 플래그 패턴 일관.
+
+HEAD at Task 06 closure
+------------------------
+(본 evidence 파일 commit 전 기준)
+8285ad0 feat(admin): add supplier review moderation + audit (Task 06 SubTask 6.8)
