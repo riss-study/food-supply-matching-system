@@ -34,44 +34,35 @@ class ReviewCommandService(
                     return@flatMap Mono.error(ReviewEligibilityFailedException("Not the request owner"))
                 }
 
-                quoteRepository.existsByRequestIdAndSupplierProfileIdAndStateIn(
-                    command.requestId,
-                    command.supplierProfileId,
-                    listOf("selected")
-                ).flatMap { hasSelectedQuote ->
-                    if (!hasSelectedQuote) {
-                        return@flatMap Mono.error(ReviewEligibilityFailedException("No selected quote for this supplier"))
-                    }
-                    quoteRepository.findAllByRequestIdAndSupplierProfileId(command.requestId, command.supplierProfileId)
-                        .filter { it.state == "selected" }
-                        .next()
-                        .switchIfEmpty(Mono.error(ReviewEligibilityFailedException("Selected quote missing")))
-                        .flatMap { selectedQuote ->
-                            reviewRepository.existsByRequestIdAndSupplierProfileId(
-                                command.requestId,
-                                command.supplierProfileId
-                            ).flatMap { exists ->
-                                if (exists) {
-                                    return@flatMap Mono.error(DuplicateReviewException())
-                                }
-                                val now = LocalDateTime.now()
-                                val review = ReviewEntity(
-                                    reviewId = "rev_${UUID.randomUUID()}",
-                                    requesterUserId = command.requesterUserId,
-                                    supplierProfileId = command.supplierProfileId,
-                                    requestId = command.requestId,
-                                    quoteId = selectedQuote.quoteId,
-                                    rating = command.rating,
-                                    text = command.text,
-                                    hidden = false,
-                                    version = 1,
-                                    createdAt = now,
-                                    updatedAt = now,
-                                ).apply { newEntity = true }
-                                reviewRepository.save(review)
+                quoteRepository.findAllByRequestIdAndSupplierProfileId(command.requestId, command.supplierProfileId)
+                    .filter { it.state == "selected" }
+                    .next()
+                    .switchIfEmpty(Mono.error(ReviewEligibilityFailedException("No selected quote for this supplier")))
+                    .flatMap { selectedQuote ->
+                        reviewRepository.existsByRequestIdAndSupplierProfileId(
+                            command.requestId,
+                            command.supplierProfileId
+                        ).flatMap { exists ->
+                            if (exists) {
+                                return@flatMap Mono.error(DuplicateReviewException())
                             }
+                            val now = LocalDateTime.now()
+                            val review = ReviewEntity(
+                                reviewId = "rev_${UUID.randomUUID()}",
+                                requesterUserId = command.requesterUserId,
+                                supplierProfileId = command.supplierProfileId,
+                                requestId = command.requestId,
+                                quoteId = selectedQuote.quoteId,
+                                rating = command.rating,
+                                text = command.text,
+                                hidden = false,
+                                version = 1,
+                                createdAt = now,
+                                updatedAt = now,
+                            ).apply { newEntity = true }
+                            reviewRepository.save(review)
                         }
-                }
+                    }
             }
         })
     }

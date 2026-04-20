@@ -2870,7 +2870,7 @@ Content-Type: application/json
 | requestId | string | O | 대상 의뢰 ID |
 | supplierId | string | O | 대상 공급자 프로필 ID (외부 명칭, 내부 `supplierProfileId` 와 동치) |
 | rating | integer | O | 1..5 정수 |
-| text | string | X | 0-500자. 금칙어 포함 시 거부 |
+| text | string\|null | X | 0-500자. 금칙어 포함 시 거부. **빈 문자열 또는 null 은 "본문 없음" 과 동일 (저장 시 null 로 정규화)** — PATCH 의 clear 시맨틱과 일원화 |
 
 **Success Response (201):**
 ```json
@@ -4080,6 +4080,7 @@ Authorization: Bearer <JWT>
 | 1.8 | 2026-04-20 | Phase 2 Task 06 SubTask 6.5 반영: §3.4 GET /api/suppliers 응답 item 과 GET /api/suppliers/{id} 상세 응답에 `ratingAvg` (number, 소수점 둘째자리), `ratingCount` (integer) 노출. 상세에는 최근 리뷰 3건 `recentReviews[]` 추가 (createdAt desc, hidden 제외, §3.11 목록 item 과 동일 구조에서 updatedAt 제외). |
 | 1.9 | 2026-04-20 | DOC-2 해소: §5.1/§5.2 registry 를 실제 code 와 일치시킴. 제거: 4001 (실제 validation 은 4000), 4002 (미구현), 4003 (미구현), 5002/5003 (미구현). 추가: 4000 Validation, 4010 Authentication required, 4030 Access denied, 4097/4098 ContactShare 관련. 수정: 5000 Internal fallback, 5001 Password encoding failed. §2.5 404→4040 fallback 언급은 예약이나 실제 핸들러는 4041 을 사용한다는 주석 추가. |
 | 1.10 | 2026-04-20 | Task 06.5 (admin review moderation UI) 용 계약 추가: §4.4 에 `GET /api/admin/supplier-reviews` (목록, hidden/supplierId 필터, 페이지네이션). 관리자 시점 응답은 hidden 포함 + requesterCompanyName 마스킹 없이 노출 (공개 목록의 P3 와 차이). |
+| 1.11 | 2026-04-20 | Task 06 BE 리뷰 (B2) 해소: POST /api/reviews `text` 필드 타입을 `string\|null` 로 정정하고 "빈 문자열 또는 null 은 본문 없음과 동일 (저장 시 null 로 정규화)" 를 명시. PATCH 의 clear 시맨틱과 일원화 (비대칭 제거). 기존 구현은 이미 이 동작을 하고 있었고, spec 문구만 의미 drift 가 있었음. |
 
 ---
 

@@ -44,8 +44,6 @@ class ReviewCommandServiceTest {
         val request = closedRequest()
         val quote = selectedQuote()
         `when`(requestRepository.findById(request.requestId)).thenReturn(Mono.just(request))
-        `when`(quoteRepository.existsByRequestIdAndSupplierProfileIdAndStateIn(request.requestId, "sprof_1", listOf("selected")))
-            .thenReturn(Mono.just(true))
         `when`(quoteRepository.findAllByRequestIdAndSupplierProfileId(request.requestId, "sprof_1"))
             .thenReturn(Flux.just(quote))
         `when`(reviewRepository.existsByRequestIdAndSupplierProfileId(request.requestId, "sprof_1"))
@@ -86,8 +84,8 @@ class ReviewCommandServiceTest {
     fun `create rejects when no selected quote exists (P1)`() {
         val request = closedRequest()
         `when`(requestRepository.findById(request.requestId)).thenReturn(Mono.just(request))
-        `when`(quoteRepository.existsByRequestIdAndSupplierProfileIdAndStateIn(request.requestId, "sprof_1", listOf("selected")))
-            .thenReturn(Mono.just(false))
+        `when`(quoteRepository.findAllByRequestIdAndSupplierProfileId(request.requestId, "sprof_1"))
+            .thenReturn(Flux.empty())
 
         StepVerifier.create(service.create(CreateReviewCommand("usr_req", "sprof_1", request.requestId, 5, null)))
             .expectErrorSatisfies { err -> assertTrue(err is ReviewEligibilityFailedException) }
@@ -99,8 +97,6 @@ class ReviewCommandServiceTest {
         val request = closedRequest()
         val quote = selectedQuote()
         `when`(requestRepository.findById(request.requestId)).thenReturn(Mono.just(request))
-        `when`(quoteRepository.existsByRequestIdAndSupplierProfileIdAndStateIn(request.requestId, "sprof_1", listOf("selected")))
-            .thenReturn(Mono.just(true))
         `when`(quoteRepository.findAllByRequestIdAndSupplierProfileId(request.requestId, "sprof_1"))
             .thenReturn(Flux.just(quote))
         `when`(reviewRepository.existsByRequestIdAndSupplierProfileId(request.requestId, "sprof_1"))

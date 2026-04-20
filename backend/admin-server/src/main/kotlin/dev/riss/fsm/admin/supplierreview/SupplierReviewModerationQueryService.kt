@@ -58,19 +58,19 @@ class SupplierReviewModerationQueryService(
     }
 
     private fun buildCriteriaQuery(hidden: String?, supplierId: String?): Query {
-        val hasSupplier = !supplierId.isNullOrBlank()
+        val normalizedSupplierId: String? = supplierId?.takeUnless { it.isBlank() }
         val hiddenFlag: Boolean? = when (hidden) {
             "true" -> true
             "false" -> false
             else -> null
         }
         val criteria: Criteria? = when {
-            hiddenFlag != null && hasSupplier ->
-                Criteria.where("hidden").`is`(hiddenFlag).and("supplier_profile_id").`is`(supplierId!!)
+            hiddenFlag != null && normalizedSupplierId != null ->
+                Criteria.where("hidden").`is`(hiddenFlag).and("supplier_profile_id").`is`(normalizedSupplierId)
             hiddenFlag != null ->
                 Criteria.where("hidden").`is`(hiddenFlag)
-            hasSupplier ->
-                Criteria.where("supplier_profile_id").`is`(supplierId!!)
+            normalizedSupplierId != null ->
+                Criteria.where("supplier_profile_id").`is`(normalizedSupplierId)
             else -> null
         }
         return if (criteria == null) Query.empty() else Query.query(criteria)
