@@ -5,6 +5,7 @@
   "brandSuffix": "Admin",
   "nav": {
     "reviews": "업체 검수",
+    "supplierReviews": "공급자 리뷰",
     "notices": "공지 관리",
     "stats": "통계"
   }

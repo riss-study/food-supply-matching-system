@@ -6,6 +6,7 @@ import { useAdminAuthStore } from "./features/auth/store/admin-auth-store"
 import { LoginPage } from "./features/auth/pages/LoginPage"
 import { ReviewQueuePage } from "./features/reviews/pages/ReviewQueuePage"
 import { ReviewDetailPage } from "./features/reviews/pages/ReviewDetailPage"
+import { SupplierReviewListPage } from "./features/supplier-reviews/pages/SupplierReviewListPage"
 import { NoticeListPage } from "./features/notices/pages/NoticeListPage"
 import { NoticeCreateEditModal } from "./features/notices/components/NoticeCreateEditModal"
 import { StatsDashboardPage } from "./features/stats/pages/StatsDashboardPage"
@@ -135,6 +136,7 @@ function NoticeManagementPage() {
 
 const navItems = [
   { to: "/reviews", labelKey: "nav.reviews", icon: "☑" },
+  { to: "/supplier-reviews", labelKey: "nav.supplierReviews", icon: "★" },
   { to: "/notices", labelKey: "nav.notices", icon: "☰" },
   { to: "/stats", labelKey: "nav.stats", icon: "≡" },
 ]
@@ -236,6 +238,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/reviews" element={<ReviewQueuePage />} />
             <Route path="/reviews/:reviewId" element={<ReviewDetailPage />} />
+            <Route path="/supplier-reviews" element={<SupplierReviewListPage />} />
             <Route path="/notices" element={<NoticeManagementPage />} />
             <Route path="/stats" element={<StatsDashboardPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

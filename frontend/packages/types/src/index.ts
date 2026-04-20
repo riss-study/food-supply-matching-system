@@ -856,3 +856,26 @@ export interface SupplierRecentReview {
   authorDisplayName: string
   createdAt: string
 }
+
+export interface AdminSupplierReviewListItem {
+  reviewId: string
+  rating: number
+  text: string | null
+  hidden: boolean
+  requesterUserId: string
+  requesterCompanyName: string | null
+  supplierProfileId: string
+  supplierCompanyName: string
+  requestId: string
+  quoteId: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminSupplierReviewModerationResponse {
+  reviewId: string
+  hidden: boolean
+  updatedAt: string
+}
+
+export type AdminSupplierReviewHiddenFilter = "all" | "true" | "false"

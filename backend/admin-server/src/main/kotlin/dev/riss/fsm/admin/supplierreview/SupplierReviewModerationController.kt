@@ -16,7 +16,30 @@ import reactor.core.publisher.Mono
 @Tag(name = "admin-supplier-reviews", description = "Admin moderation for requester-submitted supplier reviews")
 class SupplierReviewModerationController(
     private val moderationService: SupplierReviewModerationApplicationService,
+    private val queryService: SupplierReviewModerationQueryService,
 ) {
+    @org.springframework.web.bind.annotation.GetMapping("/api/admin/supplier-reviews")
+    @Operation(summary = "List supplier reviews (admin)", description = "모더레이션 대상 리뷰 목록. hidden 포함. 필터: hidden=true|false|all, supplierId. §2.7 페이지네이션.")
+    fun list(
+        @AuthenticationPrincipal principal: AuthenticatedUserPrincipal,
+        @org.springframework.web.bind.annotation.RequestParam(required = false) hidden: String?,
+        @org.springframework.web.bind.annotation.RequestParam(required = false) supplierId: String?,
+        @org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") page: Int,
+        @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20") size: Int,
+        @org.springframework.web.bind.annotation.RequestParam(required = false) sort: String?,
+        @org.springframework.web.bind.annotation.RequestParam(required = false) order: String?,
+    ): Mono<ApiSuccessResponse<List<AdminSupplierReviewListItem>>> =
+        moderationService.ensureAdminAccess(principal).then(
+            queryService.list(hidden, supplierId, page, size, order)
+                .map { pageResponse ->
+                    ApiSuccessResponse(
+                        message = "Admin reviews listed",
+                        data = pageResponse.items,
+                        meta = pageResponse.meta,
+                    )
+                }
+        )
+
     @PostMapping("/api/admin/supplier-reviews/{reviewId}/hide")
     @Operation(summary = "Hide supplier review", description = "리뷰를 숨김 처리. hidden 리뷰는 공개 목록/ratingAvg 에서 제외. 멱등.")
     fun hide(

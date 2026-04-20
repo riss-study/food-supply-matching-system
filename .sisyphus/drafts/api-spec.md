@@ -3841,7 +3841,86 @@ Authorization: Bearer <JWT>
 
 ### 4.4 관리자 공급자 리뷰 모더레이션
 
-요청자가 남긴 공급자 리뷰의 가시성 토글. 검수(Verification) 리뷰 큐인 `/api/admin/reviews/*` 와 분리하기 위해 `/api/admin/supplier-reviews/*` 경로를 사용한다. 동작은 멱등 (이미 같은 상태면 변경 없이 현재값 반환).
+요청자가 남긴 공급자 리뷰의 목록 조회 + 가시성 토글. 검수(Verification) 리뷰 큐인 `/api/admin/reviews/*` 와 분리하기 위해 `/api/admin/supplier-reviews/*` 경로를 사용한다. 토글은 멱등 (이미 같은 상태면 변경 없이 현재값 반환).
+
+#### GET /api/admin/supplier-reviews
+
+**설명:** 관리자 모더레이션 대상 리뷰 목록. 공개 목록과 달리 `hidden=true` 리뷰도 포함한다.
+
+**인증:** 필요 (role=admin)
+
+**Request Headers:**
+```
+Authorization: Bearer <JWT>
+```
+
+**Query Parameters:** (§2.7 페이지네이션 규약 준수)
+
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|----------|------|------|--------|------|
+| hidden | string | X | `all` | `all` / `true` / `false` 필터 |
+| supplierId | string | X | — | 특정 공급자 필터 |
+| page | integer | X | 1 | 1-based 페이지 번호 |
+| size | integer | X | 20 | 페이지 크기 (1-100) |
+| sort | string | X | `createdAt` | `createdAt` 만 지원 |
+| order | string | X | `desc` | `asc` / `desc` |
+
+**Success Response (200):**
+```json
+{
+  "code": 100,
+  "message": "Admin reviews listed",
+  "data": [
+    {
+      "reviewId": "rev_01HQX...",
+      "rating": 4,
+      "text": "품질 OK, 납기 하루 지연.",
+      "hidden": false,
+      "requesterUserId": "usr_seed_buyer01",
+      "requesterCompanyName": "(주)푸드마트",
+      "supplierProfileId": "sprof_seed_04",
+      "supplierCompanyName": "경남소스공업(주)",
+      "requestId": "req_seed_06",
+      "quoteId": "quo_seed_05",
+      "createdAt": "2026-04-20T12:00:00Z",
+      "updatedAt": "2026-04-20T12:05:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+**Success Response Fields (item):**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| reviewId | string | 리뷰 ID |
+| rating | integer | 1..5 |
+| text | string\|null | 본문 |
+| hidden | boolean | 숨김 상태 |
+| requesterUserId | string | 작성자 (관리자 시점에선 raw 노출) |
+| requesterCompanyName | string\|null | 작성자 회사명 (`business_profile.business_name`). 관리자 목록에선 **마스킹 없이** 노출 |
+| supplierProfileId | string | 대상 공급자 ID |
+| supplierCompanyName | string | 대상 공급자 회사명 |
+| requestId | string | 관련 의뢰 ID |
+| quoteId | string | 관련 견적 ID |
+| createdAt | string | 작성 시각 |
+| updatedAt | string | 최종 수정 시각 |
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 403 | 4030 | admin 역할 아님 |
+
+---
 
 #### POST /api/admin/supplier-reviews/{reviewId}/hide
 
@@ -4000,6 +4079,7 @@ Authorization: Bearer <JWT>
 | 1.7 | 2026-04-20 | v1.6 자체 검증 후 수정: (1) POST /api/reviews body 의 `supplierProfileId` 를 `supplierId` 로 변경 (외부 명칭 일관성, 기존 `/api/suppliers/{supplierId}` 경로와 동일). (2) GET /api/suppliers/{supplierId}/reviews 페이지네이션이 §2.7 규약을 어기고 있어 1-based / max size 100 / sort·order 분리 형태로 정정. Pre-existing drift (§5.1 4001/4002/4003) 는 DOC-2 open-item 으로 분리. |
 | 1.8 | 2026-04-20 | Phase 2 Task 06 SubTask 6.5 반영: §3.4 GET /api/suppliers 응답 item 과 GET /api/suppliers/{id} 상세 응답에 `ratingAvg` (number, 소수점 둘째자리), `ratingCount` (integer) 노출. 상세에는 최근 리뷰 3건 `recentReviews[]` 추가 (createdAt desc, hidden 제외, §3.11 목록 item 과 동일 구조에서 updatedAt 제외). |
 | 1.9 | 2026-04-20 | DOC-2 해소: §5.1/§5.2 registry 를 실제 code 와 일치시킴. 제거: 4001 (실제 validation 은 4000), 4002 (미구현), 4003 (미구현), 5002/5003 (미구현). 추가: 4000 Validation, 4010 Authentication required, 4030 Access denied, 4097/4098 ContactShare 관련. 수정: 5000 Internal fallback, 5001 Password encoding failed. §2.5 404→4040 fallback 언급은 예약이나 실제 핸들러는 4041 을 사용한다는 주석 추가. |
+| 1.10 | 2026-04-20 | Task 06.5 (admin review moderation UI) 용 계약 추가: §4.4 에 `GET /api/admin/supplier-reviews` (목록, hidden/supplierId 필터, 페이지네이션). 관리자 시점 응답은 hidden 포함 + requesterCompanyName 마스킹 없이 노출 (공개 목록의 P3 와 차이). |
 
 ---
 

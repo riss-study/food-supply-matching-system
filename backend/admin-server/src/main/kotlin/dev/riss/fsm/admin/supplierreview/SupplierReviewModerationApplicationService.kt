@@ -77,6 +77,8 @@ class SupplierReviewModerationApplicationService(
         )
     }
 
+    fun ensureAdminAccess(principal: AuthenticatedUserPrincipal): Mono<Void> = ensureAdmin(principal)
+
     private fun ensureAdmin(principal: AuthenticatedUserPrincipal): Mono<Void> {
         return if (principal.role == UserRole.ADMIN) Mono.empty()
         else Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required"))

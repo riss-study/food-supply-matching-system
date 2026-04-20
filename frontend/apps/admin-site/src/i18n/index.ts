@@ -8,6 +8,7 @@ import notices from "./locales/ko/notices.json"
 import stats from "./locales/ko/stats.json"
 import members from "./locales/ko/members.json"
 import app from "./locales/ko/app.json"
+import supplierReviews from "./locales/ko/supplier-reviews.json"
 
 export const resources = {
   ko: {
@@ -18,6 +19,7 @@ export const resources = {
     stats,
     members,
     app,
+    "supplier-reviews": supplierReviews,
   },
 } as const
 
@@ -26,7 +28,7 @@ i18n.use(initReactI18next).init({
   lng: "ko",
   fallbackLng: "ko",
   defaultNS: "common",
-  ns: ["common", "auth", "reviews", "notices", "stats", "members", "app"],
+  ns: ["common", "auth", "reviews", "notices", "stats", "members", "app", "supplier-reviews"],
   interpolation: { escapeValue: false },
   returnNull: false,
 })

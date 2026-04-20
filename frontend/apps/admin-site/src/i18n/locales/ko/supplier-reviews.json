@@ -1,0 +1,42 @@
+{
+  "page": {
+    "title": "공급자 리뷰 모더레이션",
+    "description": "요청자가 남긴 공급자 리뷰를 관리합니다. 숨김 처리한 리뷰는 공개 목록과 평균 평점 집계에서 제외됩니다."
+  },
+  "filter": {
+    "hiddenLabel": "상태",
+    "hiddenAll": "전체",
+    "hiddenFalse": "공개",
+    "hiddenTrue": "숨김",
+    "supplierIdLabel": "공급자 ID",
+    "supplierIdPlaceholder": "sprof_... (선택)",
+    "reset": "초기화"
+  },
+  "table": {
+    "empty": "조건에 맞는 리뷰가 없습니다.",
+    "loading": "불러오는 중...",
+    "loadError": "리뷰 목록을 불러오지 못했습니다.",
+    "headers": {
+      "rating": "평점",
+      "text": "본문",
+      "requester": "작성자",
+      "supplier": "공급자",
+      "createdAt": "작성일",
+      "state": "상태",
+      "actions": "동작"
+    },
+    "state": {
+      "visible": "공개",
+      "hidden": "숨김"
+    },
+    "action": {
+      "hide": "숨김 처리",
+      "unhide": "숨김 해제",
+      "pending": "처리 중..."
+    }
+  },
+  "error": {
+    "hide": "숨김 처리에 실패했습니다.",
+    "unhide": "숨김 해제에 실패했습니다."
+  }
+}
