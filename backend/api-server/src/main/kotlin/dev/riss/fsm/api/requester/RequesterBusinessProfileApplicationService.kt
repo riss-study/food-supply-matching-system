@@ -1,11 +1,11 @@
 package dev.riss.fsm.api.requester
 
+import dev.riss.fsm.api.auth.UserMeService
+import dev.riss.fsm.command.user.BusinessProfileEntity
+import dev.riss.fsm.command.user.BusinessProfileRepository
 import dev.riss.fsm.command.user.RequesterBusinessProfileCommandService
 import dev.riss.fsm.command.user.SubmitBusinessProfileCommand
 import dev.riss.fsm.command.user.UpdateBusinessProfileCommand
-import dev.riss.fsm.projection.user.RequesterBusinessProfileProjectionService
-import dev.riss.fsm.query.user.RequesterBusinessProfileQueryService
-import dev.riss.fsm.query.user.UserMeQueryService
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -16,14 +16,13 @@ import java.time.ZoneOffset
 @Service
 class RequesterBusinessProfileApplicationService(
     private val commandService: RequesterBusinessProfileCommandService,
-    private val queryService: RequesterBusinessProfileQueryService,
-    private val userMeQueryService: UserMeQueryService,
-    private val projectionService: RequesterBusinessProfileProjectionService,
+    private val businessProfileRepository: BusinessProfileRepository,
+    private val userMeService: UserMeService,
 ) {
 
     fun submit(principal: AuthenticatedUserPrincipal, request: SubmitRequesterBusinessProfileRequest): Mono<RequesterBusinessProfileSubmitResponse> {
         return ensureRequester(principal)
-            .flatMap { me ->
+            .flatMap {
                 commandService.submit(
                     userId = principal.userId,
                     request = SubmitBusinessProfileCommand(
@@ -34,40 +33,21 @@ class RequesterBusinessProfileApplicationService(
                         contactEmail = request.contactEmail,
                         verificationScope = request.verificationScope,
                     ),
-                ).flatMap { profile ->
-                    projectionService.project(profile, principal.email, principal.role)
-                        .thenReturn(
-                            RequesterBusinessProfileSubmitResponse(
-                                profileId = profile.profileId,
-                                approvalState = profile.approvalState,
-                                submittedAt = profile.submittedAt!!.toInstant(ZoneOffset.UTC),
-                            ),
-                        )
+                ).map { profile ->
+                    RequesterBusinessProfileSubmitResponse(
+                        profileId = profile.profileId,
+                        approvalState = profile.approvalState,
+                        submittedAt = profile.submittedAt!!.toInstant(ZoneOffset.UTC),
+                    )
                 }
             }
     }
 
     fun get(principal: AuthenticatedUserPrincipal): Mono<RequesterBusinessProfileResponse> {
         return ensureRequester(principal)
-            .then(queryService.findByUserId(principal.userId))
+            .then(businessProfileRepository.findByUserAccountId(principal.userId))
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Business profile not found")))
-            .map { document ->
-                RequesterBusinessProfileResponse(
-                    profileId = document.profileId,
-                    businessName = document.businessName,
-                    businessRegistrationNumber = document.businessRegistrationNumber,
-                    contactName = document.contactName,
-                    contactPhone = document.contactPhone,
-                    contactEmail = document.contactEmail,
-                    verificationScope = document.verificationScope,
-                    approvalState = document.approvalState,
-                    submittedAt = document.submittedAt,
-                    approvedAt = document.approvedAt,
-                    rejectedAt = document.rejectedAt,
-                    rejectionReason = document.rejectionReason,
-                    updatedAt = document.updatedAt,
-                )
-            }
+            .map { entity -> toResponse(entity) }
     }
 
     fun update(principal: AuthenticatedUserPrincipal, request: UpdateRequesterBusinessProfileRequest): Mono<RequesterBusinessProfileResponse> {
@@ -85,14 +65,11 @@ class RequesterBusinessProfileApplicationService(
                     ),
                 )
             }
-            .flatMap { profile ->
-                projectionService.project(profile, principal.email, principal.role).thenReturn(profile)
-            }
-            .flatMap { get(principal) }
+            .map { entity -> toResponse(entity) }
     }
 
     private fun ensureRequester(principal: AuthenticatedUserPrincipal): Mono<Unit> {
-        return userMeQueryService.findMe(principal.userId)
+        return userMeService.findMe(principal.userId)
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
             .flatMap { me ->
                 if (me.role.key() != "requester") {
@@ -101,5 +78,24 @@ class RequesterBusinessProfileApplicationService(
                     Mono.just(Unit)
                 }
             }
+    }
+
+    private fun toResponse(entity: BusinessProfileEntity): RequesterBusinessProfileResponse {
+        val zone = ZoneOffset.UTC
+        return RequesterBusinessProfileResponse(
+            profileId = entity.profileId,
+            businessName = entity.businessName,
+            businessRegistrationNumber = entity.businessRegistrationNumber,
+            contactName = entity.contactName,
+            contactPhone = entity.contactPhone,
+            contactEmail = entity.contactEmail,
+            verificationScope = entity.verificationScope,
+            approvalState = entity.approvalState,
+            submittedAt = entity.submittedAt?.toInstant(zone),
+            approvedAt = entity.approvedAt?.toInstant(zone),
+            rejectedAt = entity.rejectedAt?.toInstant(zone),
+            rejectionReason = entity.rejectionReason,
+            updatedAt = entity.updatedAt.toInstant(zone),
+        )
     }
 }

@@ -1,7 +1,7 @@
 package dev.riss.fsm.api.requester
 
-import dev.riss.fsm.query.user.UserMeQueryService
-import dev.riss.fsm.query.user.UserMeView
+import dev.riss.fsm.api.auth.UserMeService
+import dev.riss.fsm.api.auth.UserMeView
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.error.BusinessApprovalRequiredException
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
@@ -14,12 +14,12 @@ import java.time.LocalDateTime
 
 class RequesterApprovalGuardTest {
 
-    private val userMeQueryService = mock(UserMeQueryService::class.java)
-    private val guard = RequesterApprovalGuard(userMeQueryService)
+    private val userMeService = mock(UserMeService::class.java)
+    private val guard = RequesterApprovalGuard(userMeService)
 
     @Test
     fun `rejects unapproved requester`() {
-        `when`(userMeQueryService.findMe("usr_1")).thenReturn(
+        `when`(userMeService.findMe("usr_1")).thenReturn(
             Mono.just(
                 UserMeView(
                     userId = "usr_1",

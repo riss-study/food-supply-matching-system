@@ -1,6 +1,6 @@
 package dev.riss.fsm.api.requester
 
-import dev.riss.fsm.query.user.UserMeQueryService
+import dev.riss.fsm.api.auth.UserMeService
 import dev.riss.fsm.shared.error.BusinessApprovalRequiredException
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.http.HttpStatus
@@ -10,10 +10,10 @@ import reactor.core.publisher.Mono
 
 @Service
 class RequesterApprovalGuard(
-    private val userMeQueryService: UserMeQueryService,
+    private val userMeService: UserMeService,
 ) {
     fun requireApprovedRequester(principal: AuthenticatedUserPrincipal): Mono<Void> {
-        return userMeQueryService.findMe(principal.userId)
+        return userMeService.findMe(principal.userId)
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
             .flatMap { me ->
                 if (me.role.key() != "requester") {
