@@ -13,12 +13,10 @@ class ReviewProjectionService(
     private val supplierDetailViewRepository: SupplierDetailViewRepository,
 ) {
     fun recomputeFor(supplierProfileId: String): Mono<Void> {
-        return reviewRepository.findAllBySupplierProfileIdAndHiddenFalse(supplierProfileId)
-            .collectList()
-            .flatMap { visibleReviews ->
-                val count = visibleReviews.size
-                val avg = if (count == 0) 0.0
-                else visibleReviews.sumOf { it.rating }.toDouble() / count
+        return reviewRepository.aggregateRatingBySupplier(supplierProfileId)
+            .flatMap { aggregate ->
+                val count = aggregate.reviewCount.toInt()
+                val avg = if (count == 0) 0.0 else aggregate.avgRating
                 applyRating(supplierProfileId, avg, count)
             }
     }
