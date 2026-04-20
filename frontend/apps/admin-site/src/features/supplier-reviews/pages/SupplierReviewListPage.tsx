@@ -4,12 +4,16 @@ import type { AdminSupplierReviewHiddenFilter, AdminSupplierReviewListItem } fro
 import { useSupplierReviews } from "../hooks/useSupplierReviews"
 import { useHideSupplierReview, useUnhideSupplierReview } from "../hooks/useSupplierReviewModeration"
 
-const HIDDEN_OPTIONS: AdminSupplierReviewHiddenFilter[] = ["all", "false", "true"]
+const HIDDEN_TABS: { value: AdminSupplierReviewHiddenFilter; labelKey: string }[] = [
+  { value: "all", labelKey: "filter.hiddenAll" },
+  { value: "false", labelKey: "filter.hiddenFalse" },
+  { value: "true", labelKey: "filter.hiddenTrue" },
+]
 
 function StarsDisplay({ value }: { value: number }) {
   const filled = "★".repeat(Math.max(0, Math.min(5, value)))
   const empty = "☆".repeat(Math.max(0, 5 - value))
-  return <span aria-label={`별점 ${value}점`}>{filled}{empty}</span>
+  return <span aria-label={`별점 ${value}점`} style={{ color: "var(--accent, #f59e0b)" }}>{filled}<span style={{ color: "var(--border)" }}>{empty}</span></span>
 }
 
 export function SupplierReviewListPage() {
@@ -32,8 +36,7 @@ export function SupplierReviewListPage() {
     setPage(1)
   }
 
-  const resetFilters = () => {
-    setHidden("all")
+  const resetSupplierFilter = () => {
     setSupplierIdInput("")
     setSupplierId(undefined)
     setPage(1)
@@ -52,25 +55,11 @@ export function SupplierReviewListPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>{t("page.title")}</h1>
-        <p className="text-muted">{t("page.description")}</p>
-      </div>
-
-      <div className="surface flex gap-12 flex-wrap items-end">
-        <label className="flex flex-col gap-4">
-          <span className="text-sm text-muted">{t("filter.hiddenLabel")}</span>
-          <select
-            className="input"
-            value={hidden}
-            onChange={(e) => { setHidden(e.target.value as AdminSupplierReviewHiddenFilter); setPage(1) }}
-          >
-            {HIDDEN_OPTIONS.map((v) => (
-              <option key={v} value={v}>{t(`filter.hidden${v === "all" ? "All" : v === "true" ? "True" : "False"}`)}</option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-4">
-          <span className="text-sm text-muted">{t("filter.supplierIdLabel")}</span>
+        <div>
+          <h1>{t("page.title")}</h1>
+          <p className="text-muted">{t("page.description")}</p>
+        </div>
+        <div className="page-header-actions">
           <input
             type="text"
             className="input"
@@ -78,22 +67,38 @@ export function SupplierReviewListPage() {
             onChange={(e) => setSupplierIdInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") applySupplierFilter() }}
             placeholder={t("filter.supplierIdPlaceholder")}
+            aria-label={t("filter.supplierIdLabel")}
+            style={{ minWidth: 200 }}
           />
-        </label>
-        <button type="button" className="btn btn-sm btn-secondary" onClick={applySupplierFilter}>
-          {t("common:apply", { defaultValue: "적용" })}
-        </button>
-        <button type="button" className="btn btn-sm btn-ghost" onClick={resetFilters}>
-          {t("filter.reset")}
-        </button>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={applySupplierFilter}>
+            {t("common:apply")}
+          </button>
+          {supplierId && (
+            <button type="button" className="btn btn-sm btn-ghost" onClick={resetSupplierFilter}>
+              {t("filter.reset")}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="tab-underline">
+        {HIDDEN_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            className={hidden === tab.value ? "active" : ""}
+            onClick={() => { setHidden(tab.value); setPage(1) }}
+          >
+            {t(tab.labelKey)}
+          </button>
+        ))}
       </div>
 
       {actionError && <p className="text-danger text-sm" role="alert">{actionError}</p>}
 
       {isLoading ? (
-        <p className="text-muted">{t("table.loading")}</p>
+        <p className="text-muted text-center">{t("table.loading")}</p>
       ) : isError ? (
-        <p className="text-danger">{t("table.loadError")}</p>
+        <p className="text-danger text-center">{t("table.loadError")}</p>
       ) : items.length === 0 ? (
         <div className="empty-state"><p>{t("table.empty")}</p></div>
       ) : (
@@ -112,7 +117,7 @@ export function SupplierReviewListPage() {
             </thead>
             <tbody>
               {items.map((r) => (
-                <tr key={r.reviewId} className={r.hidden ? "row-muted" : ""}>
+                <tr key={r.reviewId} style={r.hidden ? { opacity: 0.6 } : undefined}>
                   <td data-label={t("table.headers.rating")}><StarsDisplay value={r.rating} /></td>
                   <td data-label={t("table.headers.text")} style={{ maxWidth: 320, whiteSpace: "pre-wrap" }}>
                     {r.text ?? <span className="text-muted">—</span>}
@@ -156,11 +161,11 @@ export function SupplierReviewListPage() {
 
       {meta.totalPages != null && meta.totalPages >= 1 && (
         <div className="pagination">
-          <button disabled={!meta.hasPrev} onClick={() => setPage(Math.max(1, page - 1))}>‹</button>
+          <button aria-label={t("common:previous")} disabled={!meta.hasPrev} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</button>
           {Array.from({ length: Math.min(meta.totalPages ?? 1, 5) }, (_, i) => i + 1).map((p) => (
             <button key={p} className={p === page ? "active" : ""} onClick={() => setPage(p)}>{p}</button>
           ))}
-          <button disabled={!meta.hasNext} onClick={() => setPage(page + 1)}>›</button>
+          <button aria-label={t("common:next")} disabled={!meta.hasNext} onClick={() => setPage((p) => Math.min(meta.totalPages || p, p + 1))}>›</button>
         </div>
       )}
     </div>
