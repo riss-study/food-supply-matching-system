@@ -1,7 +1,7 @@
 # Session Handoff — 2026-04-20 (Evening, Mac Mini)
 
 > 같은 날 오전 세션은 다른 PC 에서 진행되어 `.sisyphus/session-handoff-2026-04-20.md` 로 기록됨.
-> 본 세션은 **새 머신** (`/Users/riss/project/food-supply-matching-system`) 에서 인프라 부트스트랩 → Phase 2 Task 06 전 SubTask 완료 → 지침서·명세 정리까지 15 커밋.
+> 본 세션은 **새 머신** (`/Users/riss/project/food-supply-matching-system`) 에서 인프라 부트스트랩 → Phase 2 Task 06 전 SubTask 완료 → 지침서·명세 정리 → Task 06.5 (admin 모더레이션 UI) 까지 총 17 커밋.
 >
 > - 이전 세션: `.sisyphus/session-handoff-2026-04-20.md` (오전)
 > - 미결 항목: `.sisyphus/open-items.md`
@@ -15,9 +15,10 @@
 2. **외부 접속 경로 개통** — Vite 기본 `localhost` 바인딩을 `--host` 로 영구 전환 (commit `6b5e6c1`). UPnP 로 4 포트 매핑 (5173/5174/18080/8081). 외부 포트 8080 이 ISP 레벨 차단되어 `18080` 으로 우회. UPnP 휘발성 대비 `EXTERNAL-ACCESS-GUIDE.ko.md` (`3815761`) 작성.
 3. **Phase 2 Task 06 Reviews & Ratings 전 SubTask (6.1~6.9) 완료** — 정책 합의 → 도메인 → API → projection → DTO 노출 → main-site UI → supplier detail 리뷰 → admin 모더레이션 + audit → 도메인 테스트 13건 + evidence. 총 11 커밋. CQRS 경계 유지, 계약 우선 원칙 (소급 작성 + 자체 검증) 적용.
 4. **문서 부채 2건 해소** — DOC-2 (`api-spec.md §5.1/§5.2` drift) 를 실제 code 와 맞춰 정리하고 버전 v1.9 로 배포. DOC-1 (지침서 §8 사례 누적) 에 Task 06 에서 얻은 사례 3건 추가 (v1.8): 계약 우선 위반 / `Mono.defer` 패턴 / UPnP 휘발성.
-5. **검증 지표**: `./gradlew test` 전 모듈 green, `yarn type-check` clean, vitest 22 파일 / 105 테스트 pass, 신규 `ReviewCommandServiceTest` 13건 pass, 빌드 production 성공, E2E smoke 9 시나리오 수동 검증 통과.
+5. **Task 06.5 — admin 모더레이션 UI** (`6745bb0`) — 6.8 의 backend-only hide/unhide 를 관리자 UI 로 확장. `GET /api/admin/supplier-reviews` 신규 (hidden/supplierId 필터), admin-site 에 `/supplier-reviews` 라우트 + 필터/페이지네이션/inline hide-unhide 토글 페이지. api-spec v1.10.
+6. **검증 지표**: `./gradlew test` 전 모듈 green, `yarn type-check` clean, vitest main 22 파일 / 105 테스트, admin 5 파일 / 15 테스트, 신규 `ReviewCommandServiceTest` 13건 pass, 빌드 production 성공, E2E smoke 9+4 시나리오 수동 검증 통과.
 
-**총 커밋**: 15 (전부 `origin/main` push 완료). HEAD 는 `919e971`.
+**총 커밋**: 17 (전부 `origin/main` push 완료). HEAD 는 `6745bb0` (본 핸드오프 커밋 전 기준).
 
 **다음 세션 진입점**: 아래 §5 "다음 할 일 리스트" 순서대로. 사용자 수동 테스트 피드백 대기 중 (§7).
 
@@ -36,6 +37,8 @@
 9. 6.9 에서 domain unit test 작성 중 `ensureContentAllowed` 동기 throw 가 StepVerifier 에서 NPE 를 유발하는 결함을 자체 발견 → `Mono.defer` 패턴으로 수정.
 10. Task 06 종결 후 사용자가 공인 IP 접속이 다시 안 된다고 지적 (UPnP 매핑이 세션 사이에 날아감). `upnpc -a` 로 재등록 + `EXTERNAL-ACCESS-GUIDE.ko.md` 작성 (`3815761`) — 영구 해결은 공유기 정적 포워딩으로 사용자 본인이 처리.
 11. 사용자 복귀 지시 → DOC-2 (`api-spec` drift) + DOC-1 (지침서 §8 사례 누적) 동시 해소 (`919e971`).
+12. Task 06.5 합의 (admin UI 는 운영상 필수) → spec 우선 작성 → backend GET list endpoint → admin-site `features/supplier-reviews` 신규 → 필터/페이지네이션/hide-unhide 토글 + nav 메뉴 (`6745bb0`).
+13. 본 핸드오프 갱신 + open-items 갱신 + FE/BE 코드 리뷰 및 검증 단계.
 
 ---
 
@@ -61,9 +64,11 @@ fade13e  feat(main-site): add review writing UI (Task 06 SubTask 6.6)
 70498ff  test(review): add domain unit tests + Task 06 evidence (SubTask 6.9)
 3815761  docs: add external access guide (router port forwarding + DHCP reservation)
 919e971  docs: resolve DOC-2 spec drift + add Task 06 lessons (guidelines v1.8)
+246698d  docs: session handoff 2026-04-20 evening (new Mac + Task 06 close + docs)
+6745bb0  feat(admin): supplier review moderation UI + list endpoint (Task 06.5)
 ```
 
-15 커밋.
+17 커밋.
 
 ---
 
@@ -77,6 +82,7 @@ fade13e  feat(main-site): add review writing UI (Task 06 SubTask 6.6)
 | 04 | 🟢 Done | Supplier sort/index (이전 세션) |
 | 05 | 🟢 Done | Swagger polish (이전 세션) |
 | 06 | 🟢 **Done (본 세션)** | Reviews & Ratings 9 SubTask 전체. BE+FE+admin. evidence 파일 있음 |
+| 06.5 | 🟢 **Done (본 세션, 보강)** | admin 모더레이션 UI + GET /api/admin/supplier-reviews. 6.8 backend-only 확장 |
 | 07 | ⚪ Deferred | Hot query hardening — 측정 선행 |
 
 Wave 1~3 (Task 01~06) 전부 완료. Wave 4 (Task 07) 는 트리거 조건 충족 시 재개.
@@ -214,7 +220,8 @@ memory `08-current-state-and-roadmap.md` 의 Next-2~5 모두 "트리거 대기" 
 - `.sisyphus/plans/phase2-subplans/phase2-task-06-reviews-and-ratings-foundation.md` — 정책 결정 기록 + SubTask 전체 Done
 - `EXTERNAL-ACCESS-GUIDE.ko.md` — 공유기 정적 포워딩 + DHCP 예약 가이드
 - `docs/REFACTORING-GUIDELINES.ko.md` v1.8 — §8 사례 9건 (신규 3건: 계약 우선 위반 / Mono.defer / UPnP 휘발성)
-- `.sisyphus/drafts/api-spec.md` v1.9 — §3.11 Review, §4.4 admin supplier-reviews, §5.1/§5.2 code 와 일치
+- `.sisyphus/drafts/api-spec.md` v1.10 — §3.11 Review, §4.4 admin supplier-reviews (POST hide/unhide + GET list), §5.1/§5.2 code 와 일치
+- Task 06.5 admin UI: `backend/admin-server/.../supplierreview/` + `frontend/apps/admin-site/src/features/supplier-reviews/` + locale `supplier-reviews.json`
 
 ### 누적 세션 핸드오프
 
@@ -234,10 +241,10 @@ memory `08-current-state-and-roadmap.md` 의 Next-2~5 모두 "트리거 대기" 
 ## 9. 현재 HEAD
 
 ```
-919e971 docs: resolve DOC-2 spec drift + add Task 06 lessons (guidelines v1.8)
+6745bb0 feat(admin): supplier review moderation UI + list endpoint (Task 06.5)
 ```
 
-`origin/main` 과 동기화. 작업 트리 clean (본 파일 add 전 기준).
+`origin/main` 과 동기화. 본 핸드오프 갱신 + open-items 갱신 커밋 전 기준.
 
 ---
 

@@ -180,3 +180,4 @@
 | 2026-04-20 | CI 검증: frontend-ci `462a43f` (utils env.d.ts) 로 복구, backend-ci `5c3e03a` (docker exec) 로 복구. OP-2 note 보정. |
 | 2026-04-20 | DOC-2 신규 (api-spec §5.1 4001/4002/4003 드리프트). Task 06 명세 작업 중 발견. |
 | 2026-04-20 | DOC-2 해결: api-spec v1.9 에서 §5.1/§5.2 registry 실제 code 와 일치시킴. |
+| 2026-04-20 | Task 06.5 (admin 모더레이션 UI) 완료. `/api/admin/supplier-reviews` GET list + admin-site `/supplier-reviews` 페이지. FE-3 승격 보류 — `RatingStars` 는 여전히 main-site 전용 (admin 은 inline 유니코드 ★). 공유 컴포넌트 수 1개 유지. |
