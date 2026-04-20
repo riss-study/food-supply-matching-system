@@ -421,6 +421,61 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 
 ---
 
+### 사례 7 — 도메인 먼저, 계약 뒤 (계약 우선 위반) (2026-04-20, Task 06 SubTask 6.2)
+
+**증상**: Phase 2 Task 06 Reviews & Ratings 착수 시 SubTask 6.2 (도메인 모델) 부터 구현 → `ReviewCommandService`, `ReviewEntity`, `ReviewRepository`, sealed exceptions, DDL 을 커밋 (`8be41f3`). 이 시점까지 `api-spec.md` 에는 Review 관련 섹션이 하나도 없음. 사용자 지적: "에이피아이 명세는 만들고 한거야? 명세서 먼저 만들었으면 좋겠네? 명세 만들고 명세 검증하고 그거에 대한 에이피아이를 만드는게 맞는거 같아."
+
+**원인**: 지침서 §1 "계약 우선" (`api-spec.md` 를 먼저 맞추고 코드는 그에 맞춤) 을 인지했으나, 도메인 레이어는 HTTP 계약과 다르다고 착각하여 순서를 바꾸지 않음. 실제로는 command-service 의 signature (CreateReviewCommand 의 필드명 / 에러 sealed class 의 code 할당) 가 HTTP API 의 shape 와 error envelope 를 미리 결정해 버린다.
+
+**조치**:
+- 계약 소급 작성: §3.11 Review (api-server) + §4.4 admin supplier-reviews (admin-server) + §5.1 에러 코드 4031/4036/4094/4222 재의미 부여 (`1809069`, spec v1.6).
+- 자체 검증에서 2건 결함 발견 → 수정 (`21dfb80`, v1.7): (1) POST body `supplierProfileId` → `supplierId` (외부 필드명 일관성), (2) GET 목록 페이지네이션이 §2.7 규약 위반.
+- spec 과 domain code 의 대조 검증 매트릭스 작성. domain 은 이미 spec 과 일치한다는 결론 → 코드 수정 없음. 단 누락됐던 에러 404/4041 (RequestNotFound) 는 spec 에 추가.
+- 이후 SubTask 6.3~6.8 은 모두 "spec 우선 → 검증 → 구현" 순서로 통일.
+
+**교훈**:
+1. **계약 우선은 "HTTP 계약" 에만 국한되지 않는다**. 도메인 command/query 메서드 signature, 에러 sealed class 의 code 할당, DDL 의 UNIQUE/FK 는 전부 외부 API 의 shape 를 굳히는 결정이다. 도메인부터 쓰면 나중에 계약에서 재할당이 필요해 비용이 더 커진다.
+2. **spec 후작성도 "검증 + 수정" 사이클을 반드시 걸친다**. 계약과 구현이 "보기엔" 맞는 것 같아도 페이지네이션 규약, 외부 필드명 일관성 같은 디테일이 어긋나 있다. spec 작성 후 다른 endpoint 와 대조하는 자체 리뷰가 필수.
+3. **에러 코드는 "빈 슬롯" 만 쓴다 ≠ 충분**. Phase 1 draft 의 예약 코드 (4031 Wrong role, 4036 Invalid supplier target 등) 가 실제 구현 없이 spec 에만 있었기 때문에 재의미 부여가 가능했지만, 만약 사용 중이었다면 domain 코드를 수정해야 했을 것. **spec ↔ code 정기 audit** 가 코드 재할당 비용을 예방한다 (DOC-2 해소, v1.9).
+
+---
+
+### 사례 8 — 동기 `throw` 가 `StepVerifier` 에서 포착되지 않는 결함 (2026-04-20, Task 06 SubTask 6.9)
+
+**증상**: `ReviewCommandService.create` 와 `update` 메서드 시작에 `ensureContentAllowed(text)` 를 호출하여 금칙어가 있으면 `throw ReviewContentViolationException(...)` 하도록 구현. 프로덕션에서 curl 로 `rating=5 text="씨발 망했음"` 보내면 Spring WebFlux 가 정상적으로 `422 code=4222` 로 응답. 그러나 `StepVerifier.create(service.create(...)).expectErrorSatisfies { ... }.verify()` 형태의 단위 테스트는 **NPE** 로 깨짐. 원인은 테스트가 `requestRepository.findById("req_1")` 를 stub 하지 않았기 때문인데, 정상 흐름이라면 profanity check 에서 Mono.error 로 종료되어 findById 가 호출되지 않아야 함.
+
+**원인**: `ensureContentAllowed` 가 동기 `throw` 를 하면 `service.create(command)` 호출 자체가 Mono 를 반환하기 **전에** 예외가 던져짐. Reactor 체인 (`requestRepository.findById(command.requestId).switchIfEmpty(...)`) 은 체인 구성 시점에 평가되는 반면, StepVerifier 는 Mono 가 정상 반환된 이후 emission 을 기다리기 때문에 동기 throw 를 포착하지 못함. 결과적으로 Kotlin 에서는 Mono 를 `.then(x)` 로 연결할 때 `x` 가 먼저 평가되어 null stub 에서 NPE 발생.
+
+**조치**:
+- `ensureContentAllowed` 를 `Mono<Void>` 반환으로 변경 (profanity 면 `Mono.error`, 아니면 `Mono.empty`).
+- 후속 체인을 `.then(Mono.defer { ... })` 로 감싸 lazy 평가. profanity error 시 defer 블록은 실행되지 않음.
+- 테스트 13건 전부 통과 (SubTask 6.9 evidence 참고).
+
+**교훈**:
+1. **reactive 메서드는 어떤 경우에도 동기 throw 하지 않는다**. validation 조차 `Mono.error` 로 표현해야 Reactor pipeline 의 취소/fallback/retry 연산자와 호환된다. Spring WebFlux 가 외부에서 catch 해 주는 것에 의존하지 말 것.
+2. **`.then(expr)` 의 `expr` 은 eager 평가된다**. 앞 단계의 에러로 skip 되기를 원하면 `.then(Mono.defer { expr })` 로 lazy 하게 만든다. `flatMap` 은 자연스럽게 lazy 하지만 `then` 은 아니다.
+3. **프로덕션에서 보이지 않는 버그를 단위 테스트가 잡는다**. WebFlux 의 `Dispatcher` 가 sync throw 를 catch 하는 너그러움이 오히려 결함을 숨긴다. domain 레이어 단위 테스트는 reactive contract 를 엄격히 지키는 검증 기준이 된다.
+
+---
+
+### 사례 9 — UPnP 매핑의 휘발성 (2026-04-20, Infra)
+
+**증상**: `miniupnpc` (`upnpc -a 172.30.1.81 5173 5173 TCP 0`) 로 4 포트 매핑 등록 후 외부 접속 OK. 세션 뒤 사용자 시도 시 전부 timeout. `upnpc -l` 결과 매핑 0건.
+
+**원인**: UPnP IGD 는 본질적으로 "임시" 성격. 다수의 공유기가 UPnP 매핑을 NVRAM 이 아닌 RAM 에 저장하거나 짧은 기본 lease 로 관리. 공유기 재부팅 / Mac sleep / UPnP 상태 갱신 이벤트에서 쉽게 초기화됨. lease 를 `0` (무기한) 으로 설정해도 공유기 내부 로직상 유지를 보장하지 않음.
+
+**조치**:
+- 즉시: `upnpc -a` 4줄 재등록 (휘발성 인정).
+- 영구: 공유기 관리자 페이지에서 **정적 포트 포워딩** + **DHCP 예약 (Mac IP 고정)** 필요. `EXTERNAL-ACCESS-GUIDE.ko.md` 에 제조사별 메뉴 경로 / 검증 curl / 트러블슈팅 체크리스트 포함.
+- 외부 포트 8080 은 ISP 레벨에서 차단되는 경우가 많아 18080 같은 bypass 포트로 우회 (api-server 만 해당, admin-server 8081 은 OK).
+
+**교훈**:
+1. **UPnP 는 MVP / 데모용 임시 해결책**. 프로덕션이나 지속적 외부 테스트에는 정적 포워딩이 정답. 자동화 (launchd 부팅 시 upnpc 재실행 등) 는 공유기 재부팅 대응이 약해서 완전 대체가 안 된다.
+2. **hairpin NAT 미지원 공유기는 내부에서 공인 IP 로 쏘면 실패한다**. 반드시 외부 네트워크 (LTE 연결 폰 등) 에서 최종 검증해야 포워딩 유효성을 확신할 수 있다.
+3. **ISP 가 well-known 포트 (80/8080/443) 를 차단하는 경우 대비**. 외부 포트는 숫자를 겹치지 않게 가져가고 (`18080`), 내부 포트만 표준으로 둔다. 문서화하지 않으면 DevOps 가 "왜 8080 은 안 되는지" 추적에 시간 소모.
+
+---
+
 ## §9. 관련 문서
 
 - `api-spec.md` — API 계약의 SSOT.
@@ -442,3 +497,4 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 | 1.5 | 2026-04-19 | §2.5.2 추가: AsyncBoundary 로 loading/error/empty 패턴 공통화. |
 | 1.6 | 2026-04-19 | §8 사례 3 추가: Mongo seed 누락 → 재시드 규약 운영 문서화 (LOCAL-RUN-GUIDE.ko.md §6). |
 | 1.7 | 2026-04-20 | §8 사례 4~6 추가: Supplier search Mongo Criteria 이관 (Task 04), OpenAPI 글로벌 security 제거 (Task 05), `packages/utils` env.d.ts 로 CI red 복구. |
+| 1.8 | 2026-04-20 | §8 사례 7~9 추가 (Task 06 & Infra): 계약 우선 위반 후 소급 작성 + 대조 검증 (spec v1.6~1.9), reactive service 의 동기 throw 와 `Mono.defer` 패턴, UPnP 휘발성 과 정적 포워딩 필요성. |

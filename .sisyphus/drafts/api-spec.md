@@ -3919,11 +3919,11 @@ Authorization: Bearer <JWT>
 
 | 코드 | 의미 | 사용 상황 |
 |------|------|-----------|
-| 4001 | Validation failed | 요청 데이터 형식/값 오류 |
-| 4002 | Invalid file | 파일 형식/크기 위반 |
-| 4003 | Thread already exists | 스레드 중복 생성 시도 |
+| 4000 | Validation failed | 요청 데이터 형식/값 오류 (`WebExchangeBindException` handler) |
 | 4004 | Empty message | body와 attachment 둘 다 없음 |
+| 4010 | Authentication required | 인증 누락 (security writer) |
 | 4011 | Invalid credentials | 로그인 실패 |
+| 4030 | Access denied | 권한 불충분 (security writer, 403 fallback) |
 | 4031 | Review update forbidden | 리뷰 본인 아님 / 7일 경과 / hidden 상태 |
 | 4032 | Cannot modify approved profile | approved 상태 수정 시도 |
 | 4033 | Cannot modify approved supplier | approved 공급자 수정 시도 |
@@ -3933,15 +3933,17 @@ Authorization: Bearer <JWT>
 | 4037 | Quote permission denied | 견적 제출 권한 없음 |
 | 4038 | Cannot modify quote state | 견적 상태로 인한 수정 불가 |
 | 4039 | Thread access denied | 스레드 비참여자 접근 |
-| 4041 | Resource not found | 리소스 없음 |
+| 4041 | Resource not found | 리소스 없음 (§2.5 fallback 으로도 매핑 — 404 → 4040 은 예약이나 실제 핸들러는 4041 사용) |
 | 4091 | Duplicate email | 이미 존재하는 이메일 |
 | 4092 | Profile exists | 이미 존재하는 프로필 |
 | 4093 | Active submission exists | 이미 검수 중인 제출 |
 | 4094 | Review already exists | 같은 (request, supplier) 쌍에 리뷰 중복 |
 | 4095 | Active quote exists | 같은 의뢰에 active 견적 존재 |
 | 4096 | Already requested/approved | 연락처 공유 이미 요청/승인됨 |
+| 4097 | Contact share approval conflict | 연락처 공유 승인 상태 충돌 |
+| 4098 | Contact share not requested | 연락처 공유 요청 전 승인/거절 시도 |
 | 4099 | Cannot revoke after approval | mutually_approved 후 철회 시도 |
-| 4221 | Invalid field modification | 허용되지 않은 필드 수정 |
+| 4221 | Invalid field modification | 허용되지 않은 필드 수정 (Supplier profile state immutable) |
 | 4222 | Review content violation | 금칙어 포함 등 모더레이션 위반 |
 | 4223 | Non-patchable field | 수정 불가 필드 포함 |
 
@@ -3949,9 +3951,8 @@ Authorization: Bearer <JWT>
 
 | 코드 | 의미 |
 |------|------|
-| 5001 | Internal server error |
-| 5002 | Database error |
-| 5003 | External service error |
+| 5000 | Internal server error (fallback, 생성자 실패 / 미분류 예외) |
+| 5001 | Password encoding failed |
 
 ---
 
@@ -3998,6 +3999,7 @@ Authorization: Bearer <JWT>
 | 1.6 | 2026-04-20 | Phase 2 Task 06 계약 선반영: §3.11 Review API (POST/PATCH/eligibility/list), §4.4 admin 공급자 리뷰 모더레이션 (hide/unhide) 신규. §5.1 코드 재의미 부여: 4031=Review update forbidden, 4036=Review eligibility failed, 4094=Review already exists, 4222=Review content violation (Phase 1 draft 예약 의미는 실제 구현 없어 폐기). admin 모더레이션은 기존 `/api/admin/reviews/*` (검수 큐) 와 분리하기 위해 `/api/admin/supplier-reviews/*` 경로 사용. |
 | 1.7 | 2026-04-20 | v1.6 자체 검증 후 수정: (1) POST /api/reviews body 의 `supplierProfileId` 를 `supplierId` 로 변경 (외부 명칭 일관성, 기존 `/api/suppliers/{supplierId}` 경로와 동일). (2) GET /api/suppliers/{supplierId}/reviews 페이지네이션이 §2.7 규약을 어기고 있어 1-based / max size 100 / sort·order 분리 형태로 정정. Pre-existing drift (§5.1 4001/4002/4003) 는 DOC-2 open-item 으로 분리. |
 | 1.8 | 2026-04-20 | Phase 2 Task 06 SubTask 6.5 반영: §3.4 GET /api/suppliers 응답 item 과 GET /api/suppliers/{id} 상세 응답에 `ratingAvg` (number, 소수점 둘째자리), `ratingCount` (integer) 노출. 상세에는 최근 리뷰 3건 `recentReviews[]` 추가 (createdAt desc, hidden 제외, §3.11 목록 item 과 동일 구조에서 updatedAt 제외). |
+| 1.9 | 2026-04-20 | DOC-2 해소: §5.1/§5.2 registry 를 실제 code 와 일치시킴. 제거: 4001 (실제 validation 은 4000), 4002 (미구현), 4003 (미구현), 5002/5003 (미구현). 추가: 4000 Validation, 4010 Authentication required, 4030 Access denied, 4097/4098 ContactShare 관련. 수정: 5000 Internal fallback, 5001 Password encoding failed. §2.5 404→4040 fallback 언급은 예약이나 실제 핸들러는 4041 을 사용한다는 주석 추가. |
 
 ---
 

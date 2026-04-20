@@ -163,16 +163,9 @@
 - **규모**: S
 - **다시 검토 트리거**: 다음 대규모 리팩토링 후 §8 구조 정리 필요할 때
 
-### DOC-2. `api-spec.md §5.1` 에러 코드 드리프트
+### DOC-2. ~~`api-spec.md §5.1` 에러 코드 드리프트~~ ✅ 해결 (2026-04-20, v1.9)
 
-- **배경**: §5.1 error code registry 에 Phase 1 draft 때 예약해둔 코드들이 실제 구현과 어긋나 있음:
-  - `4001 Validation failed` — 실제 코드는 `4000` 사용 (`GlobalApiExceptionHandler.handleValidation`)
-  - `4002 Invalid file` — 구현 없음
-  - `4003 Thread already exists` — 구현 없음
-- **왜 지금 안 하는가**: Task 06 명세 작업 중 발견했으나 Review 범위 밖. v1.7 에서 회피 (내 새 error 테이블은 4000 으로 올바르게 기재).
-- **규모**: S (registry 수정 + 필요 시 컨트롤러 쪽 인용 점검)
-- **다시 검토 트리거**: 다음 api-spec pass 때 (Task 06 종결 또는 Task 07 착수 전)
-- **참고**: `api-spec.md` v1.7 history, `backend/shared-core/.../GlobalApiExceptionHandler.kt`
+- 4001/4002/4003, 5002/5003 삭제. 4000/4010/4030/4097/4098, 5000/5001 실제 핸들러와 일치하도록 정리.
 
 ---
 
@@ -186,3 +179,4 @@
 | 2026-04-19 | Phase 2 Task 03~07 재평가: 03 축소, 04/05 진행, 06/07 이관. OP-4 (audit 검색 API) 신규. |
 | 2026-04-20 | CI 검증: frontend-ci `462a43f` (utils env.d.ts) 로 복구, backend-ci `5c3e03a` (docker exec) 로 복구. OP-2 note 보정. |
 | 2026-04-20 | DOC-2 신규 (api-spec §5.1 4001/4002/4003 드리프트). Task 06 명세 작업 중 발견. |
+| 2026-04-20 | DOC-2 해결: api-spec v1.9 에서 §5.1/§5.2 registry 실제 code 와 일치시킴. |
