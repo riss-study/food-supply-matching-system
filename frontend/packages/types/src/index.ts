@@ -290,6 +290,9 @@ export interface SupplierDetailResponse {
   logoUrl?: string | null
   certifications: SupplierCertificationSummaryResponse[]
   portfolioImages: SupplierPortfolioImageResponse[]
+  ratingAvg: number
+  ratingCount: number
+  recentReviews: SupplierRecentReview[]
 }
 
 export interface SupplierCategorySummaryResponse {

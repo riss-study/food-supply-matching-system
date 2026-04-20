@@ -2,12 +2,15 @@ import { Link, useParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useMe } from "../../auth/hooks/useMe"
 import { useSupplierDetail } from "../hooks/useSupplierDetail"
+import { RatingStars, useSupplierReviews } from "../../reviews"
 
 export function SupplierDetailPage() {
   const { t } = useTranslation("discovery")
+  const { t: tReviews } = useTranslation("reviews")
   const { supplierId = "" } = useParams()
   const { data, isLoading } = useSupplierDetail(supplierId)
   const { data: me } = useMe()
+  const reviewsQuery = useSupplierReviews(supplierId, 1, 20)
 
   if (isLoading || !data) {
     return <div className="page"><h1>{t("detail.title")}</h1><p className="text-muted">{t("common:loading")}</p></div>
@@ -107,6 +110,40 @@ export function SupplierDetailPage() {
               </div>
             </section>
           )}
+
+          {/* 리뷰 */}
+          <section className="surface">
+            <div className="flex items-center justify-between mb-12">
+              <h2 className="section-title" style={{ margin: 0 }}>{tReviews("list.title")}</h2>
+              <span className="text-muted text-sm">{tReviews("list.count", { count: data.ratingCount })}</span>
+            </div>
+            <div className="flex items-center gap-12 mb-16">
+              <span className="font-bold" style={{ fontSize: 24 }}>{data.ratingAvg.toFixed(1)}</span>
+              <RatingStars value={Math.round(data.ratingAvg)} readOnly size="md" />
+            </div>
+            {reviewsQuery.isError ? (
+              <p className="text-danger text-sm">{tReviews("list.loadError")}</p>
+            ) : reviewsQuery.isLoading ? (
+              <p className="text-muted text-sm">{t("common:loading")}</p>
+            ) : reviewsQuery.data && reviewsQuery.data.items.length > 0 ? (
+              <ul className="flex flex-col gap-12" style={{ padding: 0, listStyle: "none", margin: 0 }}>
+                {reviewsQuery.data.items.map((r) => (
+                  <li key={r.reviewId} className="flex flex-col gap-4" style={{ borderBottom: "1px solid var(--line)", paddingBottom: 12 }}>
+                    <div className="flex items-center justify-between gap-8">
+                      <span className="font-semibold text-sm">{r.authorDisplayName}</span>
+                      <div className="flex items-center gap-8">
+                        <RatingStars value={r.rating} readOnly size="sm" />
+                        <span className="text-muted text-xs">{new Date(r.createdAt).toLocaleDateString("ko-KR")}</span>
+                      </div>
+                    </div>
+                    {r.text && <p className="text-muted text-sm" style={{ whiteSpace: "pre-wrap", margin: 0 }}>{r.text}</p>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted text-sm">{tReviews("list.empty")}</p>
+            )}
+          </section>
         </div>
 
         {/* Right sidebar */}

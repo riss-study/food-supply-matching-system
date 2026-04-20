@@ -116,6 +116,9 @@ describe("discovery hooks", () => {
         logoUrl: null,
         certifications: [],
         portfolioImages: [],
+        ratingAvg: 0,
+        ratingCount: 0,
+        recentReviews: [],
       })
 
       const { result } = renderHook(() => useSupplierDetail("sprof_01"), { wrapper: createWrapper() })
