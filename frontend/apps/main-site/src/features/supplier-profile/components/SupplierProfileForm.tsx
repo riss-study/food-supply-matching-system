@@ -1,7 +1,8 @@
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { CreateSupplierProfileRequest } from "@fsm/types"
-import { useSupplierCategories, useSupplierRegions } from "../../discovery/hooks/useDiscoveryLookups"
+import { SUPPLIER_CATEGORY_CODES } from "@fsm/config"
+import { useSupplierRegions } from "../../discovery/hooks/useDiscoveryLookups"
 
 interface PortfolioImage {
   url: string
@@ -24,7 +25,6 @@ export function SupplierProfileForm({
   existingPortfolioImages = [],
 }: Props) {
   const { t } = useTranslation("supplier-profile")
-  const { data: availableCategories = [], isLoading: categoriesLoading } = useSupplierCategories()
   const { data: availableRegions = [], isLoading: regionsLoading } = useSupplierRegions()
 
   const [companyName, setCompanyName] = useState(initialData?.companyName ?? "")
@@ -107,7 +107,7 @@ export function SupplierProfileForm({
     })
   }
 
-  if (categoriesLoading || regionsLoading) {
+  if (regionsLoading) {
     return <p>{t("form.optionsLoading")}</p>
   }
 
@@ -151,20 +151,19 @@ export function SupplierProfileForm({
         <fieldset className="fieldset">
           <legend className="fieldset-legend">{t("form.categoryLegend")}</legend>
           <div className="chip-group">
-            {availableCategories.map((c) => (
+            {SUPPLIER_CATEGORY_CODES.map((code) => (
               <label
-                key={c.category}
-                className={`chip${selectedCategories.includes(c.category) ? " chip--active" : ""}`}
+                key={code}
+                className={`chip${selectedCategories.includes(code) ? " chip--active" : ""}`}
               >
                 <input
                   type="checkbox"
-                  checked={selectedCategories.includes(c.category)}
-                  onChange={() => toggleCategory(c.category)}
+                  checked={selectedCategories.includes(code)}
+                  onChange={() => toggleCategory(code)}
                   disabled={contactOnly}
                   className="sr-only"
                 />
-                <span>{c.category}</span>
-                <span className="text-muted text-sm">({c.supplierCount})</span>
+                <span>{t(`common:supplierCategory.${code}`)}</span>
               </label>
             ))}
           </div>

@@ -2,10 +2,9 @@ import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import type { CreateRequestRequest, RequestMode } from "@fsm/types"
+import { SUPPLIER_CATEGORY_CODES } from "@fsm/config"
 import { useCreateRequest } from "../hooks/useCreateRequest"
 import { useSupplierList } from "../../discovery/hooks/useSupplierList"
-
-const categoryCodes = ["snack", "beverage", "sauce", "bakery", "dairy", "health", "frozen", "other"] as const
 
 const certifications = [
   { code: "HACCP", label: "HACCP" },
@@ -132,8 +131,8 @@ export function RequestCreatePage() {
                 required
               >
                 <option value="">{t("create.categorySelect")}</option>
-                {categoryCodes.map((code) => (
-                  <option key={code} value={code}>{t(`create.categoryOptions.${code}`)}</option>
+                {SUPPLIER_CATEGORY_CODES.map((code) => (
+                  <option key={code} value={code}>{t(`common:supplierCategory.${code}`)}</option>
                 ))}
               </select>
             </div>

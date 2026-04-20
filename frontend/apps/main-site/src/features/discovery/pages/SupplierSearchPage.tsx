@@ -82,7 +82,7 @@ export function SupplierSearchPage() {
               onChange={(e) => updateSearchParams({ category: e.target.value })}
             >
               <option value="">{t("common:all")}</option>
-              {categories?.map((item) => <option key={item.category} value={item.category}>{item.category}</option>)}
+              {categories?.map((item) => <option key={item.category} value={item.category}>{t(`common:supplierCategory.${item.category}`, { defaultValue: item.category })} ({item.supplierCount})</option>)}
             </select>
           </div>
 

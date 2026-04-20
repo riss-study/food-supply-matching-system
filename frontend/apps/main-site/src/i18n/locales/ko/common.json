@@ -34,5 +34,15 @@
   "menu": "메뉴",
   "logout": "로그아웃",
   "myProfile": "내 프로필",
-  "none": "없음"
+  "none": "없음",
+  "supplierCategory": {
+    "snack": "스낵 / 간식",
+    "beverage": "음료",
+    "sauce": "소스 / 조미료",
+    "bakery": "제과 / 베이커리",
+    "dairy": "유제품",
+    "health": "건강식품",
+    "frozen": "냉동식품",
+    "other": "기타"
+  }
 }

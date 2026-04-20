@@ -118,16 +118,6 @@
     "titlePlaceholder": "의뢰 제목을 입력하세요 (5~200자)",
     "categoryLabel": "카테고리",
     "categorySelect": "카테고리 선택",
-    "categoryOptions": {
-      "snack": "스낵/간식",
-      "beverage": "음료",
-      "sauce": "소스/조미료",
-      "bakery": "베이커리",
-      "dairy": "유제품",
-      "health": "건강식품",
-      "frozen": "냉동식품",
-      "other": "기타"
-    },
     "modeLabel": "의뢰 방식",
     "modePublic": "공개",
     "modeTargeted": "지정",
