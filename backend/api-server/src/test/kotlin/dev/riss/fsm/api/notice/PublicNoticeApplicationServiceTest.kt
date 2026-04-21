@@ -4,8 +4,6 @@ import dev.riss.fsm.command.notice.NoticeEntity
 import dev.riss.fsm.command.notice.NoticeRepository
 import dev.riss.fsm.command.supplier.AttachmentMetadataEntity
 import dev.riss.fsm.command.supplier.AttachmentMetadataRepository
-import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewDocument
-import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewRepository
 import dev.riss.fsm.shared.file.FileStorageService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -15,7 +13,6 @@ import org.mockito.Mockito.`when`
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import java.time.Instant
 import java.time.LocalDateTime
 
 class PublicNoticeApplicationServiceTest {
@@ -23,15 +20,14 @@ class PublicNoticeApplicationServiceTest {
     private val noticeRepository = mock(NoticeRepository::class.java)
     private val attachmentMetadataRepository = mock(AttachmentMetadataRepository::class.java)
     private val fileStorageService = mock(FileStorageService::class.java)
-    private val publicNoticeViewRepository = mock(PublicNoticeViewRepository::class.java)
-    private val service = PublicNoticeApplicationService(noticeRepository, attachmentMetadataRepository, fileStorageService, publicNoticeViewRepository)
+    private val service = PublicNoticeApplicationService(noticeRepository, attachmentMetadataRepository, fileStorageService)
 
     @Test
     fun `list sorts published notices by requested field`() {
-        `when`(publicNoticeViewRepository.findAll()).thenReturn(
+        `when`(noticeRepository.findAllByStateOrderByCreatedAtDesc("published")).thenReturn(
             Flux.just(
-                PublicNoticeViewDocument("notice_2", "Zulu", "excerpt", Instant.parse("2026-03-22T00:00:00Z"), 1),
-                PublicNoticeViewDocument("notice_1", "Alpha", "excerpt", Instant.parse("2026-03-21T00:00:00Z"), 3),
+                noticeEntity(noticeId = "notice_2", title = "Zulu", publishedAt = LocalDateTime.of(2026, 3, 22, 0, 0)),
+                noticeEntity(noticeId = "notice_1", title = "Alpha", publishedAt = LocalDateTime.of(2026, 3, 21, 0, 0)),
             )
         )
 
@@ -52,7 +48,6 @@ class PublicNoticeApplicationServiceTest {
 
         `when`(noticeRepository.findById(entity.noticeId)).thenReturn(Mono.just(entity))
         `when`(noticeRepository.save(any(NoticeEntity::class.java))).thenReturn(Mono.just(saved))
-        `when`(publicNoticeViewRepository.save(any(PublicNoticeViewDocument::class.java))).thenAnswer { Mono.just(it.arguments[0] as PublicNoticeViewDocument) }
         `when`(attachmentMetadataRepository.findAllByOwnerTypeAndOwnerId("notice", entity.noticeId)).thenReturn(
             Flux.just(
                 AttachmentMetadataEntity(
@@ -91,14 +86,20 @@ class PublicNoticeApplicationServiceTest {
             .verify()
     }
 
-    private fun noticeEntity(state: String, viewCount: Long = 0): NoticeEntity {
+    private fun noticeEntity(
+        noticeId: String = "notice_1",
+        title: String = "시스템 점검 안내",
+        state: String = "published",
+        viewCount: Long = 0,
+        publishedAt: LocalDateTime? = if (state == "published") LocalDateTime.of(2026, 3, 24, 9, 0) else null,
+    ): NoticeEntity {
         return NoticeEntity(
-            noticeId = "notice_1",
-            title = "시스템 점검 안내",
+            noticeId = noticeId,
+            title = title,
             body = "3월 25일 오전 시스템 점검이 예정되어 있습니다.",
             state = state,
             authorId = "admin_1",
-            publishedAt = if (state == "published") LocalDateTime.of(2026, 3, 24, 9, 0) else null,
+            publishedAt = publishedAt,
             viewCount = viewCount,
             createdAt = LocalDateTime.of(2026, 3, 24, 9, 0),
             updatedAt = LocalDateTime.of(2026, 3, 24, 9, 0),

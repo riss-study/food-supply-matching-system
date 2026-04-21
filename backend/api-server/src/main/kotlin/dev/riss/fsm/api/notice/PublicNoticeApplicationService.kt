@@ -1,9 +1,8 @@
 package dev.riss.fsm.api.notice
 
+import dev.riss.fsm.command.notice.NoticeEntity
 import dev.riss.fsm.command.notice.NoticeRepository
 import dev.riss.fsm.command.supplier.AttachmentMetadataRepository
-import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewDocument
-import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewRepository
 import dev.riss.fsm.shared.file.FileStorageService
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.ContentDisposition
@@ -14,7 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -31,16 +30,15 @@ class PublicNoticeApplicationService(
     private val noticeRepository: NoticeRepository,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
     private val fileStorageService: FileStorageService,
-    private val publicNoticeViewRepository: PublicNoticeViewRepository,
 ) {
 
     fun list(page: Int, size: Int, sort: String, order: String): Mono<PublicNoticePageResult> {
         val normalizedPage = page.coerceAtLeast(1)
         val normalizedSize = size.coerceIn(1, 50)
-        return publicNoticeViewRepository.findAll()
+        return noticeRepository.findAllByStateOrderByCreatedAtDesc("published")
             .collectList()
-            .map { documents ->
-                val sorted = documents.sortedWith(publicComparator(sort, order))
+            .map { published ->
+                val sorted = published.sortedWith(publicComparator(sort, order))
                 val totalElements = sorted.size.toLong()
                 val totalPages = ((totalElements + normalizedSize - 1) / normalizedSize).toInt().coerceAtLeast(1)
                 val start = ((normalizedPage - 1) * normalizedSize).coerceAtLeast(0)
@@ -48,13 +46,13 @@ class PublicNoticeApplicationService(
                 val paged = if (start < sorted.size) sorted.subList(start, end) else emptyList()
 
                 PublicNoticePageResult(
-                    items = paged.map {
+                    items = paged.map { entity ->
                         PublicNoticeListItem(
-                            noticeId = it.noticeId,
-                            title = it.title,
-                            excerpt = it.excerpt,
-                            publishedAt = it.publishedAt,
-                            viewCount = it.viewCount,
+                            noticeId = entity.noticeId,
+                            title = entity.title,
+                            excerpt = entity.body.take(200),
+                            publishedAt = entity.publishedAt?.toInstant(ZoneOffset.UTC) ?: Instant.EPOCH,
+                            viewCount = entity.viewCount,
                         )
                     },
                     page = normalizedPage,
@@ -79,15 +77,7 @@ class PublicNoticeApplicationService(
                             ?: return@flatMap Mono.error<PublicNoticeDetailResponse>(
                                 ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Published notice missing publishedAt")
                             )
-                        val publicDoc = PublicNoticeViewDocument(
-                            noticeId = saved.noticeId,
-                            title = saved.title,
-                            excerpt = saved.body.take(200),
-                            publishedAt = publishedAt.toInstant(ZoneOffset.UTC),
-                            viewCount = saved.viewCount,
-                        )
-                        publicNoticeViewRepository.save(publicDoc)
-                            .then(noticeAttachments(saved.noticeId))
+                        noticeAttachments(saved.noticeId)
                             .map { attachments ->
                                 PublicNoticeDetailResponse(
                                     noticeId = saved.noticeId,
@@ -132,7 +122,7 @@ class PublicNoticeApplicationService(
             .collectList()
     }
 
-    private fun loadPublishedNotice(noticeId: String): Mono<dev.riss.fsm.command.notice.NoticeEntity> {
+    private fun loadPublishedNotice(noticeId: String): Mono<NoticeEntity> {
         return noticeRepository.findById(noticeId)
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Notice not found")))
             .flatMap { entity ->
@@ -159,11 +149,11 @@ class PublicNoticeApplicationService(
     private fun noticeAttachmentUrl(noticeId: String, attachmentId: String): String =
         "/api/notices/$noticeId/attachments/$attachmentId"
 
-    private fun publicComparator(sort: String, order: String): Comparator<PublicNoticeViewDocument> {
+    private fun publicComparator(sort: String, order: String): Comparator<NoticeEntity> {
         val descending = order != "asc"
-        val comparator = when (sort) {
-            "title" -> compareBy<PublicNoticeViewDocument> { it.title.lowercase() }
-            else -> compareBy<PublicNoticeViewDocument> { it.publishedAt }
+        val comparator: Comparator<NoticeEntity> = when (sort) {
+            "title" -> compareBy { it.title.lowercase() }
+            else -> compareBy { it.publishedAt ?: LocalDateTime.MIN }
         }
         return if (descending) comparator.reversed() else comparator
     }

@@ -5,18 +5,12 @@ import dev.riss.fsm.command.notice.NoticeEntity
 import dev.riss.fsm.command.notice.NoticeRepository
 import dev.riss.fsm.command.supplier.AttachmentMetadataEntity
 import dev.riss.fsm.command.supplier.AttachmentMetadataRepository
-import dev.riss.fsm.query.admin.stats.notice.AdminNoticeViewDocument
-import dev.riss.fsm.query.admin.stats.notice.AdminNoticeViewRepository
-import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewDocument
-import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewRepository
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.file.StorageProperties
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import reactor.core.publisher.Flux
@@ -28,20 +22,16 @@ class NoticeApplicationServiceTest {
     private val noticeCommandService = mock(NoticeCommandService::class.java)
     private val noticeRepository = mock(NoticeRepository::class.java)
     private val attachmentMetadataRepository = mock(AttachmentMetadataRepository::class.java)
-    private val adminNoticeViewRepository = mock(AdminNoticeViewRepository::class.java)
-    private val publicNoticeViewRepository = mock(PublicNoticeViewRepository::class.java)
     private val service = NoticeApplicationService(
         StorageProperties(localRoot = "backend/local-storage"),
         noticeCommandService,
         noticeRepository,
         attachmentMetadataRepository,
-        adminNoticeViewRepository,
-        publicNoticeViewRepository,
     )
     private val principal = AuthenticatedUserPrincipal("admin_1", "admin@example.com", UserRole.ADMIN)
 
     @Test
-    fun `create honors published state and persists public projection`() {
+    fun `create honors published state and delegates to command service`() {
         val entity = noticeEntity(state = "published")
         val request = CreateNoticeRequest(
             title = entity.title,
@@ -52,15 +42,12 @@ class NoticeApplicationServiceTest {
 
         `when`(noticeCommandService.createNotice(entity.title, entity.body, principal.userId, "published", false))
             .thenReturn(Mono.just(entity))
-        `when`(adminNoticeViewRepository.save(any(AdminNoticeViewDocument::class.java))).thenAnswer { Mono.just(it.arguments[0] as AdminNoticeViewDocument) }
-        `when`(publicNoticeViewRepository.save(any(PublicNoticeViewDocument::class.java))).thenAnswer { Mono.just(it.arguments[0] as PublicNoticeViewDocument) }
 
         val response = service.create(principal, request).block()!!
 
         assertEquals("published", response.state)
         assertEquals(entity.createdAt, response.createdAt.atOffset(java.time.ZoneOffset.UTC).toLocalDateTime())
         verify(noticeCommandService).createNotice(entity.title, entity.body, principal.userId, "published", false)
-        verify(publicNoticeViewRepository, times(1)).save(any(PublicNoticeViewDocument::class.java))
     }
 
     @Test

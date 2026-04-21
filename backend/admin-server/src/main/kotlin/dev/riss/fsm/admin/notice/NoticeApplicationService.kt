@@ -1,24 +1,19 @@
 package dev.riss.fsm.admin.notice
 
 import dev.riss.fsm.command.notice.NoticeCommandService
+import dev.riss.fsm.command.notice.NoticeEntity
 import dev.riss.fsm.command.notice.NoticeRepository
 import dev.riss.fsm.command.supplier.AttachmentMetadataEntity
 import dev.riss.fsm.command.supplier.AttachmentMetadataRepository
-import dev.riss.fsm.query.admin.stats.notice.AdminNoticeViewDocument
-import dev.riss.fsm.query.admin.stats.notice.AdminNoticeViewRepository
-import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewDocument
-import dev.riss.fsm.query.admin.stats.notice.PublicNoticeViewRepository
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.file.StorageProperties
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
-import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
@@ -40,8 +35,6 @@ class NoticeApplicationService(
     private val noticeCommandService: NoticeCommandService,
     private val noticeRepository: NoticeRepository,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
-    private val adminNoticeViewRepository: AdminNoticeViewRepository,
-    private val publicNoticeViewRepository: PublicNoticeViewRepository,
 ) {
     private val localRoot: String = storageProperties.localRoot
 
@@ -57,22 +50,20 @@ class NoticeApplicationService(
     ): Mono<NoticePageResult> {
         val normalizedPage = page.coerceAtLeast(1)
         val normalizedSize = size.coerceIn(1, 100)
-        val parsedFrom = fromDate?.let { java.time.LocalDate.parse(it).atStartOfDay().toInstant(java.time.ZoneOffset.UTC) }
-        val parsedTo = toDate?.let { java.time.LocalDate.parse(it).plusDays(1).atStartOfDay().toInstant(java.time.ZoneOffset.UTC) }
+        val parsedFrom = fromDate?.let { java.time.LocalDate.parse(it).atStartOfDay() }
+        val parsedTo = toDate?.let { java.time.LocalDate.parse(it).plusDays(1).atStartOfDay() }
         return ensureAdmin(principal).then(Mono.defer {
             if (state != null) {
-                adminNoticeViewRepository.findAllByStateOrderByCreatedAtDesc(state)
-                    .collectList()
+                noticeRepository.findAllByStateOrderByCreatedAtDesc(state).collectList()
             } else {
-                adminNoticeViewRepository.findAllByOrderByCreatedAtDesc()
-                    .collectList()
+                noticeRepository.findAllByOrderByCreatedAtDesc().collectList()
             }
-        }).map { documents ->
-            documents
-                .filter { parsedFrom == null || it.createdAt >= parsedFrom }
-                .filter { parsedTo == null || it.createdAt < parsedTo }
-        }.map { documents ->
-            val sorted = documents.sortedWith(adminComparator(sort, order))
+        }).map { entities ->
+            entities
+                .filter { parsedFrom == null || !it.createdAt.isBefore(parsedFrom) }
+                .filter { parsedTo == null || it.createdAt.isBefore(parsedTo) }
+        }.map { entities ->
+            val sorted = entities.sortedWith(adminComparator(sort, order))
             val totalElements = sorted.size.toLong()
             val totalPages = ((totalElements + normalizedSize - 1) / normalizedSize).toInt().coerceAtLeast(1)
             val start = ((normalizedPage - 1) * normalizedSize).coerceAtLeast(0)
@@ -80,18 +71,18 @@ class NoticeApplicationService(
             val paged = if (start < sorted.size) sorted.subList(start, end) else emptyList()
 
             NoticePageResult(
-                items = paged.map {
+                items = paged.map { entity ->
                     NoticeListItemResponse(
-                        noticeId = it.noticeId,
-                        title = it.title,
-                        excerpt = it.excerpt,
-                        state = it.state,
-                        author = it.authorId,
-                        authorId = it.authorId,
-                        publishedAt = it.publishedAt,
-                        viewCount = it.viewCount,
-                        createdAt = it.createdAt,
-                        updatedAt = it.updatedAt,
+                        noticeId = entity.noticeId,
+                        title = entity.title,
+                        excerpt = entity.body.take(200),
+                        state = entity.state,
+                        author = entity.authorId,
+                        authorId = entity.authorId,
+                        publishedAt = entity.publishedAt?.toInstant(ZoneOffset.UTC),
+                        viewCount = entity.viewCount,
+                        createdAt = entity.createdAt.toInstant(ZoneOffset.UTC),
+                        updatedAt = entity.updatedAt.toInstant(ZoneOffset.UTC),
                     )
                 },
                 page = normalizedPage,
@@ -138,37 +129,12 @@ class NoticeApplicationService(
                 authorId = principal.userId,
                 initialState = request.state ?: "draft",
                 publishImmediately = request.publishImmediately,
-            ).flatMap { entity ->
-                val adminDoc = AdminNoticeViewDocument(
+            ).map { entity ->
+                CreateNoticeResponse(
                     noticeId = entity.noticeId,
-                    title = entity.title,
-                    excerpt = entity.body.take(200),
                     state = entity.state,
-                    authorId = entity.authorId,
-                    publishedAt = entity.publishedAt?.toInstant(ZoneOffset.UTC),
-                    viewCount = entity.viewCount,
                     createdAt = entity.createdAt.toInstant(ZoneOffset.UTC),
-                    updatedAt = entity.updatedAt.toInstant(ZoneOffset.UTC),
                 )
-                val publicDoc = if (entity.state == "published") {
-                    PublicNoticeViewDocument(
-                        noticeId = entity.noticeId,
-                        title = entity.title,
-                        excerpt = entity.body.take(200),
-                        publishedAt = entity.publishedAt!!.toInstant(ZoneOffset.UTC),
-                        viewCount = entity.viewCount,
-                    )
-                } else null
-
-                adminNoticeViewRepository.save(adminDoc)
-                    .then(publicDoc?.let { publicNoticeViewRepository.save(it) } ?: Mono.empty())
-                    .thenReturn(
-                        CreateNoticeResponse(
-                            noticeId = entity.noticeId,
-                            state = entity.state,
-                            createdAt = entity.createdAt.toInstant(ZoneOffset.UTC),
-                        )
-                    )
             }
         })
     }
@@ -190,48 +156,13 @@ class NoticeApplicationService(
                 } else {
                     Mono.just(updatedEntity)
                 }
-
-                finalEntityMono.flatMap { finalEntity ->
-
-                    val adminDoc = AdminNoticeViewDocument(
+                finalEntityMono.map { finalEntity ->
+                    UpdateNoticeResponse(
                         noticeId = finalEntity.noticeId,
-                        title = finalEntity.title,
-                        excerpt = finalEntity.body.take(200),
                         state = finalEntity.state,
-                        authorId = finalEntity.authorId,
                         publishedAt = finalEntity.publishedAt?.toInstant(ZoneOffset.UTC),
-                        viewCount = finalEntity.viewCount,
-                        createdAt = finalEntity.createdAt.toInstant(ZoneOffset.UTC),
                         updatedAt = finalEntity.updatedAt.toInstant(ZoneOffset.UTC),
                     )
-
-                    val publicMono: Mono<*> = when (finalEntity.state) {
-                        "published" -> {
-                            val publishedAt = finalEntity.publishedAt
-                                ?: return@flatMap Mono.error(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Published notice missing publishedAt"))
-                            val publicDoc = PublicNoticeViewDocument(
-                                noticeId = finalEntity.noticeId,
-                                title = finalEntity.title,
-                                excerpt = finalEntity.body.take(200),
-                                publishedAt = publishedAt.toInstant(ZoneOffset.UTC),
-                                viewCount = finalEntity.viewCount,
-                            )
-                            publicNoticeViewRepository.save(publicDoc)
-                        }
-
-                        else -> publicNoticeViewRepository.deleteById(finalEntity.noticeId)
-                    }
-
-                    adminNoticeViewRepository.save(adminDoc)
-                        .then(publicMono)
-                        .thenReturn(
-                            UpdateNoticeResponse(
-                                noticeId = finalEntity.noticeId,
-                                state = finalEntity.state,
-                                publishedAt = finalEntity.publishedAt?.toInstant(ZoneOffset.UTC),
-                                updatedAt = finalEntity.updatedAt.toInstant(ZoneOffset.UTC),
-                            )
-                        )
                 }
             }.switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Notice not found")))
         })
@@ -340,13 +271,13 @@ class NoticeApplicationService(
             .collectList()
     }
 
-    private fun adminComparator(sort: String, order: String): Comparator<AdminNoticeViewDocument> {
+    private fun adminComparator(sort: String, order: String): Comparator<NoticeEntity> {
         val descending = order != "asc"
         val comparator = when (sort) {
-            "publishedAt" -> compareBy<AdminNoticeViewDocument> { it.publishedAt ?: Instant.EPOCH }
-            "viewCount" -> compareBy<AdminNoticeViewDocument> { it.viewCount }
-            "title" -> compareBy<AdminNoticeViewDocument> { it.title.lowercase() }
-            else -> compareBy<AdminNoticeViewDocument> { it.createdAt }
+            "publishedAt" -> compareBy<NoticeEntity> { it.publishedAt ?: LocalDateTime.MIN }
+            "viewCount" -> compareBy<NoticeEntity> { it.viewCount }
+            "title" -> compareBy<NoticeEntity> { it.title.lowercase() }
+            else -> compareBy<NoticeEntity> { it.createdAt }
         }
         return if (descending) comparator.reversed() else comparator
     }
