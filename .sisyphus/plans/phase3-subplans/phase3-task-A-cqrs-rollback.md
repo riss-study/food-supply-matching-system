@@ -9,7 +9,7 @@
 | 우선순위 | P0 |
 | 기간 | 2~3 세션 예상 |
 | 스토리 포인트 | 21 (대규모) |
-| 상태 | 🟡 In Progress (Stage 1 완료 시점) |
+| 상태 | 🟡 In Progress (Stage 1/5/7 완료, 2/3/4/6/8/9 남음) |
 | Blocks | Phase 3 신규 feature 전부 (불일치 우려 제거 선결) |
 | Blocked By | 없음 |
 
@@ -89,9 +89,7 @@ ThreadProjectionService
 
 ## 단계별 계획
 
-### ✅ Stage 1 — subplan 문서화 + 인벤토리 (본 문서)
-
-Exit: 본 파일 commit 후.
+### ✅ Stage 1 — subplan 문서화 + 인벤토리 (본 문서) — **완료 `f214879` (2026-04-21)**
 
 ### 🔴 Stage 2 — Supplier 도메인
 
@@ -121,14 +119,15 @@ Exit: 전 endpoint 동일.
 
 Exit: 전 endpoint 동일.
 
-### 🔴 Stage 5 — User / BusinessProfile
+### ✅ Stage 5 — User / BusinessProfile — **완료 `c00206c` (2026-04-21)**
 
-- UserMe: user_account + business_profile 직접 조회
-- RequesterBusinessProfile: business_profile 직접
-- UserAuthProjection, RequesterBusinessProfileProjection 제거
-- 회귀: /api/me, /api/requester/business-profile
-
-Exit: 인증/프로필 플로우 정상.
+- `UserMeService` 신규 (api-server/auth) — UserAccountRepository + BusinessProfileRepository 직접 조회
+- `AuthApplicationService`: signup 시 projection 호출 제거, me() 는 UserMeService
+- `RequesterApprovalGuard`: UserMeService 로 전환
+- `RequesterBusinessProfileApplicationService`: BusinessProfileRepository 직접 사용, 두 projection 호출 제거
+- 테스트 재배선 (`RequesterApprovalGuardTest`)
+- 스모크: /api/me (buyer/admin/신규가입), /api/requester/business-profile — 전부 통과
+- **잔존**: `RequesterBusinessProfileQueryService` 는 Request/Thread projection 에서 아직 사용 중 → Stage 3/4 에서 제거
 
 ### 🔴 Stage 6 — Admin Review / Stats
 
@@ -140,12 +139,12 @@ Exit: 인증/프로필 플로우 정상.
 
 Exit: 관리자 플로우 정상.
 
-### 🔴 Stage 7 — Notice
+### ✅ Stage 7 — Notice — **완료 `cc83e69` (2026-04-21)**
 
-- PublicNotice / AdminNotice: `notice` 테이블 직접 (`WHERE state='published'` / 전체)
-- 회귀: /api/notices, /api/admin/notices
-
-Exit: 공지 플로우 정상.
+- `PublicNoticeApplicationService`: noticeRepository 직접, excerpt 는 body.take(200) 실시간, view save 제거
+- admin `NoticeApplicationService`: adminNoticeView/publicNoticeView save 전부 제거
+- 테스트 재배선
+- 스모크: /api/notices (published 3 seed + 신규), /api/admin/notices (archived 포함), create published → public list 즉시 반영 확인
 
 ### 🔴 Stage 8 — 물리 제거 + 인프라 정리
 
@@ -196,3 +195,21 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 - `memory/04-project-fsm-overview.md` 의 "CQRS 분리" 섹션 — 이후 갱신 대상
 - `.sisyphus/session-handoff-2026-04-20-evening.md` §5 우선순위 리스트
 - 이전 관련 사례: §8 사례 3 (Mongo seed 누락), 사례 4 (Supplier Mongo Criteria 이관)
+
+## 진행도 로그
+
+| Stage | 상태 | Commit | 날짜 |
+|-------|------|--------|------|
+| 1 subplan | ✅ | `f214879` | 2026-04-21 |
+| 2 Supplier | 🔴 | — | — |
+| 3 Request | 🔴 | — | — |
+| 4 Quote/Thread | 🔴 | — | — |
+| 5 User | ✅ | `c00206c` | 2026-04-21 |
+| 6 Admin | 🔴 | — | — |
+| 7 Notice | ✅ | `cc83e69` | 2026-04-21 |
+| 8 정리 | 🔴 | — | — |
+| 9 지침서 | 🔴 | — | — |
+
+**현재 HEAD**: `cc83e69` + 본 문서 갱신 커밋. `origin/main` 과 동기.
+
+**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view) 는 **더 이상 갱신되지 않음** → 향후 조회 시 stale 가능성 있지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않으므로 실 영향 없음. Supplier/Request/Quote/Thread/AdminReview 관련 뷰는 아직 쓰기·읽기 활성 (projection 아직 살아 있음).
