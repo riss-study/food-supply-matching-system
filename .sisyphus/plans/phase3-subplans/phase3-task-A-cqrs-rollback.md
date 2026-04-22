@@ -258,14 +258,14 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | 1 subplan | ✅ | `f214879` | 2026-04-21 |
 | 2 Supplier | ✅ | `1224130` | 2026-04-22 |
 | 3 Request | ✅ | `955957f` | 2026-04-22 |
-| 4 Quote/Thread | ✅ | (Stage 4 commit) | 2026-04-22 |
+| 4 Quote/Thread | ✅ | `3902577` | 2026-04-22 |
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
 | 6 Admin | 🔴 | — | — |
 | 7 Notice | ✅ | `cc83e69` | 2026-04-21 |
 | 8 정리 | 🔴 | — | — |
 | 9 지침서 | 🔴 | — | — |
 
-**현재 HEAD**: Stage 4 commit 예정. `origin/main` 과 동기화 전.
+**현재 HEAD**: `3902577`. `origin/main` 과 동기화 전.
 
 **중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice/Supplier/Request/**Quote/Thread** 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, requester_request_summary_view, supplier_request_feed_view, **quote_comparison_view, thread_summary_view, thread_detail_view**) 는 **더 이상 갱신되지 않음** → stale 가능하지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않음. AdminReview (query-model-admin-review) 관련 뷰만 남음 (Stage 6 대상).
 
