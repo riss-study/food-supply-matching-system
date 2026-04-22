@@ -1,7 +1,6 @@
 package dev.riss.fsm.api.quote
 
 import dev.riss.fsm.api.request.RequestAccessGuard
-import dev.riss.fsm.projection.request.RequestProjectionService
 import dev.riss.fsm.command.quote.QuoteCommandService
 import dev.riss.fsm.command.quote.SubmitQuoteCommand
 import dev.riss.fsm.command.quote.UpdateQuoteCommand
@@ -17,7 +16,6 @@ class QuoteApplicationService(
     private val requestAccessGuard: RequestAccessGuard,
     private val quoteCommandService: QuoteCommandService,
     private val quoteProjectionService: QuoteProjectionService,
-    private val requestProjectionService: RequestProjectionService,
     private val threadProjectionService: ThreadProjectionService,
 ) {
     fun submit(principal: AuthenticatedUserPrincipal, requestId: String, request: SubmitQuoteRequest): Mono<SubmitQuoteResponse> {
@@ -96,7 +94,6 @@ class QuoteApplicationService(
             .flatMap { result ->
                 quoteProjectionService.projectStateChanged(result.quote)
                     .then(quoteProjectionService.syncRequestQuotes(result.request.requestId))
-                    .then(requestProjectionService.projectRequestClosed(result.request))
                     .thenReturn(result)
             }
             .map { result ->

@@ -8,7 +8,6 @@ import dev.riss.fsm.command.quote.SubmittedQuoteResult
 import dev.riss.fsm.command.request.RequestEntity
 import dev.riss.fsm.command.thread.MessageThreadEntity
 import dev.riss.fsm.projection.quote.QuoteProjectionService
-import dev.riss.fsm.projection.request.RequestProjectionService
 import dev.riss.fsm.projection.thread.ThreadProjectionService
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
@@ -25,13 +24,11 @@ class QuoteApplicationServiceTest {
     private val requestAccessGuard = mock(RequestAccessGuard::class.java)
     private val quoteCommandService = mock(QuoteCommandService::class.java)
     private val quoteProjectionService = mock(QuoteProjectionService::class.java)
-    private val requestProjectionService = mock(RequestProjectionService::class.java)
     private val threadProjectionService = mock(ThreadProjectionService::class.java)
     private val service = QuoteApplicationService(
         requestAccessGuard,
         quoteCommandService,
         quoteProjectionService,
-        requestProjectionService,
         threadProjectionService,
     )
 

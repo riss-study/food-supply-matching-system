@@ -174,6 +174,10 @@ CREATE TABLE IF NOT EXISTS attachment_metadata (
 CREATE INDEX IF NOT EXISTS idx_cert_supplier ON certification_record (supplier_profile_id);
 CREATE INDEX IF NOT EXISTS idx_attachment_owner ON attachment_metadata (owner_type, owner_id);
 CREATE INDEX IF NOT EXISTS idx_supplier_state ON supplier_profile (verification_state, exposure_state);
+CREATE INDEX IF NOT EXISTS idx_targeted_supplier ON targeted_supplier_link (supplier_profile_id);
+CREATE INDEX IF NOT EXISTS idx_request_state_mode ON request_record (state, mode);
+CREATE INDEX IF NOT EXISTS idx_request_requester ON request_record (requester_user_id);
+CREATE INDEX IF NOT EXISTS idx_quote_request ON quote (request_id);
 
 CREATE TABLE IF NOT EXISTS verification_submission (
   id VARCHAR(64) PRIMARY KEY,

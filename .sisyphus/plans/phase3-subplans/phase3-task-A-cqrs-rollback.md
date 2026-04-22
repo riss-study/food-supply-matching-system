@@ -9,7 +9,7 @@
 | 우선순위 | P0 |
 | 기간 | 2~3 세션 예상 |
 | 스토리 포인트 | 21 (대규모) |
-| 상태 | 🟡 In Progress (Stage 1/2/5/7 완료, 3/4/6/8/9 남음) |
+| 상태 | 🟡 In Progress (Stage 1/2/3/5/7 완료, 4/6/8/9 남음) |
 | Blocks | Phase 3 신규 feature 전부 (불일치 우려 제거 선결) |
 | Blocked By | 없음 |
 
@@ -111,14 +111,35 @@ ThreadProjectionService
 
 Exit 충족: ./gradlew test 전 모듈 green + DTO shape 동일 + 5 endpoint + edge case live 통과.
 
-### 🔴 Stage 3 — Request 도메인
+### ✅ Stage 3 — Request 도메인 — **완료 (2026-04-22)**
 
-- `RequestQueryService` 를 R2DBC 기반으로. requester_request_summary / supplier_request_feed 의 join 내용을 SQL 로
-- `RequestProjectionService` 제거
-- quoteCount 필드: subquery 또는 별도 aggregate
-- 회귀: /api/requests (list + detail), /api/supplier/requests
+- `api/request/RequestQueryService` R2DBC 재작성
+  - list: `DatabaseClient` + COALESCE 서브쿼리로 quote_count 산출 (state != 'withdrawn')
+  - detail: `RequestAccessGuard` 통과 후 `BusinessProfileRepository.findByUserAccountId` 로 requester 조회 (구 RequesterBusinessProfileQueryService 의존 제거). targeted 경우 `targetedSupplierLinkRepository` + `supplierProfileRepository` join
+  - `RequesterRequestSummaryRepository` / `RequesterBusinessProfileQueryService` 의존 제거
+- `api/request/SupplierRequestService` R2DBC 재작성
+  - feed: `DatabaseClient` SQL — `WHERE state='open' AND (mode='public' OR EXISTS ... targeted_supplier_link)` + category 필터
+  - 각 item 별 `BusinessProfileRepository` + `QuoteRepository.existsByRequestIdAndSupplierProfileIdAndStateIn` 로 requesterBusinessName + hasQuoted 해석 (구 Mongo 버전과 동일한 per-item 패턴 유지)
+  - detail: 같은 requester/hasQuoted 해석 패턴
+- `RequestProjectionService` 호출 제거 (6 곳):
+  - `RequestApplicationService.create/update/publish/close/cancel` 5 곳
+  - `QuoteApplicationService.select` 1 곳
+- 스키마 인덱스 추가 (`01-schema.sql`): `idx_targeted_supplier`, `idx_request_state_mode`, `idx_request_requester`, `idx_quote_request`. live DB 에 `CREATE INDEX IF NOT EXISTS` 적용
+- 테스트 재배선: `QuoteApplicationServiceTest` 에서 `requestProjectionService` mock 제거
+- 드리프트 없음: request.mode (public/targeted) / state (draft/open/closed/cancelled) seed 와 코드 일치 확인
 
-Exit: 전 endpoint 동일.
+회귀 smoke (9건):
+- /api/requests 로그인 buyer01 기준 5건 (seed + 세션에서 만든 draft 2건 포함), quoteCount 정확 (seed_01=2, seed_02=1)
+- /api/requests?state=closed → 1 (seed_06)
+- /api/requests/seed_01 owner 조회 → 전체 shape
+- /api/requests/seed_04 비오너 → 403
+- /api/requests/does_not_exist → 404
+- /api/supplier/requests supplier1 (sprof_seed_01, targeted on seed_04) → 5 (4 public + seed_04)
+- /api/supplier/requests supplier2 → 4 public only (targeted 불포함)
+- /api/supplier/requests?category=snack → 1
+- /api/supplier/requests/seed_01 detail → requesterBusinessName + hasQuoted OK
+
+Exit 충족.
 
 ### 🔴 Stage 4 — Quote / Thread 도메인
 
@@ -211,7 +232,7 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 |-------|------|--------|------|
 | 1 subplan | ✅ | `f214879` | 2026-04-21 |
 | 2 Supplier | ✅ | `1224130` | 2026-04-22 |
-| 3 Request | 🔴 | — | — |
+| 3 Request | ✅ | (Stage 3 commit) | 2026-04-22 |
 | 4 Quote/Thread | 🔴 | — | — |
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
 | 6 Admin | 🔴 | — | — |
@@ -219,8 +240,8 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | 8 정리 | 🔴 | — | — |
 | 9 지침서 | 🔴 | — | — |
 
-**현재 HEAD**: `1224130`. `origin/main` 과 동기화 전 (push 필요 시 별도).
+**현재 HEAD**: Stage 3 commit 예정. `origin/main` 과 동기화 전.
 
-**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice/**Supplier** 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, **supplier_search_view, supplier_detail_view**) 는 **더 이상 갱신되지 않음** → stale 가능하지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않음 → 실 영향 없음. Request/Quote/Thread/AdminReview 관련 뷰는 아직 쓰기·읽기 활성 (projection 아직 살아 있음).
+**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice/Supplier/**Request** 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, **requester_request_summary_view, supplier_request_feed_view**) 는 **더 이상 갱신되지 않음** → stale 가능하지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않음. Quote/Thread/AdminReview 관련 뷰는 아직 쓰기·읽기 활성.
 
 **Note (Stage 2 드리프트 수정)**: `supplier_profile.exposure_state` 에 대해 seed 는 `'listed'`, 코드는 `'visible'` 로 분기하던 드리프트를 해소했음. MariaDB seed + live DB 모두 `'visible'` 로 정규화. 향후 코드 읽기/쓰기 양쪽 모두 `'visible'` 만 사용.

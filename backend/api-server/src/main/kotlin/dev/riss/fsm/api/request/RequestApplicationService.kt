@@ -4,7 +4,6 @@ import dev.riss.fsm.api.requester.RequesterApprovalGuard
 import dev.riss.fsm.command.request.CreateRequestCommand
 import dev.riss.fsm.command.request.RequestCommandService
 import dev.riss.fsm.command.request.UpdateRequestCommand
-import dev.riss.fsm.projection.request.RequestProjectionService
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -16,13 +15,11 @@ import java.time.ZoneOffset
 class RequestApplicationService(
     private val requesterApprovalGuard: RequesterApprovalGuard,
     private val requestCommandService: RequestCommandService,
-    private val requestProjectionService: RequestProjectionService,
 ) {
     fun create(principal: AuthenticatedUserPrincipal, request: CreateRequestRequest): Mono<CreateRequestResponse> {
         if (request.mode == "targeted" && request.targetSupplierIds.isNullOrEmpty()) {
             return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "targetSupplierIds are required for targeted mode"))
         }
-        // targetPriceRange는 자유 텍스트이므로 min/max 대소 검증 불가
 
         return requesterApprovalGuard.requireApprovedRequester(principal)
             .then(
@@ -44,7 +41,6 @@ class RequestApplicationService(
                     )
                 )
             )
-            .flatMap { entity -> requestProjectionService.projectRequestCreated(entity) }
             .map { entity ->
                 CreateRequestResponse(
                     requestId = entity.requestId,
@@ -55,8 +51,6 @@ class RequestApplicationService(
     }
 
     fun update(principal: AuthenticatedUserPrincipal, requestId: String, request: UpdateRequestRequest): Mono<UpdateRequestResponse> {
-        // targetPriceRange는 자유 텍스트이므로 min/max 대소 검증 불가
-
         return requestCommandService.update(
             requestId = requestId,
             requesterUserId = principal.userId,
@@ -72,7 +66,6 @@ class RequestApplicationService(
                 notes = request.notes,
                 )
         )
-            .flatMap { entity -> requestProjectionService.projectRequestUpdated(entity) }
             .map { entity ->
                 UpdateRequestResponse(
                     requestId = entity.requestId,
@@ -87,7 +80,6 @@ class RequestApplicationService(
             requestId = requestId,
             requesterUserId = principal.userId,
         )
-            .flatMap { entity -> requestProjectionService.projectRequestPublished(entity) }
             .map { entity ->
                 PublishRequestResponse(
                     requestId = entity.requestId,
@@ -102,7 +94,6 @@ class RequestApplicationService(
             requestId = requestId,
             requesterUserId = principal.userId,
         )
-            .flatMap { entity -> requestProjectionService.projectRequestClosed(entity) }
             .map { entity ->
                 CloseRequestResponse(
                     requestId = entity.requestId,
@@ -118,7 +109,6 @@ class RequestApplicationService(
             requesterUserId = principal.userId,
             reason = request?.reason,
         )
-            .flatMap { entity -> requestProjectionService.projectRequestCancelled(entity) }
             .map { entity ->
                 CancelRequestResponse(
                     requestId = entity.requestId,
