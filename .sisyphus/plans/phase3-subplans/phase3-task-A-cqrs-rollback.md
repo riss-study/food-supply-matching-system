@@ -232,7 +232,7 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 |-------|------|--------|------|
 | 1 subplan | ✅ | `f214879` | 2026-04-21 |
 | 2 Supplier | ✅ | `1224130` | 2026-04-22 |
-| 3 Request | ✅ | (Stage 3 commit) | 2026-04-22 |
+| 3 Request | ✅ | `955957f` | 2026-04-22 |
 | 4 Quote/Thread | 🔴 | — | — |
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
 | 6 Admin | 🔴 | — | — |
@@ -240,7 +240,7 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | 8 정리 | 🔴 | — | — |
 | 9 지침서 | 🔴 | — | — |
 
-**현재 HEAD**: Stage 3 commit 예정. `origin/main` 과 동기화 전.
+**현재 HEAD**: `955957f`. `origin/main` 과 동기화 전.
 
 **중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice/Supplier/**Request** 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, **requester_request_summary_view, supplier_request_feed_view**) 는 **더 이상 갱신되지 않음** → stale 가능하지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않음. Quote/Thread/AdminReview 관련 뷰는 아직 쓰기·읽기 활성.
 
