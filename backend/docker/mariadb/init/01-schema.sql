@@ -178,6 +178,11 @@ CREATE INDEX IF NOT EXISTS idx_targeted_supplier ON targeted_supplier_link (supp
 CREATE INDEX IF NOT EXISTS idx_request_state_mode ON request_record (state, mode);
 CREATE INDEX IF NOT EXISTS idx_request_requester ON request_record (requester_user_id);
 CREATE INDEX IF NOT EXISTS idx_quote_request ON quote (request_id);
+CREATE INDEX IF NOT EXISTS idx_quote_supplier ON quote (supplier_profile_id);
+CREATE INDEX IF NOT EXISTS idx_thread_message_quote ON message_thread (quote_id);
+CREATE INDEX IF NOT EXISTS idx_thread_message_thread ON thread_message (thread_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_thread_requester ON message_thread (requester_user_id);
+CREATE INDEX IF NOT EXISTS idx_thread_supplier ON message_thread (supplier_profile_id);
 
 CREATE TABLE IF NOT EXISTS verification_submission (
   id VARCHAR(64) PRIMARY KEY,

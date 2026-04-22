@@ -1,11 +1,11 @@
 package dev.riss.fsm.query.thread
 
 import dev.riss.fsm.shared.error.ThreadNotFoundException
-import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-@Service
+// Dormant Mongo-backed query service. Superseded by api-server direct R2DBC read path
+// (Phase 3 Task A, Stage 4). Class retained until Stage 8 removes the query-model-thread module.
 class ThreadQueryService(
     private val threadSummaryRepository: ThreadSummaryRepository,
     private val threadDetailRepository: ThreadDetailRepository,

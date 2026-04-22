@@ -9,7 +9,7 @@
 | 우선순위 | P0 |
 | 기간 | 2~3 세션 예상 |
 | 스토리 포인트 | 21 (대규모) |
-| 상태 | 🟡 In Progress (Stage 1/2/3/5/7 완료, 4/6/8/9 남음) |
+| 상태 | 🟡 In Progress (Stage 1/2/3/4/5/7 완료, 6/8/9 남음) |
 | Blocks | Phase 3 신규 feature 전부 (불일치 우려 제거 선결) |
 | Blocked By | 없음 |
 
@@ -141,13 +141,38 @@ Exit 충족: ./gradlew test 전 모듈 green + DTO shape 동일 + 5 endpoint + e
 
 Exit 충족.
 
-### 🔴 Stage 4 — Quote / Thread 도메인
+### ✅ Stage 4 — Quote / Thread 도메인 — **완료 (2026-04-22)**
 
-- QuoteComparison: quote + request + supplier_profile join
-- Thread summary/detail: message_thread + thread_message join + read_state + attachment_metadata
-- 회귀: /api/requests/{id}/quotes, /api/supplier/quotes, /api/threads, /api/threads/{id}
+- `api/quote/QuoteQueryService` R2DBC 재작성
+  - listForRequest: DatabaseClient JOIN quote × supplier_profile + message_thread subquery(thread_id). 정렬: unitPrice/moq/leadTime/createdAt
+  - listForSupplier: DatabaseClient JOIN quote × request_record + message_thread subquery
+  - 구 `QuoteComparisonRepository` 의존 제거
+- `api/thread/ThreadApplicationService` R2DBC 재작성
+  - list: `messageThreadRepository.findAllByRequesterUserId`/`findAllBySupplierProfileId` + 각 item 별 request/requester/supplier 이름 + unreadCount + lastMessage 해석 (N+1 per thread, MVP 규모 적정)
+  - detail: `loadAccessibleThread` (R2DBC) + 병렬 zip 으로 request title/requester name/supplier name/messages + `sharedContact` (mutually_approved 시만)
+  - `unreadCountFor`: `readStateRepository.findByThreadIdAndUserId` + `messageRepository.countByThreadIdAndSenderUserIdNotAndCreatedAtAfter` 조합
+  - 구 `threadQueryService` / `requesterBusinessProfileQueryService` / `threadProjectionService` 의존 전부 제거 (RequesterBusinessProfileQueryService 는 Stage 5 잔존분 마지막 사용처였음 → 이제 완전 dormant)
+- Projection 호출 제거 (11 곳)
+  - `QuoteApplicationService`: submit의 threadProjection+quoteProjection / update / withdraw / select (state + syncRequestQuotes) / decline — 5 call chains
+  - `ThreadApplicationService`: createThread / sendMessage / markThreadAsRead / mutateContactShare — 4 call sites
+  - `QuoteProjectionService`, `ThreadProjectionService`, `RequesterBusinessProfileQueryService`, `RequestProjectionService` 모두 dormant → Stage 8 에서 모듈과 함께 삭제
+- 구 Mongo `ThreadQueryService` 에서 `@Service` 제거 (bean 충돌 방지)
+- 스키마 인덱스 추가 (`01-schema.sql`): idx_quote_supplier, idx_thread_message_quote, idx_thread_message_thread(thread_id, created_at), idx_thread_requester, idx_thread_supplier. live DB 에 적용
+- 테스트 재배선: `QuoteApplicationServiceTest` / `ThreadApplicationServiceTest` 생성자/mock 업데이트, 삭제된 projection verify 제거
+- 드리프트 없음: quote state (submitted/selected/withdrawn/declined), contact_share_state (not_requested/one_side_approved/mutually_approved) seed 와 코드 일치
 
-Exit: 전 endpoint 동일.
+회귀 smoke (9건):
+- `/api/requests/seed_01/quotes` buyer01 (owner) → 2 quotes, companyName, threadId, 가격정렬
+- `/api/requests/seed_04/quotes` buyer01 (비owner) → 403
+- `/api/supplier/quotes` supplier1 → 2 quotes, requestTitle/category, version
+- `/api/threads` buyer01 → 5 threads (의 그 thread_0를 포함), lastMessage + unreadCount + updatedAt 내림차순
+- `/api/threads` supplier1 → 1 thread
+- `/api/threads/{id}` buyer owner detail → 전체 shape (otherParty, messages, meta)
+- 숨김 상태 (not_requested) thread → sharedContact=null
+- mutually_approved thread (seed_04) → sharedContact 노출 (requester contactName + supplier representativeName)
+- `/api/threads/does_not_exist` → 404
+
+Exit 충족.
 
 ### ✅ Stage 5 — User / BusinessProfile — **완료 `c00206c` (2026-04-21)**
 
@@ -233,15 +258,15 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | 1 subplan | ✅ | `f214879` | 2026-04-21 |
 | 2 Supplier | ✅ | `1224130` | 2026-04-22 |
 | 3 Request | ✅ | `955957f` | 2026-04-22 |
-| 4 Quote/Thread | 🔴 | — | — |
+| 4 Quote/Thread | ✅ | (Stage 4 commit) | 2026-04-22 |
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
 | 6 Admin | 🔴 | — | — |
 | 7 Notice | ✅ | `cc83e69` | 2026-04-21 |
 | 8 정리 | 🔴 | — | — |
 | 9 지침서 | 🔴 | — | — |
 
-**현재 HEAD**: `955957f`. `origin/main` 과 동기화 전.
+**현재 HEAD**: Stage 4 commit 예정. `origin/main` 과 동기화 전.
 
-**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice/Supplier/**Request** 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, **requester_request_summary_view, supplier_request_feed_view**) 는 **더 이상 갱신되지 않음** → stale 가능하지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않음. Quote/Thread/AdminReview 관련 뷰는 아직 쓰기·읽기 활성.
+**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice/Supplier/Request/**Quote/Thread** 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, requester_request_summary_view, supplier_request_feed_view, **quote_comparison_view, thread_summary_view, thread_detail_view**) 는 **더 이상 갱신되지 않음** → stale 가능하지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않음. AdminReview (query-model-admin-review) 관련 뷰만 남음 (Stage 6 대상).
 
 **Note (Stage 2 드리프트 수정)**: `supplier_profile.exposure_state` 에 대해 seed 는 `'listed'`, 코드는 `'visible'` 로 분기하던 드리프트를 해소했음. MariaDB seed + live DB 모두 `'visible'` 로 정규화. 향후 코드 읽기/쓰기 양쪽 모두 `'visible'` 만 사용.

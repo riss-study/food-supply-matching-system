@@ -14,12 +14,10 @@ import dev.riss.fsm.command.thread.MessageThreadEntity
 import dev.riss.fsm.command.thread.MessageThreadRepository
 import dev.riss.fsm.command.thread.SendMessageCommand
 import dev.riss.fsm.command.thread.ThreadCommandService
-import dev.riss.fsm.projection.thread.ThreadProjectionService
-import dev.riss.fsm.query.thread.LastMessageInfo
-import dev.riss.fsm.query.thread.ThreadDetailDocument
-import dev.riss.fsm.query.thread.ThreadQueryService
-import dev.riss.fsm.query.thread.ThreadSummaryDocument
-import dev.riss.fsm.query.user.RequesterBusinessProfileQueryService
+import dev.riss.fsm.command.thread.ThreadParticipantReadStateRepository
+import dev.riss.fsm.command.user.BusinessProfileEntity
+import dev.riss.fsm.command.user.BusinessProfileRepository
+import dev.riss.fsm.command.supplier.SupplierProfileEntity
 import dev.riss.fsm.shared.api.PaginationMeta
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.error.ThreadAccessDeniedException
@@ -40,7 +38,6 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.UUID
 
 @Service
 class ThreadApplicationService(
@@ -50,11 +47,10 @@ class ThreadApplicationService(
     private val messageThreadRepository: MessageThreadRepository,
     private val messageRepository: MessageRepository,
     private val threadCommandService: ThreadCommandService,
-    private val threadProjectionService: ThreadProjectionService,
-    private val threadQueryService: ThreadQueryService,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
     private val fileStorageService: FileStorageService,
-    private val requesterBusinessProfileQueryService: RequesterBusinessProfileQueryService,
+    private val businessProfileRepository: BusinessProfileRepository,
+    private val readStateRepository: ThreadParticipantReadStateRepository,
 ) {
     fun createThread(
         principal: AuthenticatedUserPrincipal,
@@ -104,7 +100,6 @@ class ThreadApplicationService(
                     )
                 )
             }
-            .flatMap { result -> threadProjectionService.projectThreadCreated(result.thread).thenReturn(result) }
             .map { result ->
                 CreateThreadResponse(
                     threadId = result.thread.threadId,
@@ -125,30 +120,37 @@ class ThreadApplicationService(
         val safePage = page.coerceAtLeast(1)
         val safeSize = size.coerceIn(1, 100)
 
-        val source = when (principal.role) {
-            UserRole.REQUESTER -> threadQueryService.getThreadSummariesForRequester(principal.userId, unreadOnly)
+        val threadsMono: Mono<List<MessageThreadEntity>> = when (principal.role) {
+            UserRole.REQUESTER -> messageThreadRepository.findAllByRequesterUserId(principal.userId).collectList()
             UserRole.SUPPLIER -> supplierProfileRepository.findBySupplierUserId(principal.userId)
                 .switchIfEmpty { Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Supplier profile not found")) }
-                .flatMapMany { profile -> threadQueryService.getThreadSummariesForSupplier(profile.profileId, unreadOnly) }
+                .flatMap { profile -> messageThreadRepository.findAllBySupplierProfileId(profile.profileId).collectList() }
             else -> return Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Admin thread inbox is not available"))
         }
 
-        return source.collectList().map { items ->
-            val total = items.size
-            val totalPages = if (total == 0) 0 else ((total - 1) / safeSize) + 1
-            val from = ((safePage - 1) * safeSize).coerceAtMost(total)
-            val to = (from + safeSize).coerceAtMost(total)
-            ThreadListPageResponse(
-                items = items.subList(from, to).map { document -> toSummaryResponse(document, principal.role) },
-                meta = PaginationMeta(
-                    page = safePage,
-                    size = safeSize,
-                    totalElements = total.toLong(),
-                    totalPages = totalPages,
-                    hasNext = safePage < totalPages,
-                    hasPrev = safePage > 1 && totalPages > 0,
-                ),
-            )
+        return threadsMono.flatMap { allThreads ->
+            Flux.fromIterable(allThreads)
+                .flatMap { thread -> enrichSummary(thread, principal) }
+                .collectList()
+                .map { summaries ->
+                    val filtered = summaries.filter { !unreadOnly || it.unreadCount > 0 }
+                    val sorted = filtered.sortedByDescending { it.updatedAt }
+                    val total = sorted.size
+                    val totalPages = if (total == 0) 0 else ((total - 1) / safeSize) + 1
+                    val from = ((safePage - 1) * safeSize).coerceAtMost(total)
+                    val to = (from + safeSize).coerceAtMost(total)
+                    ThreadListPageResponse(
+                        items = sorted.subList(from, to),
+                        meta = PaginationMeta(
+                            page = safePage,
+                            size = safeSize,
+                            totalElements = total.toLong(),
+                            totalPages = totalPages,
+                            hasNext = safePage < totalPages,
+                            hasPrev = safePage > 1 && totalPages > 0,
+                        ),
+                    )
+                }
         }
     }
 
@@ -163,48 +165,40 @@ class ThreadApplicationService(
 
         return loadAccessibleThread(principal, threadId)
             .flatMap { thread ->
-                Mono.zip(
-                    threadQueryService.getThreadDetail(threadId),
-                    loadMessagePage(thread, safePage, safeSize),
-                ).flatMap { tuple ->
-                    val detail = tuple.t1
-                    val messages = tuple.t2
-                    sharedContact(thread)
-                        .map<ThreadDetailResponse> { sharedContact ->
-                            ThreadDetailResponse(
-                                threadId = detail.threadId,
-                                requestId = detail.requestId,
-                                requestTitle = detail.requestTitle,
-                                otherParty = toOtherParty(detail, principal.role),
-                                contactShareState = detail.contactShareState,
-                                contactShareRequestedByRole = thread.contactShareRequestedByRole,
-                                requesterApproved = thread.contactShareRequesterApprovedAt != null,
-                                supplierApproved = thread.contactShareSupplierApprovedAt != null,
-                                sharedContact = sharedContact,
-                                messages = messages.items,
-                                meta = messages.meta,
-                                createdAt = detail.createdAt,
-                                updatedAt = detail.updatedAt,
-                            )
-                        }
-                        .defaultIfEmpty(
-                            ThreadDetailResponse(
-                                threadId = detail.threadId,
-                                requestId = detail.requestId,
-                                requestTitle = detail.requestTitle,
-                                otherParty = toOtherParty(detail, principal.role),
-                                contactShareState = detail.contactShareState,
-                                contactShareRequestedByRole = thread.contactShareRequestedByRole,
-                                requesterApproved = thread.contactShareRequesterApprovedAt != null,
-                                supplierApproved = thread.contactShareSupplierApprovedAt != null,
-                                sharedContact = null,
-                                messages = messages.items,
-                                meta = messages.meta,
-                                createdAt = detail.createdAt,
-                                updatedAt = detail.updatedAt,
-                            )
+                val titleMono = requestRepository.findById(thread.requestId).map { it.title }.defaultIfEmpty("")
+                val requesterNameMono = businessProfileRepository.findByUserAccountId(thread.requesterUserId)
+                    .map { it.businessName }.defaultIfEmpty("")
+                val supplierNameMono = supplierProfileRepository.findById(thread.supplierProfileId)
+                    .map { it.companyName }.defaultIfEmpty("")
+                val messagesMono = loadMessagePage(thread, safePage, safeSize)
+
+                Mono.zip(titleMono, requesterNameMono, supplierNameMono, messagesMono)
+                    .flatMap { tuple ->
+                        val requestTitle = tuple.t1
+                        val requesterBusinessName = tuple.t2
+                        val supplierCompanyName = tuple.t3
+                        val messages = tuple.t4
+
+                        fun build(sc: ThreadSharedContactResponse?): ThreadDetailResponse = ThreadDetailResponse(
+                            threadId = thread.threadId,
+                            requestId = thread.requestId,
+                            requestTitle = requestTitle,
+                            otherParty = buildOtherParty(principal.role, requesterBusinessName, supplierCompanyName, thread.supplierProfileId),
+                            contactShareState = thread.contactShareState,
+                            contactShareRequestedByRole = thread.contactShareRequestedByRole,
+                            requesterApproved = thread.contactShareRequesterApprovedAt != null,
+                            supplierApproved = thread.contactShareSupplierApprovedAt != null,
+                            sharedContact = sc,
+                            messages = messages.items,
+                            meta = messages.meta,
+                            createdAt = thread.createdAt.toInstant(ZoneOffset.UTC),
+                            updatedAt = thread.createdAt.toInstant(ZoneOffset.UTC),
                         )
-                }
+
+                        sharedContact(thread)
+                            .map { sc -> build(sc) }
+                            .switchIfEmpty(Mono.fromSupplier { build(null) })
+                    }
             }
     }
 
@@ -215,7 +209,7 @@ class ThreadApplicationService(
     ): Mono<SendThreadMessageResponse> {
         return loadParticipantContext(principal)
             .flatMap { context ->
-                loadAccessibleThread(principal, threadId).flatMap { thread ->
+                loadAccessibleThread(principal, threadId).flatMap { _ ->
                     validateAttachmentIds(threadId, request.attachmentIds.orEmpty())
                         .then(
                             threadCommandService.sendMessage(
@@ -228,7 +222,6 @@ class ThreadApplicationService(
                                 )
                             )
                         )
-                        .flatMap { message -> threadProjectionService.projectMessageSent(thread, message) }
                 }
             }
             .map { message ->
@@ -244,16 +237,14 @@ class ThreadApplicationService(
         return loadParticipantContext(principal)
             .flatMap { context ->
                 loadAccessibleThread(principal, threadId)
-                    .flatMap { thread ->
+                    .flatMap { _ ->
                         threadCommandService.markThreadAsRead(
                             MarkThreadAsReadCommand(
                                 threadId = threadId,
                                 userId = principal.userId,
                                 supplierProfileId = context.supplierProfileId,
                             )
-                        ).flatMap { result ->
-                            threadProjectionService.projectReadStateChanged(thread).thenReturn(result)
-                        }
+                        )
                     }
             }
             .map { result ->
@@ -338,6 +329,85 @@ class ThreadApplicationService(
             }
     }
 
+    private fun enrichSummary(
+        thread: MessageThreadEntity,
+        principal: AuthenticatedUserPrincipal,
+    ): Mono<ThreadSummaryResponse> {
+        val role = principal.role
+        val requestTitleMono = requestRepository.findById(thread.requestId)
+            .map { it.title }.defaultIfEmpty("")
+        val requesterNameMono = businessProfileRepository.findByUserAccountId(thread.requesterUserId)
+            .map { it.businessName }.defaultIfEmpty("")
+        val supplierNameMono = supplierProfileRepository.findById(thread.supplierProfileId)
+            .map { it.companyName }.defaultIfEmpty("")
+        val unreadCountMono = unreadCountFor(thread, role, principal.userId)
+
+        return Mono.zip(requestTitleMono, requesterNameMono, supplierNameMono, unreadCountMono)
+            .flatMap { tuple ->
+                val requestTitle = tuple.t1
+                val requesterName = tuple.t2
+                val supplierName = tuple.t3
+                val unreadCount = tuple.t4
+
+                fun build(lastMessage: MessageEntity?, updatedAt: LocalDateTime): ThreadSummaryResponse {
+                    val lastMessageResp = lastMessage?.let { lm ->
+                        ThreadLastMessageResponse(
+                            messageId = lm.messageId,
+                            senderUserId = lm.senderUserId,
+                            body = lm.body,
+                            hasAttachments = lm.getAttachmentIdList().isNotEmpty(),
+                            sentAt = lm.createdAt.toInstant(ZoneOffset.UTC),
+                            read = unreadCount == 0L || (role == UserRole.REQUESTER && lm.senderUserId == thread.requesterUserId),
+                            createdAt = lm.createdAt.toInstant(ZoneOffset.UTC),
+                        )
+                    }
+                    return ThreadSummaryResponse(
+                        threadId = thread.threadId,
+                        requestId = thread.requestId,
+                        requestTitle = requestTitle,
+                        otherParty = buildOtherParty(role, requesterName, supplierName, thread.supplierProfileId),
+                        unreadCount = unreadCount,
+                        contactShareState = thread.contactShareState,
+                        lastMessage = lastMessageResp,
+                        createdAt = thread.createdAt.toInstant(ZoneOffset.UTC),
+                        updatedAt = updatedAt.toInstant(ZoneOffset.UTC),
+                    )
+                }
+
+                messageRepository.findAllByThreadIdOrderByCreatedAtDesc(thread.threadId)
+                    .next()
+                    .map { last -> build(last, last.createdAt) }
+                    .switchIfEmpty(Mono.fromSupplier { build(null, thread.createdAt) })
+            }
+    }
+
+    private fun unreadCountFor(
+        thread: MessageThreadEntity,
+        role: UserRole,
+        userId: String,
+    ): Mono<Long> {
+        return readStateRepository.findByThreadIdAndUserId(thread.threadId, userId)
+            .map { it.lastReadAt }
+            .defaultIfEmpty(thread.createdAt.minusYears(100))
+            .flatMap { lastReadAt ->
+                messageRepository.countByThreadIdAndSenderUserIdNotAndCreatedAtAfter(
+                    thread.threadId,
+                    userId,
+                    lastReadAt,
+                )
+            }
+    }
+
+    private fun buildOtherParty(
+        role: UserRole,
+        requesterBusinessName: String,
+        supplierCompanyName: String,
+        supplierProfileId: String,
+    ): ThreadOtherPartyResponse = when (role) {
+        UserRole.REQUESTER -> ThreadOtherPartyResponse(supplierCompanyName, "supplier", "supplier", supplierProfileId)
+        else -> ThreadOtherPartyResponse(requesterBusinessName, "requester", "requester", null)
+    }
+
     private fun loadAccessibleThread(principal: AuthenticatedUserPrincipal, threadId: String): Mono<MessageThreadEntity> {
         return loadParticipantContext(principal)
             .flatMap { context ->
@@ -388,9 +458,6 @@ class ThreadApplicationService(
             .flatMap { context ->
                 loadAccessibleThread(principal, threadId)
                     .then(operation(context))
-                    .flatMap { updatedThread ->
-                        threadProjectionService.projectContactShareChanged(updatedThread)
-                    }
             }
             .flatMap { thread ->
                 sharedContact(thread)
@@ -474,43 +541,14 @@ class ThreadApplicationService(
             }
     }
 
-    private fun toSummaryResponse(document: ThreadSummaryDocument, role: UserRole): ThreadSummaryResponse {
-        return ThreadSummaryResponse(
-            threadId = document.threadId,
-            requestId = document.requestId,
-            requestTitle = document.requestTitle,
-            otherParty = when (role) {
-                UserRole.REQUESTER -> ThreadOtherPartyResponse(document.supplierCompanyName, "supplier", "supplier", document.supplierProfileId)
-                else -> ThreadOtherPartyResponse(document.requesterBusinessName, "requester", "requester", null)
-            },
-            unreadCount = if (role == UserRole.REQUESTER) document.requesterUnreadCount else document.supplierUnreadCount,
-            contactShareState = document.contactShareState,
-            lastMessage = document.lastMessage?.let { lastMessage ->
-                val unreadCount = if (role == UserRole.REQUESTER) document.requesterUnreadCount else document.supplierUnreadCount
-                ThreadLastMessageResponse(
-                    messageId = lastMessage.messageId,
-                    senderUserId = lastMessage.senderUserId,
-                    body = lastMessage.body,
-                    hasAttachments = lastMessage.hasAttachments,
-                    sentAt = lastMessage.createdAt,
-                    read = unreadCount == 0L || (role == UserRole.REQUESTER && lastMessage.senderUserId == document.requesterUserId),
-                    createdAt = lastMessage.createdAt,
-                )
-            },
-            createdAt = document.createdAt,
-            updatedAt = document.updatedAt,
-        )
-    }
-
     private fun sharedContact(thread: MessageThreadEntity): Mono<ThreadSharedContactResponse> {
         if (thread.contactShareState != "mutually_approved") {
             return Mono.empty()
         }
 
-        return Mono.zip(
-            requesterBusinessProfileQueryService.findByUserId(thread.requesterUserId),
-            supplierProfileRepository.findById(thread.supplierProfileId),
-        ).map { tuple ->
+        val requesterMono: Mono<BusinessProfileEntity> = businessProfileRepository.findByUserAccountId(thread.requesterUserId)
+        val supplierMono: Mono<SupplierProfileEntity> = supplierProfileRepository.findById(thread.supplierProfileId)
+        return Mono.zip(requesterMono, supplierMono).map { tuple ->
             val requester = tuple.t1
             val supplier = tuple.t2
             ThreadSharedContactResponse(
@@ -551,13 +589,6 @@ class ThreadApplicationService(
         )
     }
 
-    private fun toOtherParty(detail: ThreadDetailDocument, role: UserRole): ThreadOtherPartyResponse {
-        return when (role) {
-            UserRole.REQUESTER -> ThreadOtherPartyResponse(detail.supplierCompanyName, "supplier", "supplier", detail.supplierProfileId)
-            else -> ThreadOtherPartyResponse(detail.requesterBusinessName, "requester", "requester", null)
-        }
-    }
-
     private fun attachmentUrl(threadId: String, attachmentId: String): String = "/api/threads/$threadId/attachments/$attachmentId"
 
     private data class ParticipantContext(
@@ -568,4 +599,5 @@ class ThreadApplicationService(
         val items: List<ThreadMessageResponse>,
         val meta: PaginationMeta,
     )
+
 }

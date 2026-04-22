@@ -1,5 +1,6 @@
 package dev.riss.fsm.api.thread
 
+import dev.riss.fsm.command.request.RequestEntity
 import dev.riss.fsm.command.request.RequestRepository
 import dev.riss.fsm.command.request.TargetedSupplierLinkRepository
 import dev.riss.fsm.command.supplier.AttachmentMetadataRepository
@@ -10,11 +11,9 @@ import dev.riss.fsm.command.thread.MessageRepository
 import dev.riss.fsm.command.thread.MessageThreadEntity
 import dev.riss.fsm.command.thread.MessageThreadRepository
 import dev.riss.fsm.command.thread.ThreadCommandService
-import dev.riss.fsm.projection.thread.ThreadProjectionService
-import dev.riss.fsm.query.thread.ThreadDetailDocument
-import dev.riss.fsm.query.thread.ThreadQueryService
-import dev.riss.fsm.query.user.RequesterBusinessProfileDocument
-import dev.riss.fsm.query.user.RequesterBusinessProfileQueryService
+import dev.riss.fsm.command.thread.ThreadParticipantReadStateRepository
+import dev.riss.fsm.command.user.BusinessProfileEntity
+import dev.riss.fsm.command.user.BusinessProfileRepository
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.file.FileStorageService
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
@@ -36,11 +35,10 @@ class ThreadApplicationServiceTest {
     private val messageThreadRepository = mock(MessageThreadRepository::class.java)
     private val messageRepository = mock(MessageRepository::class.java)
     private val threadCommandService = mock(ThreadCommandService::class.java)
-    private val threadProjectionService = mock(ThreadProjectionService::class.java)
-    private val threadQueryService = mock(ThreadQueryService::class.java)
     private val attachmentMetadataRepository = mock(AttachmentMetadataRepository::class.java)
     private val fileStorageService = mock(FileStorageService::class.java)
-    private val requesterBusinessProfileQueryService = mock(RequesterBusinessProfileQueryService::class.java)
+    private val businessProfileRepository = mock(BusinessProfileRepository::class.java)
+    private val readStateRepository = mock(ThreadParticipantReadStateRepository::class.java)
     private val service = ThreadApplicationService(
         requestRepository,
         targetedSupplierLinkRepository,
@@ -48,11 +46,10 @@ class ThreadApplicationServiceTest {
         messageThreadRepository,
         messageRepository,
         threadCommandService,
-        threadProjectionService,
-        threadQueryService,
         attachmentMetadataRepository,
         fileStorageService,
-        requesterBusinessProfileQueryService,
+        businessProfileRepository,
+        readStateRepository,
     )
 
     @Test
@@ -62,7 +59,9 @@ class ThreadApplicationServiceTest {
 
         `when`(messageThreadRepository.findById(thread.threadId)).thenReturn(Mono.just(thread))
         `when`(threadCommandService.ensureThreadAccess(thread, principal.userId, null)).thenReturn(true)
-        `when`(threadQueryService.getThreadDetail(thread.threadId)).thenReturn(detail(thread))
+        `when`(requestRepository.findById(thread.requestId)).thenReturn(Mono.just(requestEntity()))
+        `when`(businessProfileRepository.findByUserAccountId(thread.requesterUserId)).thenReturn(Mono.just(requesterBusinessProfile()))
+        `when`(supplierProfileRepository.findById(thread.supplierProfileId)).thenReturn(Mono.just(supplierProfile(contactEmail = null)))
         `when`(messageRepository.findAllByThreadIdOrderByCreatedAtDesc(thread.threadId)).thenReturn(Flux.empty())
 
         StepVerifier.create(service.getThreadDetail(principal, thread.threadId, 1, 20))
@@ -95,8 +94,7 @@ class ThreadApplicationServiceTest {
                 ContactShareCommand(originalThread.threadId, principal.userId, currentProfile.profileId)
             )
         ).thenReturn(Mono.just(updatedThread))
-        `when`(threadProjectionService.projectContactShareChanged(updatedThread)).thenReturn(Mono.just(updatedThread))
-        `when`(requesterBusinessProfileQueryService.findByUserId(updatedThread.requesterUserId)).thenReturn(Mono.just(requesterProfile()))
+        `when`(businessProfileRepository.findByUserAccountId(updatedThread.requesterUserId)).thenReturn(Mono.just(requesterBusinessProfile()))
         `when`(supplierProfileRepository.findById(updatedThread.supplierProfileId)).thenReturn(Mono.just(currentProfile))
 
         StepVerifier.create(service.approveContactShare(principal, originalThread.threadId))
@@ -110,27 +108,28 @@ class ThreadApplicationServiceTest {
             .verifyComplete()
     }
 
-    private fun detail(thread: MessageThreadEntity): Mono<ThreadDetailDocument> {
-        return Mono.just(
-            ThreadDetailDocument(
-                threadId = thread.threadId,
-                requestId = thread.requestId,
-                requesterUserId = thread.requesterUserId,
-                supplierProfileId = thread.supplierProfileId,
-                quoteId = thread.quoteId,
-                contactShareState = thread.contactShareState,
-                requestTitle = "Test request",
-                requesterBusinessName = "Requester Foods",
-                supplierCompanyName = "Supplier Co",
-                createdAt = Instant.parse("2026-03-24T09:00:00Z"),
-                updatedAt = Instant.parse("2026-03-25T09:00:00Z"),
-            )
-        )
-    }
+    private fun requestEntity() = RequestEntity(
+        requestId = "req_1",
+        requesterUserId = "usr_req",
+        mode = "public",
+        title = "Test request",
+        category = "snack",
+        desiredVolume = "100",
+        targetPriceMin = null,
+        targetPriceMax = null,
+        certificationRequirement = null,
+        rawMaterialRule = null,
+        packagingRequirement = null,
+        deliveryRequirement = null,
+        notes = null,
+        state = "open",
+        createdAt = LocalDateTime.of(2026, 3, 24, 8, 0),
+        updatedAt = LocalDateTime.of(2026, 3, 24, 8, 0),
+    )
 
-    private fun requesterProfile() = RequesterBusinessProfileDocument(
+    private fun requesterBusinessProfile() = BusinessProfileEntity(
         profileId = "bp_1",
-        userId = "usr_req",
+        userAccountId = "usr_req",
         businessName = "Requester Foods",
         businessRegistrationNumber = "123-45-67890",
         contactName = "홍길동",
@@ -138,11 +137,12 @@ class ThreadApplicationServiceTest {
         contactEmail = "requester@example.com",
         verificationScope = "domestic",
         approvalState = "approved",
-        submittedAt = Instant.parse("2026-03-01T00:00:00Z"),
-        approvedAt = Instant.parse("2026-03-02T00:00:00Z"),
+        submittedAt = LocalDateTime.of(2026, 3, 1, 0, 0),
+        approvedAt = LocalDateTime.of(2026, 3, 2, 0, 0),
         rejectedAt = null,
         rejectionReason = null,
-        updatedAt = Instant.parse("2026-03-02T00:00:00Z"),
+        createdAt = LocalDateTime.of(2026, 3, 1, 0, 0),
+        updatedAt = LocalDateTime.of(2026, 3, 2, 0, 0),
     )
 
     private fun supplierProfile(contactEmail: String?) = SupplierProfileEntity(

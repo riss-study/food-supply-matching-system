@@ -7,13 +7,10 @@ import dev.riss.fsm.command.quote.SubmitQuoteCommand
 import dev.riss.fsm.command.quote.SubmittedQuoteResult
 import dev.riss.fsm.command.request.RequestEntity
 import dev.riss.fsm.command.thread.MessageThreadEntity
-import dev.riss.fsm.projection.quote.QuoteProjectionService
-import dev.riss.fsm.projection.thread.ThreadProjectionService
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -23,17 +20,10 @@ class QuoteApplicationServiceTest {
 
     private val requestAccessGuard = mock(RequestAccessGuard::class.java)
     private val quoteCommandService = mock(QuoteCommandService::class.java)
-    private val quoteProjectionService = mock(QuoteProjectionService::class.java)
-    private val threadProjectionService = mock(ThreadProjectionService::class.java)
-    private val service = QuoteApplicationService(
-        requestAccessGuard,
-        quoteCommandService,
-        quoteProjectionService,
-        threadProjectionService,
-    )
+    private val service = QuoteApplicationService(requestAccessGuard, quoteCommandService)
 
     @Test
-    fun `submit projects created thread before returning`() {
+    fun `submit returns response from command result`() {
         val principal = AuthenticatedUserPrincipal("usr_sup", "sup@example.com", UserRole.SUPPLIER)
         val requestId = "req_1"
         val submitRequest = SubmitQuoteRequest(
@@ -89,14 +79,9 @@ class QuoteApplicationServiceTest {
         `when`(requestAccessGuard.getSupplierProfileId(principal.userId)).thenReturn(Mono.just("sprof_1"))
         `when`(quoteCommandService.submit(SubmitQuoteCommand(requestId, "sprof_1", "1000", "100", "7", "10000", "note")))
             .thenReturn(Mono.just(SubmittedQuoteResult(quote, thread.threadId, thread, request)))
-        `when`(threadProjectionService.projectThreadCreated(thread.copy(quoteId = quote.quoteId))).thenReturn(Mono.just(thread))
-        `when`(quoteProjectionService.projectSubmitted(quote, thread.threadId)).thenReturn(Mono.just(quote))
 
         StepVerifier.create(service.submit(principal, requestId, submitRequest))
             .expectNextMatches { response -> response.threadId == thread.threadId && response.quoteId == quote.quoteId }
             .verifyComplete()
-
-        verify(threadProjectionService).projectThreadCreated(thread.copy(quoteId = quote.quoteId))
-        verify(quoteProjectionService).projectSubmitted(quote, thread.threadId)
     }
 }

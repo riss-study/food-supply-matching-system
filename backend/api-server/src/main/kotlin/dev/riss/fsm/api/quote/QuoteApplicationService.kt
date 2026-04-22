@@ -4,8 +4,6 @@ import dev.riss.fsm.api.request.RequestAccessGuard
 import dev.riss.fsm.command.quote.QuoteCommandService
 import dev.riss.fsm.command.quote.SubmitQuoteCommand
 import dev.riss.fsm.command.quote.UpdateQuoteCommand
-import dev.riss.fsm.projection.quote.QuoteProjectionService
-import dev.riss.fsm.projection.thread.ThreadProjectionService
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -15,8 +13,6 @@ import java.time.ZoneOffset
 class QuoteApplicationService(
     private val requestAccessGuard: RequestAccessGuard,
     private val quoteCommandService: QuoteCommandService,
-    private val quoteProjectionService: QuoteProjectionService,
-    private val threadProjectionService: ThreadProjectionService,
 ) {
     fun submit(principal: AuthenticatedUserPrincipal, requestId: String, request: SubmitQuoteRequest): Mono<SubmitQuoteResponse> {
         return requestAccessGuard.checkCanSubmitQuote(principal, requestId)
@@ -33,12 +29,6 @@ class QuoteApplicationService(
                         note = request.note,
                     )
                 )
-            }
-            .flatMap { result ->
-                threadProjectionService.projectThreadCreated(
-                    result.thread.copy(quoteId = result.quote.quoteId)
-                ).then(quoteProjectionService.projectSubmitted(result.quote, result.threadId))
-                    .thenReturn(result)
             }
             .map { result ->
                 SubmitQuoteResponse(
@@ -65,7 +55,6 @@ class QuoteApplicationService(
                     )
                 )
             }
-            .flatMap { quote -> quoteProjectionService.projectUpdated(quote) }
             .map { quote ->
                 UpdateQuoteResponse(
                     quoteId = quote.quoteId,
@@ -79,7 +68,6 @@ class QuoteApplicationService(
     fun withdraw(principal: AuthenticatedUserPrincipal, quoteId: String): Mono<WithdrawQuoteResponse> {
         return requestAccessGuard.getSupplierProfileId(principal.userId)
             .flatMap { supplierProfileId -> quoteCommandService.withdraw(quoteId, supplierProfileId) }
-            .flatMap { quote -> quoteProjectionService.projectStateChanged(quote) }
             .map { quote ->
                 WithdrawQuoteResponse(
                     quoteId = quote.quoteId,
@@ -91,11 +79,6 @@ class QuoteApplicationService(
 
     fun select(principal: AuthenticatedUserPrincipal, quoteId: String): Mono<SelectQuoteResponse> {
         return quoteCommandService.select(quoteId, principal.userId)
-            .flatMap { result ->
-                quoteProjectionService.projectStateChanged(result.quote)
-                    .then(quoteProjectionService.syncRequestQuotes(result.request.requestId))
-                    .thenReturn(result)
-            }
             .map { result ->
                 SelectQuoteResponse(
                     quoteId = result.quote.quoteId,
@@ -108,7 +91,6 @@ class QuoteApplicationService(
 
     fun decline(principal: AuthenticatedUserPrincipal, quoteId: String, request: DeclineQuoteRequest?): Mono<DeclineQuoteResponse> {
         return quoteCommandService.decline(quoteId, principal.userId)
-            .flatMap { quote -> quoteProjectionService.projectStateChanged(quote) }
             .map { quote ->
                 DeclineQuoteResponse(
                     quoteId = quote.quoteId,
