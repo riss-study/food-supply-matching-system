@@ -1,8 +1,6 @@
 package dev.riss.fsm.api.supplier
 
 import dev.riss.fsm.api.review.ReviewQueryService
-import dev.riss.fsm.query.supplier.SupplierQueryService
-import dev.riss.fsm.query.supplier.SupplierSearchQuery
 import dev.riss.fsm.shared.api.ApiSuccessResponse
 import dev.riss.fsm.shared.api.PaginationMeta
 import io.swagger.v3.oas.annotations.Operation
@@ -30,7 +28,7 @@ class SupplierDiscoveryController(
     private val reviewQueryService: ReviewQueryService,
 ) {
     @GetMapping
-    @Operation(summary = "List approved suppliers", description = "Returns approved and visible supplier search view entries. 정렬/필터는 DB-side Mongo query 로 처리됨.")
+    @Operation(summary = "List approved suppliers", description = "Returns approved and visible suppliers. 정렬/필터는 MariaDB R2DBC 쿼리로 처리됨.")
     @ApiResponse(
         responseCode = "200",
         description = "Supplier list",

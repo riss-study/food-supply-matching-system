@@ -4,7 +4,6 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
-import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 data class SupplierSearchQuery(
@@ -41,7 +40,8 @@ data class SupplierRegionSummary(
     val supplierCount: Int,
 )
 
-@Service
+// Dormant Mongo-backed implementation retained until Stage 8 physically removes the module.
+// No longer a Spring bean; replaced by dev.riss.fsm.api.supplier.SupplierQueryService (R2DBC).
 class SupplierQueryService(
     private val supplierSearchViewRepository: SupplierSearchViewRepository,
     private val supplierDetailViewRepository: SupplierDetailViewRepository,

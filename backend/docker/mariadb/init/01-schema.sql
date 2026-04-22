@@ -167,8 +167,13 @@ CREATE TABLE IF NOT EXISTS attachment_metadata (
   content_type VARCHAR(128) NOT NULL,
   file_size BIGINT NOT NULL,
   storage_key VARCHAR(500) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_attachment_owner (owner_type, owner_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_cert_supplier ON certification_record (supplier_profile_id);
+CREATE INDEX IF NOT EXISTS idx_attachment_owner ON attachment_metadata (owner_type, owner_id);
+CREATE INDEX IF NOT EXISTS idx_supplier_state ON supplier_profile (verification_state, exposure_state);
 
 CREATE TABLE IF NOT EXISTS verification_submission (
   id VARCHAR(64) PRIMARY KEY,

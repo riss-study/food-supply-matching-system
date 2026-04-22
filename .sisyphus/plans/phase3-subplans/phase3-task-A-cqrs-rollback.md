@@ -9,7 +9,7 @@
 | 우선순위 | P0 |
 | 기간 | 2~3 세션 예상 |
 | 스토리 포인트 | 21 (대규모) |
-| 상태 | 🟡 In Progress (Stage 1/5/7 완료, 2/3/4/6/8/9 남음) |
+| 상태 | 🟡 In Progress (Stage 1/2/5/7 완료, 3/4/6/8/9 남음) |
 | Blocks | Phase 3 신규 feature 전부 (불일치 우려 제거 선결) |
 | Blocked By | 없음 |
 
@@ -91,16 +91,25 @@ ThreadProjectionService
 
 ### ✅ Stage 1 — subplan 문서화 + 인벤토리 (본 문서) — **완료 `f214879` (2026-04-21)**
 
-### 🔴 Stage 2 — Supplier 도메인
+### ✅ Stage 2 — Supplier 도메인 — **완료 (2026-04-22)**
 
-- `SupplierQueryService` 를 api-server 내부로 이전하거나 신규 작성. R2dbcEntityTemplate + Criteria 로 검색/필터/정렬/페이지네이션 구현
-- SupplierDetail: supplier_profile + certification_record + attachment_metadata join + review aggregate (`@Query` 이미 있음)
-- categories / regions aggregate: MariaDB `GROUP BY`
-- `SupplierVisibilityProjectionService` 제거 (SupplierProfile 저장 후 더 이상 Mongo 업데이트 안 함)
-- 회귀: /api/suppliers, /api/suppliers/{id}, /api/suppliers/categories, /api/suppliers/regions, /api/suppliers/{id}/reviews
-- Review 쪽 recentReviews 는 이미 R2DBC 기반
+- 신규 `api-server/.../supplier/SupplierQueryService` (R2DBC)
+  - list: `DatabaseClient` 로 동적 WHERE + `FIND_IN_SET` (CSV 카테고리) + logo subquery + `LEFT JOIN` 으로 review rating aggregate.
+    Mongo 버전과 같이 `minCapacity/maxMoq` 는 VARCHAR 한계로 post-filter 유지.
+  - detail: `supplierProfileRepository` + `certificationRecordRepository` + `attachmentMetadataRepository` + `ReviewRepository.aggregateRatingBySupplier`
+  - categories: `supplierProfileRepository.findAll()` 후 CSV 분해 in-memory group by (MVP 규모)
+  - regions: `GROUP BY region` SQL
+- `SupplierDiscoveryController` 를 새 서비스로 교체 (동일 DTO shape 유지)
+- `SupplierVisibilityProjectionService` 호출 제거
+  - `SupplierProfileApplicationService.create/update/submitVerification` 3 곳
+  - `admin-server`/`AdminReviewApplicationService.applyDecision` 1 곳
+  - 서비스 클래스 자체 + query-model-supplier 모듈은 Stage 8 에서 물리 제거
+- 구 Mongo `SupplierQueryService` 는 `@Service` 만 제거 (bean 충돌 방지, 클래스는 Stage 8 삭제 시 함께)
+- **데이터 드리프트 발견 + 수정**: seed 에서 `exposure_state='listed'` 로 넣고 있었는데 코드 canonical 은 `'visible'` (admin approve 플로우). 구 Mongo 쿼리는 exposure 필터가 없어 가려졌던 버그. R2DBC 로 전환하면서 `WHERE ... exposure_state='visible'` 로 정상화. `02-mock-data.sql` + live DB 업데이트.
+- 스키마 인덱스 추가 (`01-schema.sql`): `idx_attachment_owner`, `idx_cert_supplier`, `idx_supplier_state`. 실 DB 에도 `CREATE INDEX IF NOT EXISTS` 적용
+- 회귀 smoke (8건): list (3 seed approved+visible), detail (seed_01 full shape), categories (4 categories), regions (3), reviews (empty), keyword/category/oem/odm filter, sort asc, pagination size=2, hidden supplier (seed_08) 직접 detail 접근, 404
 
-Exit: 전 endpoint 동일 shape 응답 + type-check/test green + live smoke.
+Exit 충족: ./gradlew test 전 모듈 green + DTO shape 동일 + 5 endpoint + edge case live 통과.
 
 ### 🔴 Stage 3 — Request 도메인
 
@@ -201,7 +210,7 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | Stage | 상태 | Commit | 날짜 |
 |-------|------|--------|------|
 | 1 subplan | ✅ | `f214879` | 2026-04-21 |
-| 2 Supplier | 🔴 | — | — |
+| 2 Supplier | ✅ | (Stage 2 commit) | 2026-04-22 |
 | 3 Request | 🔴 | — | — |
 | 4 Quote/Thread | 🔴 | — | — |
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
@@ -210,6 +219,8 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | 8 정리 | 🔴 | — | — |
 | 9 지침서 | 🔴 | — | — |
 
-**현재 HEAD**: `cc83e69` + 본 문서 갱신 커밋. `origin/main` 과 동기.
+**현재 HEAD**: Stage 2 commit 예정. `origin/main` 과 동기.
 
-**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view) 는 **더 이상 갱신되지 않음** → 향후 조회 시 stale 가능성 있지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않으므로 실 영향 없음. Supplier/Request/Quote/Thread/AdminReview 관련 뷰는 아직 쓰기·읽기 활성 (projection 아직 살아 있음).
+**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice/**Supplier** 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, **supplier_search_view, supplier_detail_view**) 는 **더 이상 갱신되지 않음** → stale 가능하지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않음 → 실 영향 없음. Request/Quote/Thread/AdminReview 관련 뷰는 아직 쓰기·읽기 활성 (projection 아직 살아 있음).
+
+**Note (Stage 2 드리프트 수정)**: `supplier_profile.exposure_state` 에 대해 seed 는 `'listed'`, 코드는 `'visible'` 로 분기하던 드리프트를 해소했음. MariaDB seed + live DB 모두 `'visible'` 로 정규화. 향후 코드 읽기/쓰기 양쪽 모두 `'visible'` 만 사용.

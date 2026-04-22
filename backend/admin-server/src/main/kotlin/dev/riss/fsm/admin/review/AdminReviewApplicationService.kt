@@ -4,7 +4,6 @@ import dev.riss.fsm.command.supplier.AuditLogEntity
 import dev.riss.fsm.command.supplier.AuditLogRepository
 import dev.riss.fsm.command.supplier.SupplierProfileRepository
 import dev.riss.fsm.command.supplier.VerificationSubmissionRepository
-import dev.riss.fsm.projection.supplier.SupplierVisibilityProjectionService
 import dev.riss.fsm.query.admin.review.AdminReviewQuery
 import dev.riss.fsm.query.admin.review.AdminReviewQueryService
 import dev.riss.fsm.shared.auth.UserRole
@@ -26,7 +25,6 @@ class AdminReviewApplicationService(
     private val supplierProfileRepository: SupplierProfileRepository,
     private val adminReviewProjectionService: AdminReviewProjectionService,
     private val adminReviewQueryService: AdminReviewQueryService,
-    private val supplierVisibilityProjectionService: SupplierVisibilityProjectionService,
     private val auditLogRepository: AuditLogRepository,
 ) {
     private val objectMapper = jacksonObjectMapper()
@@ -157,9 +155,7 @@ class AdminReviewApplicationService(
                     }
             }
             .flatMap { (submission, profile) ->
-                val certsMono = Mono.just(emptyList<dev.riss.fsm.command.supplier.CertificationRecordEntity>())
-                supplierVisibilityProjectionService.project(profile, emptyList())
-                    .then(adminReviewProjectionService.project(submission, profile))
+                adminReviewProjectionService.project(submission, profile)
                     .then(
                         auditLogRepository.save(
                             AuditLogEntity(

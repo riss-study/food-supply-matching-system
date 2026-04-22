@@ -11,7 +11,6 @@ import dev.riss.fsm.command.supplier.SupplierProfileRepository
 import dev.riss.fsm.command.supplier.UpdateSupplierProfileCommand
 import dev.riss.fsm.command.supplier.VerificationSubmissionEntity
 import dev.riss.fsm.command.supplier.VerificationSubmissionRepository
-import dev.riss.fsm.projection.supplier.SupplierVisibilityProjectionService
 import dev.riss.fsm.query.admin.review.AdminReviewDetailDocument
 import dev.riss.fsm.query.admin.review.AdminReviewDetailViewRepository
 import dev.riss.fsm.query.admin.review.AdminReviewFileItem
@@ -39,7 +38,6 @@ class SupplierProfileApplicationService(
     private val certificationRecordRepository: CertificationRecordRepository,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
     private val fileStorageService: FileStorageService,
-    private val supplierVisibilityProjectionService: SupplierVisibilityProjectionService,
     private val adminReviewQueueViewRepository: AdminReviewQueueViewRepository,
     private val adminReviewDetailViewRepository: AdminReviewDetailViewRepository,
 ) {
@@ -64,10 +62,7 @@ class SupplierProfileApplicationService(
                 packagingLabelingSupport = request.packagingLabelingSupport,
                 introduction = request.introduction,
             ),
-        ).flatMap { profile ->
-            zipProfileAssets(profile.profileId)
-                .flatMap { (certs, attachments) -> supplierVisibilityProjectionService.project(profile, certs, attachments).thenReturn(profile) }
-        }.flatMap { profile -> toResponse(profile) }
+        ).flatMap { profile -> toResponse(profile) }
     }
 
     fun get(principal: AuthenticatedUserPrincipal): Mono<SupplierProfileResponse> {
@@ -97,10 +92,7 @@ class SupplierProfileApplicationService(
                 packagingLabelingSupport = request.packagingLabelingSupport,
                 introduction = request.introduction,
             ),
-        ).flatMap { profile ->
-            zipProfileAssets(profile.profileId)
-                .flatMap { (certs, attachments) -> supplierVisibilityProjectionService.project(profile, certs, attachments).thenReturn(profile) }
-        }.flatMap { toResponse(it) }
+        ).flatMap { toResponse(it) }
     }
 
     fun submitVerification(
@@ -145,10 +137,10 @@ class SupplierProfileApplicationService(
                                         )
                                     }
                                     .flatMap { updatedProfile ->
-                                        zipProfileAssets(profile.profileId)
-                                            .flatMap { (certs, attachments) ->
-                                                supplierVisibilityProjectionService.project(updatedProfile, certs, attachments)
-                                                    .then(projectAdminReviewViews(submission, updatedProfile, certs))
+                                        certificationRecordRepository.findAllBySupplierProfileId(profile.profileId)
+                                            .collectList()
+                                            .flatMap { certs ->
+                                                projectAdminReviewViews(submission, updatedProfile, certs)
                                                     .thenReturn(updatedProfile)
                                             }
                                     }
