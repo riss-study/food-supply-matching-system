@@ -273,12 +273,12 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | 3 Request | ✅ | `955957f` | 2026-04-22 |
 | 4 Quote/Thread | ✅ | `3902577` | 2026-04-22 |
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
-| 6 Admin | ✅ | (Stage 6 commit) | 2026-04-24 |
+| 6 Admin | ✅ | `47dfb57` | 2026-04-24 |
 | 7 Notice | ✅ | `cc83e69` | 2026-04-21 |
 | 8 정리 | 🔴 | — | — |
 | 9 지침서 | 🔴 | — | — |
 
-**현재 HEAD**: Stage 6 commit 예정. `origin/main` 과 동기화 전.
+**현재 HEAD**: `47dfb57`. `origin/main` 과 동기화 전.
 
 **중간 dual-state 윈도우**: Mongo 는 여전히 기동 중이나 **모든 도메인이 R2DBC 로 전환 완료**. 11개 Mongo 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, requester_request_summary_view, supplier_request_feed_view, quote_comparison_view, thread_summary_view, thread_detail_view, **admin_review_queue_view, admin_review_detail_view**) 모두 dormant. 남은 작업: Stage 8 (Mongo 컨테이너/모듈/의존성 물리 제거) + Stage 9 (지침서 사례 추가).
 
