@@ -458,6 +458,54 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 
 ---
 
+### 사례 10 — CQRS 롤백: 과잉 설계의 흔적 청산 (2026-04-22~24, Phase 3 Task A)
+
+**증상 / 문제 상황**:
+- Phase 1 부터 MariaDB (command) + MongoDB (read view) 2-store CQRS 로 설계. read view 는 projection service 들이 command write 후 비동기로 동기화.
+- 운영 6개월 후 누적 부채:
+  - **정합성 리스크 상시**: supplier verification_state 변경 시 Mongo supplier_search_view 갱신 누락 → "승인했는데 목록에 안 나옴" 류 이슈 반복.
+  - **seed/코드 드리프트**: supplier_profile.exposure_state 가 seed 에선 `'listed'`, 코드 canonical 은 `'visible'`. Mongo 쿼리가 이 필드를 필터링하지 않았기에 seed 데이터가 그대로 노출되어 버그가 가려짐. R2DBC 로 전환하며 비로소 드러남.
+  - **쓰기 팬아웃**: 하나의 command 가 command repository + 여러 projection repository 에 write. 실패 시 compensation 없음.
+  - **미래 도입 가치 낮음**: FSM 은 B2B 트랜잭션 시스템. 대용량 검색 / 피드 / 실시간 스트림 / OLAP 대시보드 없음. Mongo 가 제공하는 유연 스키마 / 샤딩 이점을 실제로 쓰는 query 가 0.
+- 즉, **CQRS 로 얻는 이익 < CQRS 로 발생하는 부채**.
+
+**원인**:
+1. **YAGNI 위반**. 초기 설계 단계에 "미래에 성능 병목이 생길 수 있으니 분리해 두자" 가 내려진 결정. 실측 없이 "대비" 만으로 도입한 아키텍처.
+2. **"CQRS 는 중립" 이라는 착각**. 두 저장소 병행은 "선택지를 열어둔다" 기보다 "매 command 마다 dual-write 부담" 이라는 비용으로 귀결된다. 중립이 아니라 **명백한 tradeoff 측**.
+3. **적합 도구 오인식**. 복잡 검색이 필요하면 Elasticsearch, 분석이 필요하면 OLAP DB 가 정답. Mongo 는 "유연 스키마 저장소" 이지 "만능 query DB" 가 아니다.
+
+**조치** (Phase 3 Task A, 8 stage, 9 commits):
+- **Stage 1 (subplan)**: 7 모듈 + 7 projection 서비스 + 14개 쿼리 서비스 인벤토리. 단계별 rollback 순서 고정.
+- **Stage 2~7** (도메인별 R2DBC 전환):
+  - Supplier / Request / Quote / Thread / User / Notice / Admin Review 의 read path 를 MariaDB 직접 조회로 재작성.
+  - 각 도메인에서 "신규 R2DBC query service 작성 → controller 재배선 → 해당 projection 호출 제거" 를 한 commit 에 완결. **절대 Mongo/R2DBC dual-read 윈도우를 남기지 않는다**. projection 은 stage 경계에서 즉시 호출 제거.
+  - 복잡 필터 / join / subquery 는 `DatabaseClient` 로 raw SQL 작성 (Supplier CSV `FIND_IN_SET`, Request quote_count COALESCE 서브쿼리, Quote thread_id LEFT JOIN, AdminReview verification_submission JOIN supplier_profile).
+  - 단순 조회는 기존 command repository 재사용 (`BusinessProfileRepository.findByUserAccountId`, `MessageRepository.countByThreadIdAnd…`).
+  - DTO shape 불변. frontend 완전 무변경.
+- **Stage 8 (물리 제거)**:
+  - 8개 모듈 (`projection/`, `query-model-user/…/admin-stats/`) 디렉토리 삭제, `settings.gradle.kts` include 제거.
+  - `spring-boot-starter-data-mongodb-reactive` 의존 제거, `@EnableReactiveMongoRepositories` 삭제.
+  - `application.yml` / `application-local.yml` / test yml 에서 `spring.mongodb` + `management.health.mongo` 제거.
+  - `compose.local.mongodb.yml` / `docker/mongodb/` / `init-mongodb.sh` / `seed-mongodb.sh` 삭제, `seed-all.sh` 단순화.
+  - `.github/workflows/backend-ci.yml` mongodb service + init/seed step 제거.
+  - `docker stop / rm` Mongo 컨테이너. `LOCAL-RUN-GUIDE.ko.md` 전면 정리.
+- 검증: `./gradlew test` 전 모듈 green, health `r2dbc` 만 UP, end-to-end 19 endpoint HTTP 200, 이전 FE 회귀 0건.
+
+**효과**:
+- 75 files changed, 2099 lines deleted (Stage 8 단독). 도메인 stage 평균 ~300 LOC 교체.
+- 정합성 리스크 전면 소멸 (single source of truth).
+- 빌드/CI/로컬 기동 1 step 단축.
+- 드리프트 수정 (`exposure_state 'listed' → 'visible'`) 이 부수효과로 잡힘.
+
+**교훈**:
+1. **CQRS / 복잡 아키텍처는 "측정된 문제" 에 대해서만 도입한다**. "미래 대비" 로 도입하면 대부분 부채만 쌓인다. YAGNI 는 기능뿐 아니라 아키텍처에도 적용된다.
+2. **롤백은 stage 단위로 완결시킨다**. dual-read 윈도우 / 부분 전환 / 임시 플래그는 리스크를 늘린다. 각 stage 에서 "이 도메인은 Mongo 를 더 이상 읽지도 쓰지도 않는다" 가 완결되어야 다음 stage 로 간다.
+3. **드리프트는 단일 저장소로 수렴할 때 드러난다**. 2-store 체제는 한쪽이 한쪽을 가리는 경우가 많고 (projection 필터 로직 vs seed 데이터), 단일화 과정에서 자연스럽게 정상화된다.
+4. **적합 도구는 필요할 때 별도 도입**. 검색 고도화가 실제로 필요해지면 Elasticsearch 를 그때 붙이면 된다. "언젠가 쓸 것 같다" 는 MongoDB 를 안고 가는 근거가 아니다.
+5. **DTO shape 보존은 롤백의 안전선이다**. 응답 shape 가 동일하면 frontend 무변경 → rollback 이 백엔드 내부 일로 국한된다. 계약이 바뀌지 않도록 응답 mapping 단에서 shape 고정.
+
+---
+
 ### 사례 9 — UPnP 매핑의 휘발성 (2026-04-20, Infra)
 
 **증상**: `miniupnpc` (`upnpc -a 172.30.1.81 5173 5173 TCP 0`) 로 4 포트 매핑 등록 후 외부 접속 OK. 세션 뒤 사용자 시도 시 전부 timeout. `upnpc -l` 결과 매핑 0건.
@@ -498,3 +546,4 @@ queryClient.invalidateQueries({ queryKey: requestKeys.detail(id) }) // 1건만
 | 1.6 | 2026-04-19 | §8 사례 3 추가: Mongo seed 누락 → 재시드 규약 운영 문서화 (LOCAL-RUN-GUIDE.ko.md §6). |
 | 1.7 | 2026-04-20 | §8 사례 4~6 추가: Supplier search Mongo Criteria 이관 (Task 04), OpenAPI 글로벌 security 제거 (Task 05), `packages/utils` env.d.ts 로 CI red 복구. |
 | 1.8 | 2026-04-20 | §8 사례 7~9 추가 (Task 06 & Infra): 계약 우선 위반 후 소급 작성 + 대조 검증 (spec v1.6~1.9), reactive service 의 동기 throw 와 `Mono.defer` 패턴, UPnP 휘발성 과 정적 포워딩 필요성. |
+| 1.9 | 2026-04-24 | §8 사례 10 추가 (Phase 3 Task A): CQRS 전면 롤백. 8 stage 로 Mongo 완전 제거 + 단일 MariaDB R2DBC 전환. YAGNI / dual-read 금지 / 드리프트 수렴 / DTO shape 보존. |

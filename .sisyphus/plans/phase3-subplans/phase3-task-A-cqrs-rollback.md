@@ -9,7 +9,7 @@
 | 우선순위 | P0 |
 | 기간 | 2~3 세션 예상 |
 | 스토리 포인트 | 21 (대규모) |
-| 상태 | 🟡 In Progress (Stage 1/2/3/4/5/6/7/8 완료, 9 남음) |
+| 상태 | 🟢 **Done** (Stage 1~9 전부 완료, 2026-04-24) |
 | Blocks | Phase 3 신규 feature 전부 (불일치 우려 제거 선결) |
 | Blocked By | 없음 |
 
@@ -252,10 +252,12 @@ Exit 충족.
 
 Exit 충족. **MongoDB 완전 소거.**
 
-### 🔴 Stage 9 — 지침서 §8 사례 10 추가
+### ✅ Stage 9 — 지침서 §8 사례 10 추가 — **완료 (2026-04-24)**
 
-- 사례 10: "CQRS 롤백 — 과잉 설계의 흔적 청산"
-- 증상 → 원인 (조회 복잡도 대비 도구 과잉) → 조치 (MariaDB 단일화) → 교훈 (YAGNI, 필요 시 적합 도구 별도 도입)
+- `docs/REFACTORING-GUIDELINES.ko.md` §8 사례 10 추가: "CQRS 롤백 — 과잉 설계의 흔적 청산"
+- 증상 (정합성 리스크 / 드리프트 / dual-write 부담) → 원인 (YAGNI 위반, "CQRS 중립" 착각, 적합 도구 오인식) → 조치 (8 stage 롤백 전 과정) → 효과 (2099 lines 삭제, 단일 저장소)
+- 교훈 5건: YAGNI 는 아키텍처에도 / stage 단위 완결 / 단일화 시 드리프트 드러남 / 적합 도구는 필요할 때 별도 / DTO shape 보존은 rollback 안전선
+- §10 Document History 에 v1.9 항목 추가
 
 ## 원칙
 
@@ -301,11 +303,11 @@ Exit 충족. **MongoDB 완전 소거.**
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
 | 6 Admin | ✅ | `47dfb57` | 2026-04-24 |
 | 7 Notice | ✅ | `cc83e69` | 2026-04-21 |
-| 8 정리 | ✅ | (Stage 8 commit) | 2026-04-24 |
-| 9 지침서 | 🔴 | — | — |
+| 8 정리 | ✅ | `da14966` | 2026-04-24 |
+| 9 지침서 | ✅ | (Stage 9 commit) | 2026-04-24 |
 
-**현재 HEAD**: Stage 8 commit 예정. `origin/main` 과 동기화 전.
+**현재 HEAD**: Stage 9 commit 예정. `origin/main` 과 동기화 전.
 
-**dual-state 종료**: Mongo 컨테이너 제거, 모든 query-model 모듈 삭제, Mongo starter 의존성/설정 전부 제거. 남은 작업은 Stage 9 (지침서 §8 사례 10 추가) 뿐.
+**Phase 3 Task A 종료**: MongoDB 완전 제거, 모든 read 경로 R2DBC 통합, 지침서 사례 추가. Phase 3 의 다음 task 는 별도 계획으로 진입.
 
 **Note (Stage 2 드리프트 수정)**: `supplier_profile.exposure_state` 에 대해 seed 는 `'listed'`, 코드는 `'visible'` 로 분기하던 드리프트를 해소했음. MariaDB seed + live DB 모두 `'visible'` 로 정규화. 향후 코드 읽기/쓰기 양쪽 모두 `'visible'` 만 사용.
