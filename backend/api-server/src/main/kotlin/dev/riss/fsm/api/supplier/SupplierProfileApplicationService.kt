@@ -11,11 +11,6 @@ import dev.riss.fsm.command.supplier.SupplierProfileRepository
 import dev.riss.fsm.command.supplier.UpdateSupplierProfileCommand
 import dev.riss.fsm.command.supplier.VerificationSubmissionEntity
 import dev.riss.fsm.command.supplier.VerificationSubmissionRepository
-import dev.riss.fsm.query.admin.review.AdminReviewDetailDocument
-import dev.riss.fsm.query.admin.review.AdminReviewDetailViewRepository
-import dev.riss.fsm.query.admin.review.AdminReviewFileItem
-import dev.riss.fsm.query.admin.review.AdminReviewQueueItemDocument
-import dev.riss.fsm.query.admin.review.AdminReviewQueueViewRepository
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.file.FileStorageService
 import dev.riss.fsm.shared.file.AttachmentMetadata
@@ -38,8 +33,6 @@ class SupplierProfileApplicationService(
     private val certificationRecordRepository: CertificationRecordRepository,
     private val attachmentMetadataRepository: AttachmentMetadataRepository,
     private val fileStorageService: FileStorageService,
-    private val adminReviewQueueViewRepository: AdminReviewQueueViewRepository,
-    private val adminReviewDetailViewRepository: AdminReviewDetailViewRepository,
 ) {
 
     fun create(principal: AuthenticatedUserPrincipal, request: CreateSupplierProfileRequest): Mono<SupplierProfileResponse> {
@@ -135,14 +128,6 @@ class SupplierProfileApplicationService(
                                                 updatedAt = LocalDateTime.now(),
                                             )
                                         )
-                                    }
-                                    .flatMap { updatedProfile ->
-                                        certificationRecordRepository.findAllBySupplierProfileId(profile.profileId)
-                                            .collectList()
-                                            .flatMap { certs ->
-                                                projectAdminReviewViews(submission, updatedProfile, certs)
-                                                    .thenReturn(updatedProfile)
-                                            }
                                     }
                                     .map { updatedProfile ->
                                         VerificationSubmissionResponse(
@@ -283,44 +268,4 @@ class SupplierProfileApplicationService(
         return Mono.zip(certsMono, attachmentsMono).map { it.t1 to it.t2 }
     }
 
-    private fun projectAdminReviewViews(
-        submission: VerificationSubmissionEntity,
-        profile: SupplierProfileEntity,
-        certs: List<CertificationRecordEntity>,
-    ): Mono<Void> {
-        val queueDoc = AdminReviewQueueItemDocument(
-            reviewId = submission.submissionId,
-            supplierProfileId = profile.profileId,
-            companyName = profile.companyName,
-            state = submission.state,
-            submittedAt = submission.submittedAt.toInstant(ZoneOffset.UTC),
-            pendingDays = 0,
-            verificationState = profile.verificationState,
-        )
-
-        val detailDoc = AdminReviewDetailDocument(
-            reviewId = submission.submissionId,
-            supplierProfileId = profile.profileId,
-            companyName = profile.companyName,
-            representativeName = profile.representativeName,
-            region = profile.region,
-            categories = profile.categories.split(',').filter { it.isNotBlank() },
-            state = submission.state,
-            submittedAt = submission.submittedAt.toInstant(ZoneOffset.UTC),
-            reviewedAt = submission.reviewedAt?.toInstant(ZoneOffset.UTC),
-            reviewNoteInternal = submission.reviewNoteInternal,
-            reviewNotePublic = submission.reviewNotePublic,
-            files = certs.map {
-                AdminReviewFileItem(
-                    fileId = it.fileAttachmentId,
-                    fileName = it.number ?: it.type,
-                    status = it.status,
-                )
-            },
-        )
-
-        return adminReviewQueueViewRepository.save(queueDoc)
-            .then(adminReviewDetailViewRepository.save(detailDoc))
-            .then()
-    }
 }

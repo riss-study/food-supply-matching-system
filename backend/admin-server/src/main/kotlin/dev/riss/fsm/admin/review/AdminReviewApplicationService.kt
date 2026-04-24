@@ -4,8 +4,6 @@ import dev.riss.fsm.command.supplier.AuditLogEntity
 import dev.riss.fsm.command.supplier.AuditLogRepository
 import dev.riss.fsm.command.supplier.SupplierProfileRepository
 import dev.riss.fsm.command.supplier.VerificationSubmissionRepository
-import dev.riss.fsm.query.admin.review.AdminReviewQuery
-import dev.riss.fsm.query.admin.review.AdminReviewQueryService
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.http.HttpStatus
@@ -23,7 +21,6 @@ import java.util.UUID
 class AdminReviewApplicationService(
     private val verificationSubmissionRepository: VerificationSubmissionRepository,
     private val supplierProfileRepository: SupplierProfileRepository,
-    private val adminReviewProjectionService: AdminReviewProjectionService,
     private val adminReviewQueryService: AdminReviewQueryService,
     private val auditLogRepository: AuditLogRepository,
 ) {
@@ -155,30 +152,26 @@ class AdminReviewApplicationService(
                     }
             }
             .flatMap { (submission, profile) ->
-                adminReviewProjectionService.project(submission, profile)
-                    .then(
-                        auditLogRepository.save(
-                            AuditLogEntity(
-                                auditLogId = "audit_${UUID.randomUUID()}",
-                                actorUserId = principal.userId,
-                                actionType = "review_${decision}",
-                                targetType = "verification_submission",
-                                targetId = submission.submissionId,
-                                payloadSnapshot = objectMapper.writeValueAsString(
-                                    mapOf(
-                                        "reviewId" to submission.submissionId,
-                                        "supplierProfileId" to profile.profileId,
-                                        "decision" to decision,
-                                        "noteInternal" to request.noteInternal,
-                                        "notePublic" to request.notePublic,
-                                        "reasonCode" to request.reasonCode,
-                                    )
-                                ),
-                                createdAt = LocalDateTime.now(),
-                            ).apply { newEntity = true }
-                        )
-                    )
-                    .thenReturn(
+                auditLogRepository.save(
+                    AuditLogEntity(
+                        auditLogId = "audit_${UUID.randomUUID()}",
+                        actorUserId = principal.userId,
+                        actionType = "review_${decision}",
+                        targetType = "verification_submission",
+                        targetId = submission.submissionId,
+                        payloadSnapshot = objectMapper.writeValueAsString(
+                            mapOf(
+                                "reviewId" to submission.submissionId,
+                                "supplierProfileId" to profile.profileId,
+                                "decision" to decision,
+                                "noteInternal" to request.noteInternal,
+                                "notePublic" to request.notePublic,
+                                "reasonCode" to request.reasonCode,
+                            )
+                        ),
+                        createdAt = LocalDateTime.now(),
+                    ).apply { newEntity = true }
+                ).thenReturn(
                         ReviewDecisionResponse(
                             reviewId = submission.submissionId,
                             state = submission.state,

@@ -9,7 +9,7 @@
 | 우선순위 | P0 |
 | 기간 | 2~3 세션 예상 |
 | 스토리 포인트 | 21 (대규모) |
-| 상태 | 🟡 In Progress (Stage 1/2/3/4/5/7 완료, 6/8/9 남음) |
+| 상태 | 🟡 In Progress (Stage 1/2/3/4/5/6/7 완료, 8/9 남음) |
 | Blocks | Phase 3 신규 feature 전부 (불일치 우려 제거 선결) |
 | Blocked By | 없음 |
 
@@ -184,15 +184,28 @@ Exit 충족.
 - 스모크: /api/me (buyer/admin/신규가입), /api/requester/business-profile — 전부 통과
 - **잔존**: `RequesterBusinessProfileQueryService` 는 Request/Thread projection 에서 아직 사용 중 → Stage 3/4 에서 제거
 
-### 🔴 Stage 6 — Admin Review / Stats
+### ✅ Stage 6 — Admin Review / Stats — **완료 (2026-04-24)**
 
-- AdminReviewQueue: verification_submission + supplier_profile join
-- AdminReviewDetail: 위 + attachment_metadata + audit_log
-- AdminStats: COUNT/GROUP BY 쿼리
-- AdminReviewProjection 제거
-- 회귀: /api/admin/reviews, /api/admin/reviews/{id}, /api/admin/stats/summary
+- `admin-server/.../AdminReviewQueryService` (신규, R2DBC)
+  - queue: `DatabaseClient` JOIN verification_submission × supplier_profile. state/date 필터, 정렬 (submittedAt / pendingDays / state / companyName). pendingDays 는 now - submitted_at 실시간 계산
+  - detail: JOIN + certification_record 별도 쿼리로 `files` 구성
+  - `AdminReviewQuery` / `AdminReviewQueueItemView` / `AdminReviewDetailView` / `AdminReviewFileView` 전부 admin-server 로컬 패키지 정의
+- `AdminStatsApplicationService` 는 이미 R2DBC (supplier_profile/user_account/verification_submission/request_record 직접 사용) — 터치 불필요
+- `AdminReviewApplicationService`: `AdminReviewProjectionService` 주입/호출 제거. 결정 (approve/hold/reject) 은 R2DBC 저장 + audit_log 쓰기만. query service 로 새 R2DBC 것 주입
+- `api-server SupplierProfileApplicationService`: `projectAdminReviewViews()` + `adminReviewQueueViewRepository` / `adminReviewDetailViewRepository` 주입 전체 제거. Stage 2 에서 남겨둔 마지막 Mongo AdminReview 쓰기 경로 종결
+- 구 Mongo `AdminReviewQueryService` 에서 `@Service` 제거 (bean 충돌 방지)
+- `AdminReviewProjectionService` 는 클래스 정의만 남음 — 호출자 없음, Stage 8 에서 물리 제거
+- 드리프트 없음: verification_submission.state (submitted/approved/hold/rejected) 코드와 seed 일치. under_review 는 코드에 있지만 실 흐름에서는 미사용 (무시 가능)
 
-Exit: 관리자 플로우 정상.
+회귀 smoke (7건):
+- `/api/admin/reviews` → 6 submissions (seed), pendingDays 정확 (7/11/19/59/69/79), state + verificationState 값
+- `/api/admin/reviews?state=submitted` → 1 (vsub_seed_04)
+- `/api/admin/reviews?sort=companyName&order=asc` → 가나다순
+- `/api/admin/reviews/vsub_seed_04` detail → companyName, categories (CSV split), files(2건) + reviewHistory(0건)
+- `/api/admin/reviews/does_not_exist` → 404
+- `/api/admin/stats/summary` → users/suppliersByState/reviews(avgReviewDays=4.5)/requests 모두 정상
+
+Exit 충족.
 
 ### ✅ Stage 7 — Notice — **완료 `cc83e69` (2026-04-21)**
 
@@ -260,13 +273,13 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | 3 Request | ✅ | `955957f` | 2026-04-22 |
 | 4 Quote/Thread | ✅ | `3902577` | 2026-04-22 |
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
-| 6 Admin | 🔴 | — | — |
+| 6 Admin | ✅ | (Stage 6 commit) | 2026-04-24 |
 | 7 Notice | ✅ | `cc83e69` | 2026-04-21 |
 | 8 정리 | 🔴 | — | — |
 | 9 지침서 | 🔴 | — | — |
 
-**현재 HEAD**: `3902577`. `origin/main` 과 동기화 전.
+**현재 HEAD**: Stage 6 commit 예정. `origin/main` 과 동기화 전.
 
-**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중. User/Notice/Supplier/Request/**Quote/Thread** 관련 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, requester_request_summary_view, supplier_request_feed_view, **quote_comparison_view, thread_summary_view, thread_detail_view**) 는 **더 이상 갱신되지 않음** → stale 가능하지만 해당 도메인은 이미 R2DBC 로 전환되어 Mongo 를 읽지 않음. AdminReview (query-model-admin-review) 관련 뷰만 남음 (Stage 6 대상).
+**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중이나 **모든 도메인이 R2DBC 로 전환 완료**. 11개 Mongo 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, requester_request_summary_view, supplier_request_feed_view, quote_comparison_view, thread_summary_view, thread_detail_view, **admin_review_queue_view, admin_review_detail_view**) 모두 dormant. 남은 작업: Stage 8 (Mongo 컨테이너/모듈/의존성 물리 제거) + Stage 9 (지침서 사례 추가).
 
 **Note (Stage 2 드리프트 수정)**: `supplier_profile.exposure_state` 에 대해 seed 는 `'listed'`, 코드는 `'visible'` 로 분기하던 드리프트를 해소했음. MariaDB seed + live DB 모두 `'visible'` 로 정규화. 향후 코드 읽기/쓰기 양쪽 모두 `'visible'` 만 사용.

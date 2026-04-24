@@ -1,6 +1,5 @@
 package dev.riss.fsm.query.admin.review
 
-import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import java.time.LocalDate
 import java.util.Comparator
@@ -25,7 +24,8 @@ data class AdminReviewQueuePage(
     val hasPrev: Boolean,
 )
 
-@Service
+// Dormant Mongo-backed query service. Superseded by admin-server direct R2DBC read path
+// (Phase 3 Task A, Stage 6). Class retained until Stage 8 removes the query-model-admin-review module.
 class AdminReviewQueryService(
     private val queueRepository: AdminReviewQueueViewRepository,
     private val detailRepository: AdminReviewDetailViewRepository,
