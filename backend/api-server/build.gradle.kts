@@ -13,7 +13,6 @@ java {
 
 dependencies {
     implementation(project(":shared-core"))
-    implementation(project(":projection"))
     implementation(project(":command-domain-user"))
     implementation(project(":command-domain-supplier"))
     implementation(project(":command-domain-request"))
@@ -21,18 +20,10 @@ dependencies {
     implementation(project(":command-domain-thread"))
     implementation(project(":command-domain-notice"))
     implementation(project(":command-domain-review"))
-    implementation(project(":query-model-user"))
-    implementation(project(":query-model-supplier"))
-    implementation(project(":query-model-request"))
-    implementation(project(":query-model-quote"))
-    implementation(project(":query-model-thread"))
-    implementation(project(":query-model-admin-review"))
-    implementation(project(":query-model-admin-stats"))
 
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.webflux.actuator)
     implementation(libs.spring.boot.starter.data.r2dbc)
-    implementation(libs.spring.boot.starter.data.mongodb.reactive)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.reactor.kotlin.extensions)

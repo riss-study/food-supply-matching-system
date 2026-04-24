@@ -5,8 +5,6 @@ spring:
     url: ${SPRING_R2DBC_URL:r2dbc:mariadb://localhost:3306/fsm_command}
     username: ${SPRING_R2DBC_USERNAME:fsm}
     password: ${SPRING_R2DBC_PASSWORD:fsm}
-  mongodb:
-    uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/fsm_read}
 management:
   endpoints:
     web:

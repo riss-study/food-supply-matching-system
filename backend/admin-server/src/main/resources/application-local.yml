@@ -6,8 +6,6 @@ spring:
     url: r2dbc:mariadb://localhost:13306/fsm_command
     username: fsm
     password: fsm
-  mongodb:
-    uri: mongodb://localhost:27018/fsm_read
 security:
   jwt:
     secret: local-dev-secret-key-minimum-32-chars
@@ -20,6 +18,4 @@ management:
       show-details: always
   health:
     db:
-      enabled: true
-    mongo:
       enabled: true

@@ -9,7 +9,7 @@
 | 우선순위 | P0 |
 | 기간 | 2~3 세션 예상 |
 | 스토리 포인트 | 21 (대규모) |
-| 상태 | 🟡 In Progress (Stage 1/2/3/4/5/6/7 완료, 8/9 남음) |
+| 상태 | 🟡 In Progress (Stage 1/2/3/4/5/6/7/8 완료, 9 남음) |
 | Blocks | Phase 3 신규 feature 전부 (불일치 우려 제거 선결) |
 | Blocked By | 없음 |
 
@@ -214,17 +214,43 @@ Exit 충족.
 - 테스트 재배선
 - 스모크: /api/notices (published 3 seed + 신규), /api/admin/notices (archived 포함), create published → public list 즉시 반영 확인
 
-### 🔴 Stage 8 — 물리 제거 + 인프라 정리
+### ✅ Stage 8 — 물리 제거 + 인프라 정리 — **완료 (2026-04-24)**
 
-- `query-model-*` 7개 모듈 삭제 (`settings.gradle.kts`, 각 `build.gradle.kts` implementation 제거)
-- `projection/` 모듈 삭제
-- Mongo compose / init / seed 스크립트 삭제
-- Gradle 의존성 제거 (`spring-boot-starter-data-mongodb-reactive`)
-- `application-local.yml`, `application.yml` Mongo 설정 제거
-- `backend-ci.yml` Mongo 서비스 제거
-- LOCAL-RUN-GUIDE, memory 갱신
+- 잔존 projection 호출 제거
+  - api-server `ReviewApplicationService`: `reviewProjectionService.recomputeFor` 2곳 제거 + 주입 제거
+  - admin-server `SupplierReviewModerationApplicationService`: 동일 호출 제거
+  - admin-server `AdminReviewDtos`: 불필요한 `AdminReviewFileItem` import 정리
+- 파일 삭제
+  - `admin-server/.../review/AdminReviewProjectionService.kt`
+  - 모듈 디렉토리 8개: `projection/`, `query-model-user`, `query-model-supplier`, `query-model-request`, `query-model-quote`, `query-model-thread`, `query-model-admin-review`, `query-model-admin-stats`
+  - `compose.local.mongodb.yml`, `docker/mongodb/` 전체, `scripts/local/init-mongodb.sh`, `scripts/local/seed-mongodb.sh`
+- Gradle 정리
+  - `settings.gradle.kts`: 8개 모듈 include 제거
+  - `api-server/build.gradle.kts` / `admin-server/build.gradle.kts`: 모든 `:query-model-*`, `:projection` 의존성 + `spring.boot.starter.data.mongodb.reactive` 제거
+- 앱 부트스트랩 정리
+  - `ApiServerApplication` / `AdminServerApplication`: `@EnableReactiveMongoRepositories` + 관련 import 제거
+- 설정 정리
+  - `application.yml` (api/admin): `spring.mongodb` 블록 제거
+  - `application-local.yml` (api/admin): `spring.mongodb.uri` + `management.health.mongo` 제거
+  - 테스트 `application.yml`: Mongo autoconfigure exclude + `management.health.mongo.enabled` 제거 (더 이상 classpath 에 없음)
+- CI (`.github/workflows/backend-ci.yml`): `mongodb` service container + Mongo init/seed step 제거
+- `scripts/local/seed-all.sh`: Mongo seed 단계 제거 (MariaDB 만 시드)
+- `LOCAL-RUN-GUIDE.ko.md`: "DB 2개" → "DB 1개 (MariaDB 만)", MongoDB 관련 설명/섹션 전면 정리
+- Mongo container `docker stop`/`docker rm` (live DB 제거)
 
-Exit: Mongo 완전 사라짐. 전체 build + test green.
+검증:
+- `./gradlew test` 전 모듈 green (Mongo 의존 없이)
+- 양 서버 재기동: `/actuator/health` 에 `mongo` 컴포넌트 사라지고 `r2dbc` (MariaDB) 만 UP
+- end-to-end sweep (19 endpoint):
+  api: /api/me, /api/suppliers (list/detail/categories/regions/reviews),
+       /api/requests (list/detail), /api/supplier/requests, 
+       /api/requests/{id}/quotes, /api/supplier/quotes,
+       /api/threads (list/detail), /api/notices
+  admin: /api/admin/reviews (list/detail), /api/admin/stats/summary,
+         /api/admin/notices, /api/admin/supplier-reviews
+  → 모두 HTTP 200
+
+Exit 충족. **MongoDB 완전 소거.**
 
 ### 🔴 Stage 9 — 지침서 §8 사례 10 추가
 
@@ -275,11 +301,11 @@ Exit: Mongo 완전 사라짐. 전체 build + test green.
 | 5 User | ✅ | `c00206c` | 2026-04-21 |
 | 6 Admin | ✅ | `47dfb57` | 2026-04-24 |
 | 7 Notice | ✅ | `cc83e69` | 2026-04-21 |
-| 8 정리 | 🔴 | — | — |
+| 8 정리 | ✅ | (Stage 8 commit) | 2026-04-24 |
 | 9 지침서 | 🔴 | — | — |
 
-**현재 HEAD**: `47dfb57`. `origin/main` 과 동기화 전.
+**현재 HEAD**: Stage 8 commit 예정. `origin/main` 과 동기화 전.
 
-**중간 dual-state 윈도우**: Mongo 는 여전히 기동 중이나 **모든 도메인이 R2DBC 로 전환 완료**. 11개 Mongo 뷰 (user_me_view, requester_business_profile_view, public_notice_view, admin_notice_view, supplier_search_view, supplier_detail_view, requester_request_summary_view, supplier_request_feed_view, quote_comparison_view, thread_summary_view, thread_detail_view, **admin_review_queue_view, admin_review_detail_view**) 모두 dormant. 남은 작업: Stage 8 (Mongo 컨테이너/모듈/의존성 물리 제거) + Stage 9 (지침서 사례 추가).
+**dual-state 종료**: Mongo 컨테이너 제거, 모든 query-model 모듈 삭제, Mongo starter 의존성/설정 전부 제거. 남은 작업은 Stage 9 (지침서 §8 사례 10 추가) 뿐.
 
 **Note (Stage 2 드리프트 수정)**: `supplier_profile.exposure_state` 에 대해 seed 는 `'listed'`, 코드는 `'visible'` 로 분기하던 드리프트를 해소했음. MariaDB seed + live DB 모두 `'visible'` 로 정규화. 향후 코드 읽기/쓰기 양쪽 모두 `'visible'` 만 사용.

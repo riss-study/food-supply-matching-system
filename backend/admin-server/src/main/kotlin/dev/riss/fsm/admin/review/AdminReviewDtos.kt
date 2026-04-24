@@ -1,7 +1,5 @@
 package dev.riss.fsm.admin.review
 
-import dev.riss.fsm.query.admin.review.AdminReviewFileItem
-import jakarta.validation.constraints.NotBlank
 import java.time.Instant
 
 data class ReviewDecisionRequest(

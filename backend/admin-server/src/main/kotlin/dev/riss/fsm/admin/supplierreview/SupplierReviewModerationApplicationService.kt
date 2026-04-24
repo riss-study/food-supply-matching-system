@@ -4,7 +4,6 @@ import dev.riss.fsm.command.review.ReviewCommandService
 import dev.riss.fsm.command.review.ReviewEntity
 import dev.riss.fsm.command.supplier.AuditLogEntity
 import dev.riss.fsm.command.supplier.AuditLogRepository
-import dev.riss.fsm.projection.review.ReviewProjectionService
 import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.http.HttpStatus
@@ -19,7 +18,6 @@ import java.util.UUID
 @Service
 class SupplierReviewModerationApplicationService(
     private val reviewCommandService: ReviewCommandService,
-    private val reviewProjectionService: ReviewProjectionService,
     private val auditLogRepository: AuditLogRepository,
 ) {
     private val objectMapper = jacksonObjectMapper()
@@ -38,9 +36,7 @@ class SupplierReviewModerationApplicationService(
         return ensureAdmin(principal).then(
             (if (targetHidden) reviewCommandService.hide(reviewId) else reviewCommandService.unhide(reviewId))
                 .flatMap { review ->
-                    reviewProjectionService.recomputeFor(review.supplierProfileId)
-                        .then(writeAudit(principal, review, targetHidden))
-                        .thenReturn(review)
+                    writeAudit(principal, review, targetHidden).thenReturn(review)
                 }
                 .map { review ->
                     SupplierReviewModerationResponse(

@@ -1,10 +1,4 @@
 spring:
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
-      - org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoReactiveDataAutoConfiguration
   r2dbc:
     url: r2dbc:h2:mem:///admin-test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
     username: sa
@@ -12,10 +6,6 @@ spring:
   sql:
     init:
       mode: always
-management:
-  health:
-    mongo:
-      enabled: false
 security:
   jwt:
     issuer: dev.riss.fsm.test

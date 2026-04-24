@@ -12,16 +12,17 @@
 
 ## 1. 먼저 알아둘 것
 
-이 프로젝트는 크게 네 덩어리로 실행됩니다.
+이 프로젝트는 크게 다섯 덩어리로 실행됩니다.
 
 1. MariaDB
-2. MongoDB
-3. API 서버 (`8080`)
-4. Admin 서버 (`8081`)
-5. Main 프론트 (`Vite dev server`)
-6. Admin 프론트 (`Vite dev server`)
+2. API 서버 (`8080`)
+3. Admin 서버 (`8081`)
+4. Main 프론트 (`Vite dev server`)
+5. Admin 프론트 (`Vite dev server`)
 
-즉, 화면을 제대로 보려면 `DB 2개 + 서버 2개 + 프론트 2개`가 필요합니다.
+즉, 화면을 제대로 보려면 `DB 1개 + 서버 2개 + 프론트 2개`가 필요합니다.
+
+> **변경 이력**: 2026-04-24 기준 MongoDB 의존성을 완전히 제거했습니다 (Phase 3 Task A, CQRS 롤백). 모든 read 경로는 MariaDB R2DBC 로 통합되었습니다.
 
 ---
 
@@ -47,7 +48,6 @@
 - `backend/`: API 서버, Admin 서버, DB 스키마/시드, 로컬 compose
 - `frontend/`: main-site, admin-site, 공용 타입/유틸
 - `backend/compose.local.mariadb.yml`: MariaDB 로컬 실행 파일
-- `backend/compose.local.mongodb.yml`: MongoDB 로컬 실행 파일
 
 ---
 
@@ -88,22 +88,18 @@ VITE_ADMIN_API_BASE_URL=http://localhost:8081
 ```bash
 cd backend
 docker volume create backend_mariadb-data >/dev/null
-docker volume create backend_mongodb-data >/dev/null
 docker compose -f compose.local.mariadb.yml up -d
-docker compose -f compose.local.mongodb.yml up -d
 ```
 
 상태 확인:
 
 ```bash
 docker compose -f compose.local.mariadb.yml ps
-docker compose -f compose.local.mongodb.yml ps
 ```
 
 참고:
 
 - MariaDB 포트: `13306`
-- MongoDB 포트: `27018`
 
 ### Colima를 쓰는 경우
 
@@ -124,8 +120,6 @@ DB만 띄우는 것으로 끝나지 않고, 최소한 스키마와 읽기용 데
 ```bash
 ./scripts/local/init-mariadb.sh
 ./scripts/local/seed-mariadb.sh
-./scripts/local/init-mongodb.sh
-./scripts/local/seed-mongodb.sh
 ```
 
 ### Colima를 쓰는 경우
@@ -134,39 +128,12 @@ DB만 띄우는 것으로 끝나지 않고, 최소한 스키마와 읽기용 데
 export DOCKER_CONTEXT=colima
 ./scripts/local/init-mariadb.sh
 ./scripts/local/seed-mariadb.sh
-./scripts/local/init-mongodb.sh
-./scripts/local/seed-mongodb.sh
 ```
 
 참고:
 
-- 현재 `02-mock-data.sql`은 최소한의 marker 성격이 강합니다.
-- 즉, “완성된 데모 계정 세트”가 자동으로 깔리는 구조는 아닙니다.
-
-### 시드 파일을 수정했다면 **반드시** 재시드
-
-MongoDB 의 `docker-entrypoint-initdb.d/` 는 **컨테이너 초기화 시 한 번만** 실행됩니다. 따라서:
-
-- `backend/docker/mongodb/init/02-seed-read-models.js` 를 수정해도,
-- Docker volume (`backend_mongodb-data`) 이 이미 초기화된 상태라면 **자동으로 재실행되지 않습니다**.
-
-스크립트 자체는 idempotent (`_id: /seed_/` 패턴으로 기존 문서 `deleteMany` 후 재삽입) 하므로, 아래 명령을 **수동 실행** 해야 최신 seed 가 반영됩니다:
-
-```bash
-cd backend
-./scripts/local/seed-mongodb.sh
-# Colima 를 쓰는 경우
-DOCKER_CONTEXT=colima ./scripts/local/seed-mongodb.sh
-```
-
-**체크 포인트** (재시드 필요 신호):
-- 백엔드가 "Failed to instantiate … Document" 류 5xxx 에러를 뱉을 때
-- seed 스크립트에 새 필드가 추가됐을 때 (예: `requesterUserId`, `updatedAt` 등)
-- 새 view collection 추가 / 기존 collection schema 변경 시
-
-MariaDB 쪽 seed 도 동일 원리. `02-mock-data.sql` 수정 시 `./scripts/local/seed-mariadb.sh` 재실행.
-
-> 2026-04-19 세션에 실제로 `requester_request_summary_view` 문서에 `requesterUserId/updatedAt` 필드 누락으로 견적 제출 API 가 code 5000 에러를 냈고, `./scripts/local/seed-mongodb.sh` 수동 재실행으로 복구. 상세는 `docs/REFACTORING-GUIDELINES.ko.md §8` 사례 3.
+- 현재 `02-mock-data.sql` 은 테스트 계정/공급자/의뢰/견적 등 체험용 seed 를 포함합니다.
+- seed 수정 시 `./scripts/local/seed-mariadb.sh` 재실행으로 반영.
 
 ---
 
@@ -305,13 +272,9 @@ yarn dev:admin-site
 ```bash
 cd backend
 docker volume create backend_mariadb-data >/dev/null
-docker volume create backend_mongodb-data >/dev/null
 docker compose -f compose.local.mariadb.yml up -d
-docker compose -f compose.local.mongodb.yml up -d
 ./scripts/local/init-mariadb.sh
 ./scripts/local/seed-mariadb.sh
-./scripts/local/init-mongodb.sh
-./scripts/local/seed-mongodb.sh
 ```
 
 ### 터미널 B - API 서버
@@ -361,7 +324,6 @@ yarn dev:admin-site
 확인할 것:
 
 - MariaDB가 `13306` 포트에서 떠 있는지
-- MongoDB가 `27018` 포트에서 떠 있는지
 - `application-local.yml` 기준으로 local profile로 실행했는지
 
 ### 11.3 admin-site 화면을 실제로 못 들어가는 경우
@@ -388,16 +350,7 @@ yarn dev:admin-site
 ```bash
 cd backend
 docker compose -f compose.local.mariadb.yml down
-docker compose -f compose.local.mongodb.yml down
 ```
-
-한쪽만 내려도 다른 쪽은 유지됩니다.
-
-즉,
-
-- MariaDB만 재시작 가능
-- MongoDB만 재시작 가능
-- 이전처럼 둘이 같이 내려가지 않음
 
 ---
 
@@ -422,6 +375,6 @@ docker compose -f compose.local.mongodb.yml down
 
 이 프로젝트를 로컬에서 화면까지 보려면,
 
-`DB 두 개를 띄우고 -> 스키마/시드 넣고 -> backend 두 개를 켜고 -> frontend 두 개를 켜면` 됩니다.
+`MariaDB 한 개를 띄우고 -> 스키마/시드 넣고 -> backend 두 개를 켜고 -> frontend 두 개를 켜면` 됩니다.
 
 다만 관리자 화면은 기본 관리자 계정이 자동으로 준비되는 구조가 아니라는 점을 꼭 기억하면 됩니다.

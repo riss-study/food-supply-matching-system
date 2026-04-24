@@ -3,7 +3,6 @@ package dev.riss.fsm.api.review
 import dev.riss.fsm.command.review.CreateReviewCommand
 import dev.riss.fsm.command.review.ReviewCommandService
 import dev.riss.fsm.command.review.UpdateReviewCommand
-import dev.riss.fsm.projection.review.ReviewProjectionService
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -12,7 +11,6 @@ import java.time.ZoneOffset
 @Service
 class ReviewApplicationService(
     private val reviewCommandService: ReviewCommandService,
-    private val reviewProjectionService: ReviewProjectionService,
 ) {
     fun create(principal: AuthenticatedUserPrincipal, request: CreateReviewRequest): Mono<CreateReviewResponse> {
         val command = CreateReviewCommand(
@@ -23,9 +21,6 @@ class ReviewApplicationService(
             text = request.text.takeUnless { it.isNullOrBlank() },
         )
         return reviewCommandService.create(command)
-            .flatMap { review ->
-                reviewProjectionService.recomputeFor(review.supplierProfileId).thenReturn(review)
-            }
             .map { review ->
                 CreateReviewResponse(
                     reviewId = review.reviewId,
@@ -44,9 +39,6 @@ class ReviewApplicationService(
             textProvided = request.textProvided,
         )
         return reviewCommandService.update(reviewId, principal.userId, command)
-            .flatMap { review ->
-                reviewProjectionService.recomputeFor(review.supplierProfileId).thenReturn(review)
-            }
             .map { review ->
                 UpdateReviewResponse(
                     reviewId = review.reviewId,
