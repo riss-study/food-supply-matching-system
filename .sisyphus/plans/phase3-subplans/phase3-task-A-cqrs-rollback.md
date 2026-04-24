@@ -304,9 +304,9 @@ Exit 충족. **MongoDB 완전 소거.**
 | 6 Admin | ✅ | `47dfb57` | 2026-04-24 |
 | 7 Notice | ✅ | `cc83e69` | 2026-04-21 |
 | 8 정리 | ✅ | `da14966` | 2026-04-24 |
-| 9 지침서 | ✅ | (Stage 9 commit) | 2026-04-24 |
+| 9 지침서 | ✅ | `239c193` | 2026-04-24 |
 
-**현재 HEAD**: Stage 9 commit 예정. `origin/main` 과 동기화 전.
+**현재 HEAD**: `239c193`. `origin/main` 과 동기화 전.
 
 **Phase 3 Task A 종료**: MongoDB 완전 제거, 모든 read 경로 R2DBC 통합, 지침서 사례 추가. Phase 3 의 다음 task 는 별도 계획으로 진입.
 
