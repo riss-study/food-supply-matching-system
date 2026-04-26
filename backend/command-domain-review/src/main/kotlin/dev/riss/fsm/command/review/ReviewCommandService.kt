@@ -6,9 +6,12 @@ import dev.riss.fsm.shared.error.DuplicateReviewException
 import dev.riss.fsm.shared.error.RequestNotFoundException
 import dev.riss.fsm.shared.error.ReviewContentViolationException
 import dev.riss.fsm.shared.error.ReviewEligibilityFailedException
+import dev.riss.fsm.shared.error.ReviewImmutableException
+import dev.riss.fsm.shared.error.ReviewNotEligibleByStateException
 import dev.riss.fsm.shared.error.ReviewNotFoundException
 import dev.riss.fsm.shared.error.ReviewUpdateForbiddenException
 import dev.riss.fsm.shared.moderation.ProfanityFilter
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import java.time.Duration
@@ -28,7 +31,7 @@ class ReviewCommandService(
             .switchIfEmpty(Mono.error(RequestNotFoundException()))
             .flatMap { request ->
                 if (request.state != "closed") {
-                    return@flatMap Mono.error(ReviewEligibilityFailedException("Request is not closed"))
+                    return@flatMap Mono.error(ReviewNotEligibleByStateException("Request is not closed"))
                 }
                 if (request.requesterUserId != command.requesterUserId) {
                     return@flatMap Mono.error(ReviewEligibilityFailedException("Not the request owner"))
@@ -37,7 +40,7 @@ class ReviewCommandService(
                 quoteRepository.findAllByRequestIdAndSupplierProfileId(command.requestId, command.supplierProfileId)
                     .filter { it.state == "selected" }
                     .next()
-                    .switchIfEmpty(Mono.error(ReviewEligibilityFailedException("No selected quote for this supplier")))
+                    .switchIfEmpty(Mono.error(ReviewNotEligibleByStateException("No selected quote for this supplier")))
                     .flatMap { selectedQuote ->
                         reviewRepository.existsByRequestIdAndSupplierProfileId(
                             command.requestId,
@@ -61,6 +64,9 @@ class ReviewCommandService(
                                 updatedAt = now,
                             ).apply { newEntity = true }
                             reviewRepository.save(review)
+                                // TOCTOU: existsBy* 와 save 사이 동시 작성 시 uk_review_request_supplier 위반 →
+                                // 5000 SQL leak 막기 위해 도메인 예외로 변환
+                                .onErrorMap(DataIntegrityViolationException::class.java) { DuplicateReviewException() }
                         }
                     }
             }
@@ -76,10 +82,10 @@ class ReviewCommandService(
                     return@flatMap Mono.error(ReviewUpdateForbiddenException("Not the review author"))
                 }
                 if (review.hidden) {
-                    return@flatMap Mono.error(ReviewUpdateForbiddenException("Hidden review cannot be edited"))
+                    return@flatMap Mono.error(ReviewImmutableException("Hidden review cannot be edited"))
                 }
                 if (LocalDateTime.now().isAfter(review.createdAt.plus(EDIT_WINDOW))) {
-                    return@flatMap Mono.error(ReviewUpdateForbiddenException("Edit window has expired"))
+                    return@flatMap Mono.error(ReviewImmutableException("Edit window has expired"))
                 }
 
                 reviewRepository.save(

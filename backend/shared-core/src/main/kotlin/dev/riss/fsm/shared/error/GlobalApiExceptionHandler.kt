@@ -25,9 +25,9 @@ class GlobalApiExceptionHandler {
 
     @ExceptionHandler(QuoteSubmissionForbiddenException::class)
     fun handleQuoteSubmissionForbidden(exception: QuoteSubmissionForbiddenException): ResponseEntity<ApiErrorResponse> {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
             ApiErrorResponse(
-                code = 4037,
+                code = 4081,
                 message = exception.message ?: "Quote submission is forbidden",
             )
         )
@@ -35,9 +35,9 @@ class GlobalApiExceptionHandler {
 
     @ExceptionHandler(QuoteUpdateForbiddenException::class)
     fun handleQuoteUpdateForbidden(exception: QuoteUpdateForbiddenException): ResponseEntity<ApiErrorResponse> {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
             ApiErrorResponse(
-                code = 4038,
+                code = 4082,
                 message = exception.message ?: "Quote update is forbidden",
             )
         )
@@ -128,8 +128,8 @@ class GlobalApiExceptionHandler {
 
     @ExceptionHandler(RequestStateTransitionException::class)
     fun handleRequestStateTransition(exception: RequestStateTransitionException): ResponseEntity<ApiErrorResponse> =
-        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-            ApiErrorResponse(code = 4035, message = exception.message ?: "Invalid request state")
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4080, message = exception.message ?: "Invalid request state")
         )
 
     // ---- Quote ownership ----
@@ -160,8 +160,8 @@ class GlobalApiExceptionHandler {
 
     @ExceptionHandler(ApprovedSupplierProfileImmutableException::class)
     fun handleApprovedSupplierProfileImmutable(exception: ApprovedSupplierProfileImmutableException): ResponseEntity<ApiErrorResponse> =
-        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-            ApiErrorResponse(code = 4033, message = exception.message ?: "Cannot modify approved supplier")
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4083, message = exception.message ?: "Cannot modify approved supplier")
         )
 
     @ExceptionHandler(SupplierProfileStateImmutableException::class)
@@ -185,8 +185,8 @@ class GlobalApiExceptionHandler {
 
     @ExceptionHandler(ApprovedBusinessProfileImmutableException::class)
     fun handleApprovedBusinessProfileImmutable(exception: ApprovedBusinessProfileImmutableException): ResponseEntity<ApiErrorResponse> =
-        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-            ApiErrorResponse(code = 4032, message = exception.message ?: "Cannot modify approved profile")
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4084, message = exception.message ?: "Cannot modify approved profile")
         )
 
     @ExceptionHandler(BusinessProfilePartialUpdateNotAllowedException::class)
@@ -227,10 +227,22 @@ class GlobalApiExceptionHandler {
             ApiErrorResponse(code = 4036, message = exception.message ?: "Not eligible to write a review")
         )
 
+    @ExceptionHandler(ReviewNotEligibleByStateException::class)
+    fun handleReviewNotEligibleByState(exception: ReviewNotEligibleByStateException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4086, message = exception.message ?: "Review not allowed in current state")
+        )
+
     @ExceptionHandler(ReviewUpdateForbiddenException::class)
     fun handleReviewUpdateForbidden(exception: ReviewUpdateForbiddenException): ResponseEntity<ApiErrorResponse> =
         ResponseEntity.status(HttpStatus.FORBIDDEN).body(
             ApiErrorResponse(code = 4031, message = exception.message ?: "Review update is forbidden")
+        )
+
+    @ExceptionHandler(ReviewImmutableException::class)
+    fun handleReviewImmutable(exception: ReviewImmutableException): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiErrorResponse(code = 4085, message = exception.message ?: "Review is immutable in current state")
         )
 
     @ExceptionHandler(DuplicateReviewException::class)

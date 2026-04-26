@@ -12,7 +12,11 @@ import dev.riss.fsm.shared.error.QuoteSubmissionForbiddenException
 import dev.riss.fsm.shared.error.QuoteUpdateForbiddenException
 import dev.riss.fsm.shared.error.RequestAccessForbiddenException
 import dev.riss.fsm.shared.error.RequestNotFoundException
+import dev.riss.fsm.shared.error.RequestStateTransitionException
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.TransientDataAccessException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
@@ -57,6 +61,10 @@ class QuoteCommandService(
                     ).apply { newEntity = true }
 
                     quoteRepository.save(quote)
+                        // TOCTOU race: existsBy* 와 save 사이에 다른 동시 submit 이 들어와
+                        // uk_active_quote (request_id, supplier_profile_id, state) UNIQUE 위반 →
+                        // 도메인 예외로 변환 (5000 SQL leak 방지).
+                        .onErrorMap(DataIntegrityViolationException::class.java) { DuplicateActiveQuoteException() }
                         .flatMap { savedQuote ->
                             threadCommandService.createThread(
                                 CreateThreadCommand(
@@ -117,6 +125,19 @@ class QuoteCommandService(
             }
     }
 
+    /**
+     * Quote select 는 다음 3가지가 한 transaction 으로 실행되어야 함:
+     *  - 선택된 quote.state = "selected"
+     *  - request.state = "closed"
+     *  - 나머지 submitted quote 들 = "declined"
+     * 부분 실패 시 일관성 깨지지 않도록 Spring `@Transactional` (reactive R2dbcTransactionManager).
+     * Mono.zip 병렬 대신 sequential chain 으로 ordering 도 보장.
+     *
+     * 동시 select race 보호: requestRepository.save(state="closed") 는 PK 기반 unconditional UPDATE 라
+     * 두 transaction 모두 1 row affected → 둘 다 selected 가능. 이를 막기 위해 closeIfOpen(state='open' 조건부)
+     * 으로 변경 — 1번째 tx 만 1 row, 2번째 tx 는 0 row → RequestStateTransitionException 으로 변환.
+     */
+    @Transactional
     fun select(quoteId: String, requestOwnerId: String): Mono<SelectedQuoteResult> {
         return loadQuoteWithRequest(quoteId)
             .flatMap { pair ->
@@ -124,30 +145,44 @@ class QuoteCommandService(
                 val request = pair.request
                 ensureRequestOwnership(request, requestOwnerId)
                 ensureSubmittedState(quote)
+                val now = LocalDateTime.now()
 
-                val selectedQuoteMono = quoteRepository.save(
+                quoteRepository.save(
                     quote.copy(
                         state = "selected",
-                        updatedAt = LocalDateTime.now(),
+                        version = quote.version + 1,
+                        updatedAt = now,
                     )
-                )
-
-                val closeRequestMono = requestRepository.save(
-                    request.copy(
-                        state = "closed",
-                        updatedAt = LocalDateTime.now(),
-                    )
-                )
-
-                val declineOthersMono = quoteRepository.findAllByRequestIdAndState(request.requestId, "submitted")
-                    .filter { candidate -> candidate.quoteId != quote.quoteId }
-                    .flatMap { candidate ->
-                        quoteRepository.save(candidate.copy(state = "declined", updatedAt = LocalDateTime.now()))
+                ).flatMap { savedQuote ->
+                    requestRepository.closeIfOpen(request.requestId, now)
+                        .flatMap { affected ->
+                            if (affected == 0L) {
+                                Mono.error(RequestStateTransitionException("Request is no longer open (concurrent select or already closed)"))
+                            } else {
+                                val savedRequest = request.copy(state = "closed", updatedAt = now)
+                                quoteRepository.findAllByRequestIdAndState(request.requestId, "submitted")
+                                    .filter { candidate -> candidate.quoteId != quote.quoteId }
+                                    .flatMap { candidate ->
+                                        quoteRepository.save(
+                                            candidate.copy(
+                                                state = "declined",
+                                                version = candidate.version + 1,
+                                                updatedAt = now,
+                                            )
+                                        )
+                                    }
+                                    .then(Mono.just(SelectedQuoteResult(savedQuote, savedRequest)))
+                            }
+                        }
+                }
+                    // 동시 select 시 두 transaction 의 request row lock 경합으로 deadlock 발생 가능.
+                    // 또는 unique 제약 충돌. 5000 SQL leak 막기 위해 도메인 예외로 변환.
+                    .onErrorMap(TransientDataAccessException::class.java) {
+                        RequestStateTransitionException("Request was concurrently updated; please retry")
                     }
-                    .collectList()
-
-                Mono.zip(selectedQuoteMono, closeRequestMono, declineOthersMono)
-                    .map { tuple -> SelectedQuoteResult(tuple.t1, tuple.t2) }
+                    .onErrorMap(DataIntegrityViolationException::class.java) {
+                        RequestStateTransitionException("Quote selection conflict; please retry")
+                    }
             }
     }
 

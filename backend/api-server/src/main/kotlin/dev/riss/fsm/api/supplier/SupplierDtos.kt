@@ -1,7 +1,5 @@
 package dev.riss.fsm.api.supplier
 
-import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Size
@@ -23,11 +21,7 @@ data class CreateSupplierProfileRequest(
     val categories: List<String>,
     @field:Size(max = 500)
     val equipmentSummary: String?,
-    @field:Min(1)
-    @field:Max(1_000_000_000)
     val monthlyCapacity: String,
-    @field:Min(1)
-    @field:Max(1_000_000_000)
     val moq: String,
     val oemAvailable: Boolean,
     val odmAvailable: Boolean,

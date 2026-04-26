@@ -19,7 +19,8 @@ import org.springframework.http.HttpStatus
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 class AdminSecurityConfig(
-    @org.springframework.beans.factory.annotation.Value("\${fsm.cors.allowed-origin-patterns:http://*:5173,http://*:5174}")
+    /** wildcard host pattern 사용 금지. 자세한 내용은 ApiSecurityConfig 의 같은 필드 주석 참고. */
+    @org.springframework.beans.factory.annotation.Value("\${fsm.cors.allowed-origin-patterns:http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174}")
     private val allowedOriginPatterns: String,
 ) {
 
@@ -59,6 +60,8 @@ class AdminSecurityConfig(
             .authorizeExchange { exchanges ->
                 exchanges
                     .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/admin/bootstrap/**", "/api/admin/auth/**", "/actuator/**").permitAll()
+                    // defense in depth: admin path 는 ADMIN role 만 통과 (application 레벨 가드와 이중)
+                    .pathMatchers("/api/admin/**").hasRole("ADMIN")
                     .anyExchange().authenticated()
             }
             .addFilterAt(adminJwtAuthenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

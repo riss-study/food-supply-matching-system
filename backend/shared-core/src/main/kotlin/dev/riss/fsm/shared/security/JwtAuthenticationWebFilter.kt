@@ -45,6 +45,11 @@ class JwtAuthenticationWebFilter(
 
         return try {
             val claims = jwtTokenProvider.parseClaims(token)
+            // refresh token 으로 protected endpoint 호출 차단 (refresh 는 토큰 회전 전용)
+            val tokenType = claims["tokenType"]?.toString()
+            if (tokenType != "access") {
+                return SecurityErrorResponseWriter.write(exchange, HttpStatus.UNAUTHORIZED, 4011, "Access token required")
+            }
             val subject = claims.subject ?: return SecurityErrorResponseWriter.write(exchange, HttpStatus.UNAUTHORIZED, 4011, "Missing token subject")
             val email = claims["email"]?.toString() ?: return SecurityErrorResponseWriter.write(exchange, HttpStatus.UNAUTHORIZED, 4011, "Missing token email")
             val role = UserRole.fromKey(claims["role"]?.toString() ?: return SecurityErrorResponseWriter.write(exchange, HttpStatus.UNAUTHORIZED, 4011, "Missing token role"))

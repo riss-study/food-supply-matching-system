@@ -8,6 +8,8 @@ import dev.riss.fsm.shared.error.DuplicateReviewException
 import dev.riss.fsm.shared.error.ReviewContentViolationException
 import dev.riss.fsm.shared.error.ReviewEligibilityFailedException
 import dev.riss.fsm.shared.error.ReviewNotFoundException
+import dev.riss.fsm.shared.error.ReviewImmutableException
+import dev.riss.fsm.shared.error.ReviewNotEligibleByStateException
 import dev.riss.fsm.shared.error.ReviewUpdateForbiddenException
 import dev.riss.fsm.shared.moderation.ProfanityFilter
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -66,7 +68,7 @@ class ReviewCommandServiceTest {
         `when`(requestRepository.findById(request.requestId)).thenReturn(Mono.just(request))
 
         StepVerifier.create(service.create(CreateReviewCommand("usr_req", "sprof_1", request.requestId, 5, null)))
-            .expectErrorSatisfies { err -> assertTrue(err is ReviewEligibilityFailedException) }
+            .expectErrorSatisfies { err -> assertTrue(err is ReviewNotEligibleByStateException) }
             .verify()
     }
 
@@ -88,7 +90,7 @@ class ReviewCommandServiceTest {
             .thenReturn(Flux.empty())
 
         StepVerifier.create(service.create(CreateReviewCommand("usr_req", "sprof_1", request.requestId, 5, null)))
-            .expectErrorSatisfies { err -> assertTrue(err is ReviewEligibilityFailedException) }
+            .expectErrorSatisfies { err -> assertTrue(err is ReviewNotEligibleByStateException) }
             .verify()
     }
 
@@ -144,7 +146,7 @@ class ReviewCommandServiceTest {
         `when`(reviewRepository.findById(review.reviewId)).thenReturn(Mono.just(review))
 
         StepVerifier.create(service.update(review.reviewId, "usr_req", UpdateReviewCommand(rating = 3)))
-            .expectErrorSatisfies { err -> assertTrue(err is ReviewUpdateForbiddenException) }
+            .expectErrorSatisfies { err -> assertTrue(err is ReviewImmutableException) }
             .verify()
     }
 
@@ -154,7 +156,7 @@ class ReviewCommandServiceTest {
         `when`(reviewRepository.findById(review.reviewId)).thenReturn(Mono.just(review))
 
         StepVerifier.create(service.update(review.reviewId, "usr_req", UpdateReviewCommand(rating = 3)))
-            .expectErrorSatisfies { err -> assertTrue(err is ReviewUpdateForbiddenException) }
+            .expectErrorSatisfies { err -> assertTrue(err is ReviewImmutableException) }
             .verify()
     }
 

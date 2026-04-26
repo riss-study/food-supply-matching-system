@@ -82,11 +82,12 @@ class NoticeCommandService(
 
     fun changeState(noticeId: String, newState: String): Mono<NoticeEntity> {
         return when (newState) {
+            // draft 회수 시 publishedAt 은 보존 (재발행 시 최초 발행 시각 유지).
+            // 영원히 publishedAt 을 비우고 싶다면 별도 hardReset 액션을 추가.
             "draft" -> noticeRepository.findById(noticeId)
                 .flatMap { existing ->
                     val updated = existing.copy(
                         state = "draft",
-                        publishedAt = null,
                         updatedAt = LocalDateTime.now(),
                     )
                     noticeRepository.save(updated)

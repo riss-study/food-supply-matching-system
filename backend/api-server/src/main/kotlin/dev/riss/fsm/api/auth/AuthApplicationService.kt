@@ -1,6 +1,7 @@
 package dev.riss.fsm.api.auth
 
 import dev.riss.fsm.command.user.AuthCommandService
+import dev.riss.fsm.shared.auth.UserRole
 import dev.riss.fsm.shared.security.AuthenticatedUserPrincipal
 import dev.riss.fsm.shared.security.JwtTokenProvider
 import org.springframework.http.HttpStatus
@@ -17,6 +18,11 @@ class AuthApplicationService(
 ) {
 
     fun signup(request: SignupRequest): Mono<SignupResponse> {
+        // 권한 상승 방지: 외부 signup 으로는 ADMIN 계정 생성 불가.
+        // ADMIN 계정은 DB seed 또는 운영 도구로만 부여.
+        if (request.role == UserRole.ADMIN) {
+            return Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Admin signup is not allowed"))
+        }
         return authCommandService.register(request.email, request.password, request.role, request.businessName)
             .map { user ->
                 SignupResponse(

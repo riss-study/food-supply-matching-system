@@ -7,6 +7,7 @@ import dev.riss.fsm.shared.error.ContactShareApprovalConflictException
 import dev.riss.fsm.shared.error.ContactShareNotRequestedException
 import dev.riss.fsm.shared.error.ContactShareRevokeForbiddenException
 import dev.riss.fsm.shared.error.MessageContentRequiredException
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
@@ -36,7 +37,18 @@ class ThreadCommandService(
                         contactShareState = "not_requested",
                         createdAt = LocalDateTime.now(),
                     ).apply { newEntity = true }
-                    messageThreadRepository.save(thread).map { CreateThreadResult(it, isNew = true) }
+                    messageThreadRepository.save(thread)
+                        .map { saved -> CreateThreadResult(saved, isNew = true) }
+                        // TOCTOU: 동시 createThread 시 uk_request_participant_thread 위반 →
+                        // 다른 요청이 먼저 생성한 thread 를 lookup 으로 복귀 (idempotent).
+                        // 5000 SQL leak 차단.
+                        .onErrorResume(DataIntegrityViolationException::class.java) {
+                            messageThreadRepository.findByRequestIdAndRequesterUserIdAndSupplierProfileId(
+                                command.requestId,
+                                command.requesterUserId,
+                                command.supplierProfileId,
+                            ).map { existing -> CreateThreadResult(existing, isNew = false) }
+                        }
                 }
             )
     }
@@ -133,6 +145,11 @@ class ThreadCommandService(
                             (actorRole == "supplier" && thread.contactShareSupplierApprovedAt != null)
                         ) {
                             return@flatMap Mono.error(ContactShareApprovalConflictException("This participant already approved contact sharing"))
+                        }
+                        // self-approval 차단: state="requested" 단계에서 요청자가 본인 요청을 즉시 승인하는 무의미 전이 방지.
+                        // state="one_side_approved" 에선 이미 상대측 승인됐으므로 정상 mutual 진행이라 차단 안 함.
+                        if (thread.contactShareState == "requested" && actorRole == thread.contactShareRequestedByRole) {
+                            return@flatMap Mono.error(ContactShareApprovalConflictException("Requester cannot approve their own contact-share request before counterpart approves"))
                         }
 
                         val now = LocalDateTime.now()

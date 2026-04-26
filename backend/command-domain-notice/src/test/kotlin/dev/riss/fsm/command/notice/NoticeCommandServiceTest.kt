@@ -157,15 +157,16 @@ class NoticeCommandServiceTest {
     }
 
     @Test
-    fun `changeState to draft clears publishedAt`() {
-        val existing = draftEntity(state = "published", publishedAt = LocalDateTime.now())
+    fun `changeState to draft preserves publishedAt for re-publish`() {
+        val originalPublishedAt = LocalDateTime.now().minusDays(3)
+        val existing = draftEntity(state = "published", publishedAt = originalPublishedAt)
         `when`(noticeRepository.findById("notc_1")).thenReturn(Mono.just(existing))
         mockSavePassthrough()
 
         StepVerifier.create(service.changeState("notc_1", "draft"))
             .assertNext { entity ->
                 assertEquals("draft", entity.state)
-                assertNull(entity.publishedAt)
+                assertEquals(originalPublishedAt, entity.publishedAt)
             }
             .verifyComplete()
     }

@@ -161,8 +161,9 @@ class ThreadCommandServiceTest {
 
     @Test
     fun `approve contact share reaches mutual state after both participants approve`() {
+        // 요청자 요청 → 공급자 먼저 approve → state="one_side_approved" → 요청자 approve → mutual
         val requested = thread().copy(
-            contactShareState = "requested",
+            contactShareState = "one_side_approved",
             contactShareRequestedByRole = "requester",
             contactShareRequestedAt = LocalDateTime.now(),
             contactShareSupplierApprovedAt = LocalDateTime.now(),

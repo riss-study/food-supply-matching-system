@@ -175,7 +175,7 @@ class QuoteCommandServiceTest {
         `when`(requestRepository.findById(request.requestId)).thenReturn(Mono.just(request))
         `when`(quoteRepository.save(any())).thenAnswer { invocation -> Mono.just(invocation.getArgument<QuoteEntity>(0)) }
         `when`(quoteRepository.findAllByRequestIdAndState(request.requestId, "submitted")).thenReturn(Flux.just(quote, other))
-        `when`(requestRepository.save(any())).thenAnswer { invocation -> Mono.just(invocation.getArgument<RequestEntity>(0)) }
+        `when`(requestRepository.closeIfOpen(org.mockito.kotlin.any(), org.mockito.kotlin.any())).thenReturn(Mono.just(1L))
 
         StepVerifier.create(quoteCommandService.select(quote.quoteId, request.requesterUserId))
             .assertNext { result ->
@@ -183,6 +183,22 @@ class QuoteCommandServiceTest {
                 assertEquals("closed", result.request.state)
             }
             .verifyComplete()
+    }
+
+    @Test
+    fun `select detects concurrent close race`() {
+        val quote = submittedQuote()
+        val request = openRequest()
+        `when`(quoteRepository.findById(quote.quoteId)).thenReturn(Mono.just(quote))
+        `when`(requestRepository.findById(request.requestId)).thenReturn(Mono.just(request))
+        `when`(quoteRepository.save(any())).thenAnswer { invocation -> Mono.just(invocation.getArgument<QuoteEntity>(0)) }
+        `when`(requestRepository.closeIfOpen(org.mockito.kotlin.any(), org.mockito.kotlin.any())).thenReturn(Mono.just(0L))
+
+        StepVerifier.create(quoteCommandService.select(quote.quoteId, request.requesterUserId))
+            .expectErrorSatisfies { error ->
+                assertTrue(error is dev.riss.fsm.shared.error.RequestStateTransitionException)
+            }
+            .verify()
     }
 
     @Test

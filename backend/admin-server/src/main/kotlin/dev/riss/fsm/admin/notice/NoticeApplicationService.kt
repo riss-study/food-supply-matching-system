@@ -178,15 +178,42 @@ class NoticeApplicationService(
             noticeRepository.findById(noticeId)
                 .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Notice not found")))
                 .flatMap { _ ->
+                    // 검증: content-type 화이트리스트 + 확장자 + 사이즈 한도 (10MB).
+                    // 공지 첨부는 공개 download 라 XSS / 임의 binary 우회 위험 차단 필요.
+                    val declaredContentType = file.headers().contentType?.toString()?.lowercase()
+                    val allowedContentTypes = setOf(
+                        "image/jpeg", "image/png", "image/gif", "image/webp",
+                        "application/pdf",
+                    )
+                    if (declaredContentType !in allowedContentTypes) {
+                        return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Allowed types: jpg/png/gif/webp/pdf"))
+                    }
+                    val originalName = file.filename()
+                    val ext = originalName.substringAfterLast('.', "").lowercase()
+                    val allowedExt = setOf("jpg", "jpeg", "png", "gif", "webp", "pdf")
+                    if (ext !in allowedExt) {
+                        return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Allowed extensions: $allowedExt"))
+                    }
+                    val declaredLength = file.headers().contentLength
+                    val MAX_BYTES = 10L * 1024 * 1024
+                    if (declaredLength > MAX_BYTES) {
+                        return@flatMap Mono.error(ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Max ${MAX_BYTES / 1024 / 1024}MB"))
+                    }
+
                     val attachmentId = "att_${UUID.randomUUID()}"
-                    val sanitized = file.filename().replace(Regex("[^A-Za-z0-9._-]"), "_")
+                    val sanitized = originalName.replace(Regex("[^A-Za-z0-9._-]"), "_")
                     val storageKey = "notice/$noticeId/$attachmentId-$sanitized"
                     val targetPath = Path.of(localRoot, storageKey)
                     Files.createDirectories(targetPath.parent)
 
                     file.transferTo(targetPath).then(Mono.defer {
                         val fileSize = Files.size(targetPath)
-                        val contentType = file.headers().contentType?.toString() ?: "application/octet-stream"
+                        // 실제 저장된 사이즈도 한도 검증 (스트림 chunked 로 declared==0 인 경우 대비)
+                        if (fileSize > MAX_BYTES) {
+                            Files.deleteIfExists(targetPath)
+                            return@defer Mono.error(ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Max ${MAX_BYTES / 1024 / 1024}MB"))
+                        }
+                        val contentType = declaredContentType ?: "application/octet-stream"
                         val entity = AttachmentMetadataEntity(
                             attachmentId = attachmentId,
                             ownerType = "notice",

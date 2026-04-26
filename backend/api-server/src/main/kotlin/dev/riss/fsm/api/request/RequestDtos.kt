@@ -1,8 +1,6 @@
 package dev.riss.fsm.api.request
 
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
@@ -64,8 +62,6 @@ data class UpdateRequestRequest(
     @field:Size(min = 5, max = 200)
     @Schema(description = "Request title", example = "수제 과자 제조 의뢰")
     val title: String?,
-    @field:Min(1)
-    @field:Max(1_000_000_000)
     @Schema(description = "Desired volume", example = "15000")
     val desiredVolume: String?,
     @Schema(description = "Target price range")

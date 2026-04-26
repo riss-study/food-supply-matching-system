@@ -18,8 +18,11 @@ import org.springframework.http.HttpStatus
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
+// 기본값은 로컬 개발 host (localhost / 127.0.0.1) 만 허용. wildcard 호스트(http://*:5173)
+// 는 임의의 외부 도메인 매칭으로 credentialed CORS 우회 위험이 있어 사용 금지.
+// 운영/외부접속 환경에서는 env var FSM_CORS_ALLOWED_ORIGIN_PATTERNS 로 명시 host 지정.
 class ApiSecurityConfig(
-    @org.springframework.beans.factory.annotation.Value("\${fsm.cors.allowed-origin-patterns:http://*:5173,http://*:5174}")
+    @org.springframework.beans.factory.annotation.Value("\${fsm.cors.allowed-origin-patterns:http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174}")
     private val allowedOriginPatterns: String,
 ) {
 
