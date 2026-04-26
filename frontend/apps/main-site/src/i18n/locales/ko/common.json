@@ -44,5 +44,22 @@
     "health": "건강식품",
     "frozen": "냉동식품",
     "other": "기타"
+  },
+  "rawMaterialRule": {
+    "requester_provided": "의뢰자 제공",
+    "supplier_provided": "공급자 제공"
+  },
+  "packagingRequirement": {
+    "private_label": "프라이빗 라벨",
+    "bulk": "벌크",
+    "none": "없음"
+  },
+  "certification": {
+    "HACCP": "HACCP",
+    "ISO22000": "ISO 22000",
+    "FSSC22000": "FSSC 22000",
+    "ORGANIC": "유기농",
+    "HALAL": "할랄",
+    "KOSHER": "코셔"
   }
 }

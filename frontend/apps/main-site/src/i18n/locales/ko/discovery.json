@@ -3,9 +3,6 @@
     "filterTitle": "필터",
     "keywordPlaceholder": "🔍 업체명 검색",
     "categoryLabel": "카테고리",
-    "regionLabel": "지역",
-    "monthlyCapacityLabel": "월 생산능력 (톤)",
-    "monthlyCapacityPlaceholder": "최소값",
     "moqLabel": "최소 주문량 (MOQ)",
     "moqPlaceholder": "최대값",
     "manufacturingModeLabel": "제조 방식",
@@ -19,7 +16,6 @@
     "sortLabel": "정렬",
     "sortUpdatedAt": "최신 등록순",
     "sortCompanyName": "업체명",
-    "sortMonthlyCapacity": "월 생산능력",
     "sortMoq": "MOQ",
     "orderAsc": "오름차순",
     "orderDesc": "내림차순"

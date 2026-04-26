@@ -112,29 +112,25 @@ export function SupplierRequestDetailPage() {
             {request.certificationRequirement && request.certificationRequirement.length > 0 && (
               <>
                 <dt>{t("detail.certificationLabel")}</dt>
-                <dd>{request.certificationRequirement.join(", ")}</dd>
+                <dd>
+                  {request.certificationRequirement
+                    .map((code) => t(`common:certification.${code}`, { defaultValue: code }))
+                    .join(", ")}
+                </dd>
               </>
             )}
 
             {request.rawMaterialRule && (
               <>
                 <dt>{t("detail.rawMaterialLabel")}</dt>
-                <dd>
-                  {request.rawMaterialRule === "requester_provided" ? t("detail.rawMaterialRequester") : t("detail.rawMaterialSupplier")}
-                </dd>
+                <dd>{t(`common:rawMaterialRule.${request.rawMaterialRule}`, { defaultValue: request.rawMaterialRule })}</dd>
               </>
             )}
 
             {request.packagingRequirement && (
               <>
                 <dt>{t("detail.packagingLabel")}</dt>
-                <dd>
-                  {request.packagingRequirement === "private_label"
-                    ? t("detail.packagingPrivateLabel")
-                    : request.packagingRequirement === "bulk"
-                      ? t("detail.packagingBulk")
-                      : t("detail.packagingNone")}
-                </dd>
+                <dd>{t(`common:packagingRequirement.${request.packagingRequirement}`, { defaultValue: request.packagingRequirement })}</dd>
               </>
             )}
 

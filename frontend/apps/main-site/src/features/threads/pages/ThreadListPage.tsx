@@ -10,9 +10,10 @@ function ThreadListItem({ thread }: { thread: ThreadSummary }) {
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+    const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / (1000 * 60 * 60 * 24))
 
-    if (diffDays === 0) {
+    if (diffDays <= 0) {
       return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false })
     } else if (diffDays < 7) {
       return t("list.daysAgo", { days: diffDays })

@@ -10,23 +10,17 @@ interface Props {
 export function RequestInfoSection({ request, onCreateThread, createThreadPending }: Props) {
   const { t } = useTranslation("request-management")
 
-  const formatPriceRange = (range: RequestDetail["targetPriceRange"]) => {
-    if (!range) return t("common:notSpecified")
-    if (range.min && range.max) return t("info.priceBetween", { min: range.min.toLocaleString(), max: range.max.toLocaleString() })
-    if (range.min) return t("info.priceAbove", { min: range.min.toLocaleString() })
-    if (range.max) return t("info.priceBelow", { max: range.max.toLocaleString() })
-    return t("common:notSpecified")
-  }
-
   const formatRawMaterialRule = (rule: RequestDetail["rawMaterialRule"]) => {
-    return rule === "requester_provided" ? t("info.rawMaterialRequester") : t("info.rawMaterialSupplier")
+    if (!rule) return t("common:notSpecified")
+    return t(`common:rawMaterialRule.${rule}`, { defaultValue: rule })
   }
 
   const formatPackagingRequirement = (req: RequestDetail["packagingRequirement"]) => {
-    if (req === "private_label") return t("info.packagingPrivateLabel")
-    if (req === "bulk") return t("info.packagingBulk")
-    return t("info.packagingNone")
+    if (!req) return t("common:notSpecified")
+    return t(`common:packagingRequirement.${req}`, { defaultValue: req })
   }
+
+  const formatCertification = (code: string) => t(`common:certification.${code}`, { defaultValue: code })
 
   return (
     <div className="flex flex-col gap-20">
@@ -35,10 +29,16 @@ export function RequestInfoSection({ request, onCreateThread, createThreadPendin
         <dl className="detail-grid">
           <dt>{t("info.desiredVolume")}</dt>
           <dd>{request.desiredVolume}</dd>
-          {request.targetPriceRange && (
+          {request.targetPriceRange?.min && (
             <>
-              <dt>{t("info.targetPrice")}</dt>
-              <dd>{formatPriceRange(request.targetPriceRange)}</dd>
+              <dt>{t("info.priceMin")}</dt>
+              <dd>{request.targetPriceRange.min}</dd>
+            </>
+          )}
+          {request.targetPriceRange?.max && (
+            <>
+              <dt>{t("info.priceMax")}</dt>
+              <dd>{request.targetPriceRange.max}</dd>
             </>
           )}
           {request.rawMaterialRule && (
@@ -62,7 +62,7 @@ export function RequestInfoSection({ request, onCreateThread, createThreadPendin
           {request.certificationRequirement?.length > 0 && (
             <>
               <dt>{t("info.certificationRequirement")}</dt>
-              <dd>{request.certificationRequirement.join(", ")}</dd>
+              <dd>{request.certificationRequirement.map(formatCertification).join(", ")}</dd>
             </>
           )}
         </dl>

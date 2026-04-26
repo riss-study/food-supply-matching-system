@@ -1,6 +1,7 @@
 import { useSearchParams, Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { useSupplierCategories, useSupplierRegions } from "../hooks/useDiscoveryLookups"
+import { SUPPLIER_CATEGORY_CODES } from "@fsm/config"
+import { useSupplierCategories } from "../hooks/useDiscoveryLookups"
 import { useSupplierList } from "../hooks/useSupplierList"
 
 export function SupplierSearchPage() {
@@ -8,10 +9,8 @@ export function SupplierSearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const keyword = searchParams.get("keyword") ?? ""
   const category = searchParams.get("category") ?? ""
-  const region = searchParams.get("region") ?? ""
   const oem = searchParams.get("oem") === "true"
   const odm = searchParams.get("odm") === "true"
-  const minCapacity = searchParams.get("minCapacity") ?? ""
   const maxMoq = searchParams.get("maxMoq") ?? ""
   const sort = searchParams.get("sort") ?? "updatedAt"
   const order = searchParams.get("order") ?? "desc"
@@ -20,10 +19,8 @@ export function SupplierSearchPage() {
   const { data } = useSupplierList({
     keyword,
     category,
-    region,
     oem: oem || undefined,
     odm: odm || undefined,
-    minCapacity: minCapacity ? Number(minCapacity) : undefined,
     maxMoq: maxMoq ? Number(maxMoq) : undefined,
     sort,
     order,
@@ -31,16 +28,14 @@ export function SupplierSearchPage() {
     size: 20,
   })
   const { data: categories } = useSupplierCategories()
-  const { data: regions } = useSupplierRegions()
+  const categoryCounts = new Map((categories ?? []).map((item) => [item.category, item.supplierCount]))
 
   const updateSearchParams = (updates: Record<string, string | undefined>) => {
     const newParams: Record<string, string> = {}
     if (keyword && !("keyword" in updates)) newParams.keyword = keyword
     if (category && !("category" in updates)) newParams.category = category
-    if (region && !("region" in updates)) newParams.region = region
     if (oem && !("oem" in updates)) newParams.oem = "true"
     if (odm && !("odm" in updates)) newParams.odm = "true"
-    if (minCapacity && !("minCapacity" in updates)) newParams.minCapacity = minCapacity
     if (maxMoq && !("maxMoq" in updates)) newParams.maxMoq = maxMoq
     if (sort !== "updatedAt" && !("sort" in updates)) newParams.sort = sort
     if (order !== "desc" && !("order" in updates)) newParams.order = order
@@ -82,32 +77,16 @@ export function SupplierSearchPage() {
               onChange={(e) => updateSearchParams({ category: e.target.value })}
             >
               <option value="">{t("common:all")}</option>
-              {categories?.map((item) => <option key={item.category} value={item.category}>{t(`common:supplierCategory.${item.category}`, { defaultValue: item.category })} ({item.supplierCount})</option>)}
+              {SUPPLIER_CATEGORY_CODES.map((code) => {
+                const count = categoryCounts.get(code) ?? 0
+                const label = t(`common:supplierCategory.${code}`, { defaultValue: code })
+                return (
+                  <option key={code} value={code}>
+                    {label} ({count})
+                  </option>
+                )
+              })}
             </select>
-          </div>
-
-          <div className="input-field">
-            <label>{t("search.regionLabel")}</label>
-            <select
-              className="select"
-              value={region}
-              onChange={(e) => updateSearchParams({ region: e.target.value })}
-            >
-              <option value="">{t("common:all")}</option>
-              {regions?.map((item) => <option key={item.region} value={item.region}>{item.region}</option>)}
-            </select>
-          </div>
-
-          <div className="input-field">
-            <label>{t("search.monthlyCapacityLabel")}</label>
-            <input
-              className="input"
-              type="number"
-              value={minCapacity}
-              onChange={(e) => updateSearchParams({ minCapacity: e.target.value })}
-              placeholder={t("search.monthlyCapacityPlaceholder")}
-              min={0}
-            />
           </div>
 
           <div className="input-field">
@@ -171,7 +150,6 @@ export function SupplierSearchPage() {
                 >
                   <option value="updatedAt">{t("search.sortUpdatedAt")}</option>
                   <option value="companyName">{t("search.sortCompanyName")}</option>
-                  <option value="monthlyCapacity">{t("search.sortMonthlyCapacity")}</option>
                   <option value="moq">{t("search.sortMoq")}</option>
                 </select>
                 <select

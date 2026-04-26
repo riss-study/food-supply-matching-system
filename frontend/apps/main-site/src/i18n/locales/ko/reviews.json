@@ -22,7 +22,9 @@
     "errorRatingRequired": "별점을 선택해주세요 (1-5)",
     "errorProfanity": "허용되지 않은 표현이 포함되어 있습니다",
     "errorDuplicate": "이미 리뷰를 작성했습니다",
-    "errorNotEligible": "리뷰 작성 자격이 없습니다",
+    "errorNotEligible": "리뷰 작성 권한이 없습니다 (본인 의뢰가 아닙니다)",
+    "errorNotEligibleByState": "리뷰를 작성할 수 있는 상태가 아닙니다 (의뢰 미마감 또는 선택된 견적 없음)",
+    "errorImmutable": "리뷰가 숨김 처리됐거나 수정 가능 기간(7일)이 지났습니다",
     "errorGeneric": "리뷰 등록에 실패했습니다. 잠시 후 다시 시도해주세요"
   },
   "list": {

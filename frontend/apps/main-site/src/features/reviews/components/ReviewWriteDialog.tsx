@@ -40,6 +40,10 @@ export function ReviewWriteDialog({ requestId, supplierId, supplierCompanyName, 
           if (code === 4222) setError(t("write.errorProfanity"))
           else if (code === 4094) setError(t("write.errorDuplicate"))
           else if (code === 4036) setError(t("write.errorNotEligible"))
+          // 4086: 의뢰 미마감 / selected quote 없음 (상태 위반)
+          else if (code === 4086) setError(t("write.errorNotEligibleByState"))
+          // 4085: 숨김 처리 / 7일 수정 기간 만료 (수정 흐름이지만 안전장치)
+          else if (code === 4085) setError(t("write.errorImmutable"))
           else setError(t("write.errorGeneric"))
         },
       },

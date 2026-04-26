@@ -15,7 +15,7 @@
       "submittedAt": "제출일",
       "unitPrice": "단가",
       "moq": "MOQ",
-      "leadTime": "리드타임",
+      "leadTime": "납기",
       "sampleCost": "샘플비",
       "state": "상태",
       "actions": "액션"
