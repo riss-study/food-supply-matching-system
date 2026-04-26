@@ -4003,23 +4003,28 @@ Authorization: Bearer <JWT>
 | 4010 | Authentication required | 인증 누락 (security writer) |
 | 4011 | Invalid credentials | 로그인 실패 |
 | 4030 | Access denied | 권한 불충분 (security writer, 403 fallback) |
-| 4031 | Review update forbidden | 리뷰 본인 아님 / 7일 경과 / hidden 상태 |
-| 4032 | Cannot modify approved profile | approved 상태 수정 시도 |
-| 4033 | Cannot modify approved supplier | approved 공급자 수정 시도 |
+| 4031 | Review update forbidden | 리뷰 작성자 본인 아님 (권한 위반, 403). 상태 위반(hidden/만료)은 4085 로 분리됨 |
+| 4032 | (deprecated) | 4084 로 이전 |
+| 4033 | (deprecated) | 4083 으로 이전 |
 | 4034 | Business approval required | 요청자 사업자 승인 필요 |
-| 4035 | Not owner or wrong state | 의뢰 수정 권한/상태 위반 |
-| 4036 | Review eligibility failed | 리뷰 작성 자격 미달 (request 미종료 / 비소유자 / selected quote 없음) |
-| 4037 | Quote permission denied | 견적 제출 권한 없음 |
-| 4038 | Cannot modify quote state | 견적 상태로 인한 수정 불가 |
+| 4035 | Owner mismatch | 의뢰/견적 소유자 아님 (권한 위반) |
+| 4036 | Review eligibility failed | 리뷰 본인 의뢰 아님 (권한 위반, **403**). 상태 위반은 4086 으로 분리됨 |
 | 4039 | Thread access denied | 스레드 비참여자 접근 |
 | 4041 | Resource not found | 리소스 없음 (§2.5 fallback 으로도 매핑 — 404 → 4040 은 예약이나 실제 핸들러는 4041 사용) |
+| 4080 | Request state transition | 의뢰 상태 위반 (draft→publish 외 / open→close 외 / cancelled 후 publish 등) — **상태 충돌, 409** |
+| 4081 | Quote submission forbidden | 견적 제출 시 의뢰 상태 위반 (open 아닌 의뢰에 제출) — **409** |
+| 4082 | Quote update forbidden | 견적 상태로 인한 수정/철회 불가 (이미 declined/withdrawn 등) — **409** |
+| 4083 | Cannot modify approved supplier | approved 공급자 프로필 수정 시도 — **409** |
+| 4084 | Cannot modify approved profile | approved 사업자 프로필 수정 시도 — **409** |
+| 4085 | Review immutable | 숨김 처리됐거나 7일 수정 가능 기간 만료 — **409** |
+| 4086 | Review not eligible by state | 의뢰 미마감 / selected quote 없음 등 상태 prerequisite 미충족 — **409** |
 | 4091 | Duplicate email | 이미 존재하는 이메일 |
 | 4092 | Profile exists | 이미 존재하는 프로필 |
-| 4093 | Active submission exists | 이미 검수 중인 제출 |
+| 4093 | Active submission exists | 이미 검수 중인 사업자 정보 제출 |
 | 4094 | Review already exists | 같은 (request, supplier) 쌍에 리뷰 중복 |
 | 4095 | Active quote exists | 같은 의뢰에 active 견적 존재 |
 | 4096 | Already requested/approved | 연락처 공유 이미 요청/승인됨 |
-| 4097 | Contact share approval conflict | 연락처 공유 승인 상태 충돌 |
+| 4097 | Contact share approval conflict | 연락처 공유 승인 상태 충돌 (자기 요청 자기 승인 / 이미 승인됨) |
 | 4098 | Contact share not requested | 연락처 공유 요청 전 승인/거절 시도 |
 | 4099 | Cannot revoke after approval | mutually_approved 후 철회 시도 |
 | 4221 | Invalid field modification | 허용되지 않은 필드 수정 (Supplier profile state immutable) |
