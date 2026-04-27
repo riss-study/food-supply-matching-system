@@ -24,6 +24,14 @@ backend/**/build/
 backend/.tmp-bootstrap/
 backend/**/backend/local-storage/
 
+# Secrets — env 파일과 local profile yml 은 절대 커밋 금지.
+# *.example 파일만 commit, 개발자가 복사 후 자기 secret 채워서 사용.
+.env
+.env.local
+backend/.env
+backend/**/application-local.yml
+!backend/**/application-local.yml.example
+
 # IDE / OS
 .DS_Store
 .idea/

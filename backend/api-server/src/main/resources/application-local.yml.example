@@ -1,0 +1,29 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  r2dbc:
+    url: r2dbc:mariadb://localhost:13306/fsm_command
+    username: ${SPRING_R2DBC_USERNAME}
+    password: ${SPRING_R2DBC_PASSWORD}
+  data:
+    redis:
+      host: localhost
+      port: 16379
+      password: ${SPRING_DATA_REDIS_PASSWORD}
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET}
+fsm:
+  storage:
+    local-root: ${user.dir}/../local-storage
+  security:
+    # 로컬 개발에서는 자기 자신 (loopback) 을 trusted proxy 로.
+    trusted-proxies: ${FSM_SECURITY_TRUSTED_PROXIES:127.0.0.1,0:0:0:0:0:0:0:1}
+management:
+  endpoint:
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true

@@ -1,17 +1,20 @@
+# `.env` 파일 자동 로드 (docker compose 표준 동작). `.env.example` 참고.
+# default fallback 없이 env 미설정 시 명시적으로 fail — 비어있는 비밀번호 방지.
+
 name: fsm-local-mariadb
 
 services:
   mariadb:
     image: mariadb:11.4
     environment:
-      MARIADB_ROOT_PASSWORD: root
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?env MARIADB_ROOT_PASSWORD required (see .env.example)}
       MARIADB_DATABASE: fsm_command
-      MARIADB_USER: fsm
-      MARIADB_PASSWORD: fsm
+      MARIADB_USER: ${MARIADB_USER:?env MARIADB_USER required}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?env MARIADB_PASSWORD required}
     ports:
-      - "13306:3306"
+      - "127.0.0.1:13306:3306"
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1", "-u", "root", "-proot"]
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -20,20 +23,20 @@ services:
       - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
 
   # refresh token 폐기 / 향후 rate-limit 분산화 / WebSocket pub-sub / 분산 락 등에 사용.
-  # - --requirepass 로 인증 강제 (인증 없이 연결 차단).
-  # - 포트 바인딩을 127.0.0.1 로 제한 → 호스트 머신 안에서만 접근 (LAN/외부 노출 차단).
+  # - --requirepass 로 인증 강제. REDIS_PASSWORD 미설정 시 compose 부팅 실패.
+  # - 포트 바인딩을 127.0.0.1 로 제한 → 호스트 머신 안에서만 접근.
   redis:
     image: redis:7.4-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?env REDIS_PASSWORD required}
     command:
-      - "redis-server"
-      - "--appendonly"
-      - "yes"
-      - "--requirepass"
-      - "${REDIS_PASSWORD:-fsm-local-redis}"
+      - "sh"
+      - "-c"
+      - "redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""
     ports:
       - "127.0.0.1:16379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-fsm-local-redis}", "--no-auth-warning", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping"]
       interval: 5s
       timeout: 3s
       retries: 10

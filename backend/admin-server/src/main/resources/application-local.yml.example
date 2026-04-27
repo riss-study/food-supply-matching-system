@@ -4,11 +4,11 @@ spring:
       on-profile: local
   r2dbc:
     url: r2dbc:mariadb://localhost:13306/fsm_command
-    username: fsm
-    password: fsm
+    username: ${SPRING_R2DBC_USERNAME}
+    password: ${SPRING_R2DBC_PASSWORD}
 security:
   jwt:
-    secret: local-dev-secret-key-minimum-32-chars
+    secret: ${SECURITY_JWT_SECRET}
 fsm:
   storage:
     local-root: ${user.dir}/../local-storage
