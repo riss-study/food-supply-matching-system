@@ -43,6 +43,16 @@ data class LoginResponse(
     val user: AuthenticatedUserResponse,
 )
 
+data class RefreshRequest(
+    @field:NotBlank
+    val refreshToken: String,
+)
+
+data class RefreshResponse(
+    val accessToken: String,
+    val expiresIn: Long,
+)
+
 data class AuthenticatedUserResponse(
     val userId: String,
     val email: String,

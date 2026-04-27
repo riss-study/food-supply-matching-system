@@ -5,6 +5,13 @@ spring:
     url: ${SPRING_R2DBC_URL:r2dbc:mariadb://localhost:3306/fsm_command}
     username: ${SPRING_R2DBC_USERNAME:fsm}
     password: ${SPRING_R2DBC_PASSWORD:fsm}
+  codec:
+    max-in-memory-size: 1MB
+  webflux:
+    multipart:
+      max-in-memory-size: 1MB
+      max-disk-usage-per-part: 10MB
+      max-parts: 20
 management:
   endpoints:
     web:

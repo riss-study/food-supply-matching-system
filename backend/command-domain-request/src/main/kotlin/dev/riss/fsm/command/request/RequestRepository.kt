@@ -18,4 +18,18 @@ interface RequestRepository : ReactiveCrudRepository<RequestEntity, String> {
     @Modifying
     @Query("UPDATE request_record SET state = 'closed', updated_at = :now WHERE id = :id AND state = 'open'")
     fun closeIfOpen(id: String, now: LocalDateTime): Mono<Long>
+
+    /**
+     * 동시 publish() race 방지: state="draft" 일 때만 open 으로 전환.
+     */
+    @Modifying
+    @Query("UPDATE request_record SET state = 'open', updated_at = :now WHERE id = :id AND state = 'draft'")
+    fun publishIfDraft(id: String, now: LocalDateTime): Mono<Long>
+
+    /**
+     * 동시 cancel() race 방지: state IN ('draft','open') 일 때만 cancelled 로 전환.
+     */
+    @Modifying
+    @Query("UPDATE request_record SET state = 'cancelled', updated_at = :now WHERE id = :id AND state IN ('draft', 'open')")
+    fun cancelIfActive(id: String, now: LocalDateTime): Mono<Long>
 }

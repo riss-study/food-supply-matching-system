@@ -5,6 +5,17 @@ spring:
     url: ${SPRING_R2DBC_URL:r2dbc:mariadb://localhost:3306/fsm_command}
     username: ${SPRING_R2DBC_USERNAME:fsm}
     password: ${SPRING_R2DBC_PASSWORD:fsm}
+  codec:
+    # JSON 본문 등 in-memory buffer 한도. 1MB 초과 응답/요청 본문은 거부.
+    max-in-memory-size: 1MB
+  webflux:
+    multipart:
+      # multipart 한 파트의 in-memory 한도 (작은 텍스트 part)
+      max-in-memory-size: 1MB
+      # 파일 part 의 디스크 사용 한도 (10MB). 거대 업로드 차단.
+      max-disk-usage-per-part: 10MB
+      # 한 요청에 허용되는 part 개수
+      max-parts: 20
 management:
   endpoints:
     web:

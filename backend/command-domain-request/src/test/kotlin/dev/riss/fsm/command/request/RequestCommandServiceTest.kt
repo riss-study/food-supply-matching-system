@@ -127,9 +127,7 @@ class RequestCommandServiceTest {
         )
 
         `when`(requestRepository.findById(requestId)).thenReturn(Mono.just(entity))
-        `when`(requestRepository.save(any())).thenAnswer { invocation ->
-            Mono.just(invocation.getArgument<dev.riss.fsm.command.request.RequestEntity>(0))
-        }
+        `when`(requestRepository.publishIfDraft(org.mockito.kotlin.any(), org.mockito.kotlin.any())).thenReturn(Mono.just(1L))
 
         StepVerifier.create(requestCommandService.publish(requestId, requesterUserId))
             .assertNext { result ->
@@ -194,9 +192,7 @@ class RequestCommandServiceTest {
         )
 
         `when`(requestRepository.findById(requestId)).thenReturn(Mono.just(entity))
-        `when`(requestRepository.save(any())).thenAnswer { invocation ->
-            Mono.just(invocation.getArgument<dev.riss.fsm.command.request.RequestEntity>(0))
-        }
+        `when`(requestRepository.closeIfOpen(org.mockito.kotlin.any(), org.mockito.kotlin.any())).thenReturn(Mono.just(1L))
 
         StepVerifier.create(requestCommandService.close(requestId, requesterUserId))
             .assertNext { result ->
@@ -261,9 +257,7 @@ class RequestCommandServiceTest {
         )
 
         `when`(requestRepository.findById(requestId)).thenReturn(Mono.just(entity))
-        `when`(requestRepository.save(any())).thenAnswer { invocation ->
-            Mono.just(invocation.getArgument<dev.riss.fsm.command.request.RequestEntity>(0))
-        }
+        `when`(requestRepository.cancelIfActive(org.mockito.kotlin.any(), org.mockito.kotlin.any())).thenReturn(Mono.just(1L))
 
         StepVerifier.create(requestCommandService.cancel(requestId, requesterUserId, "Test reason"))
             .assertNext { result ->

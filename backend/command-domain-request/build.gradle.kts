@@ -17,6 +17,7 @@ dependencies {
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation("io.projectreactor:reactor-test")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

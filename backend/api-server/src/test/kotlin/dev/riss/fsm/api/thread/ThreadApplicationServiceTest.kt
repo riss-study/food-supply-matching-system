@@ -39,6 +39,7 @@ class ThreadApplicationServiceTest {
     private val fileStorageService = mock(FileStorageService::class.java)
     private val businessProfileRepository = mock(BusinessProfileRepository::class.java)
     private val readStateRepository = mock(ThreadParticipantReadStateRepository::class.java)
+    private val auditLogRepository = mock(dev.riss.fsm.command.supplier.AuditLogRepository::class.java)
     private val service = ThreadApplicationService(
         requestRepository,
         targetedSupplierLinkRepository,
@@ -50,6 +51,7 @@ class ThreadApplicationServiceTest {
         fileStorageService,
         businessProfileRepository,
         readStateRepository,
+        auditLogRepository,
     )
 
     @Test

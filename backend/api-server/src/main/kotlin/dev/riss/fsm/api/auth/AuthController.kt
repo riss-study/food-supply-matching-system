@@ -40,6 +40,13 @@ class AuthController(
             .map { response -> ApiSuccessResponse(message = "Login successful", data = response) }
     }
 
+    @PostMapping("/auth/refresh")
+    @Operation(summary = "Refresh access token", description = "Exchange a refresh token for a new access token")
+    fun refresh(@Valid @RequestBody request: RefreshRequest): Mono<ApiSuccessResponse<RefreshResponse>> {
+        return authApplicationService.refresh(request)
+            .map { response -> ApiSuccessResponse(message = "Access token refreshed", data = response) }
+    }
+
     @GetMapping("/me")
     @Operation(summary = "Me", description = "Get the currently authenticated user", security = [SecurityRequirement(name = "bearerAuth")])
     fun me(@AuthenticationPrincipal principal: AuthenticatedUserPrincipal): Mono<ApiSuccessResponse<MeResponse>> {

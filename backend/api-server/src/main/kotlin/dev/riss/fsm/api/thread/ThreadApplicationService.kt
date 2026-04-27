@@ -51,6 +51,7 @@ class ThreadApplicationService(
     private val fileStorageService: FileStorageService,
     private val businessProfileRepository: BusinessProfileRepository,
     private val readStateRepository: ThreadParticipantReadStateRepository,
+    private val auditLogRepository: dev.riss.fsm.command.supplier.AuditLogRepository,
 ) {
     fun createThread(
         principal: AuthenticatedUserPrincipal,
@@ -414,14 +415,32 @@ class ThreadApplicationService(
                 messageThreadRepository.findById(threadId)
                     .switchIfEmpty { Mono.error(ThreadNotFoundException()) }
                     .flatMap { thread ->
-                        val canAccess = principal.role == UserRole.ADMIN || threadCommandService.ensureThreadAccess(thread, principal.userId, context.supplierProfileId)
+                        val isParticipant = threadCommandService.ensureThreadAccess(thread, principal.userId, context.supplierProfileId)
+                        val isAdminOverride = principal.role == UserRole.ADMIN && !isParticipant
+                        val canAccess = isParticipant || principal.role == UserRole.ADMIN
                         if (!canAccess) {
                             Mono.error(ThreadAccessDeniedException())
+                        } else if (isAdminOverride) {
+                            // 관리자가 자기 thread 가 아닌 thread 를 들여다본 기록 남김 (사후 감사용).
+                            recordAdminThreadAccess(principal.userId, threadId).thenReturn(thread)
                         } else {
                             Mono.just(thread)
                         }
                     }
             }
+    }
+
+    private fun recordAdminThreadAccess(adminUserId: String, threadId: String): Mono<Void> {
+        val entry = dev.riss.fsm.command.supplier.AuditLogEntity(
+            auditLogId = "alog_${java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 16)}",
+            actorUserId = adminUserId,
+            actionType = "admin_thread_view",
+            targetType = "thread",
+            targetId = threadId,
+            payloadSnapshot = "{}",
+            createdAt = java.time.LocalDateTime.now(),
+        ).apply { newEntity = true }
+        return auditLogRepository.save(entry).then()
     }
 
     private fun loadParticipantContext(principal: AuthenticatedUserPrincipal): Mono<ParticipantContext> {

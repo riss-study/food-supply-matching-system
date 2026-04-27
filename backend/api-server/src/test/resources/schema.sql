@@ -31,9 +31,9 @@ CREATE TABLE request_record (
   mode VARCHAR(20) NOT NULL,
   title VARCHAR(200) NOT NULL,
   category VARCHAR(100) NOT NULL,
-  desired_volume INT NOT NULL,
-  target_price_min INT NULL,
-  target_price_max INT NULL,
+  desired_volume VARCHAR(100) NOT NULL,
+  target_price_min VARCHAR(100) NULL,
+  target_price_max VARCHAR(100) NULL,
   certification_requirement TEXT NULL,
   raw_material_rule VARCHAR(50) NULL,
   packaging_requirement VARCHAR(50) NULL,
@@ -56,10 +56,10 @@ CREATE TABLE quote (
   id VARCHAR(64) PRIMARY KEY,
   request_id VARCHAR(64) NOT NULL,
   supplier_profile_id VARCHAR(64) NOT NULL,
-  unit_price_estimate INT NOT NULL,
-  moq INT NOT NULL,
-  lead_time INT NOT NULL,
-  sample_cost INT NULL,
+  unit_price_estimate VARCHAR(100) NOT NULL,
+  moq VARCHAR(100) NOT NULL,
+  lead_time VARCHAR(100) NOT NULL,
+  sample_cost VARCHAR(100) NULL,
   note TEXT NULL,
   state VARCHAR(32) NOT NULL,
   version INT NOT NULL,
@@ -112,8 +112,8 @@ CREATE TABLE supplier_profile (
   region VARCHAR(100) NOT NULL,
   categories TEXT NOT NULL,
   equipment_summary VARCHAR(500) NULL,
-  monthly_capacity INT NOT NULL,
-  moq INT NOT NULL,
+  monthly_capacity VARCHAR(100) NOT NULL,
+  moq VARCHAR(100) NOT NULL,
   oem_available BOOLEAN NOT NULL,
   odm_available BOOLEAN NOT NULL,
   raw_material_support BOOLEAN NOT NULL,
@@ -144,4 +144,14 @@ CREATE TABLE verification_submission (
   reviewed_by VARCHAR(64) NULL,
   review_note_internal TEXT NULL,
   review_note_public TEXT NULL
+);
+
+CREATE TABLE audit_log (
+  id VARCHAR(64) PRIMARY KEY,
+  actor_user_id VARCHAR(64) NOT NULL,
+  action_type VARCHAR(64) NOT NULL,
+  target_type VARCHAR(64) NOT NULL,
+  target_id VARCHAR(64) NOT NULL,
+  payload_snapshot TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL
 );

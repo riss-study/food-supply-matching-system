@@ -1,5 +1,6 @@
 package dev.riss.fsm.api.config
 
+import dev.riss.fsm.api.auth.LoginRateLimitWebFilter
 import dev.riss.fsm.shared.security.JwtAuthenticationWebFilter
 import dev.riss.fsm.shared.security.JwtTokenProvider
 import dev.riss.fsm.shared.security.SecurityErrorResponseWriter
@@ -45,7 +46,13 @@ class ApiSecurityConfig(
     }
 
     @Bean
-    fun apiSecurityFilterChain(http: ServerHttpSecurity, jwtAuthenticationWebFilter: JwtAuthenticationWebFilter): SecurityWebFilterChain {
+    fun loginRateLimitWebFilter(): LoginRateLimitWebFilter = LoginRateLimitWebFilter()
+
+    @Bean
+    fun apiSecurityFilterChain(
+        http: ServerHttpSecurity,
+        jwtAuthenticationWebFilter: JwtAuthenticationWebFilter,
+    ): SecurityWebFilterChain {
         return http
             .csrf { it.disable() }
             .cors { }
@@ -61,9 +68,11 @@ class ApiSecurityConfig(
             }
             .authorizeExchange { exchanges ->
                 exchanges
-                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/bootstrap/**", "/actuator/**", "/api/auth/signup", "/api/auth/login", "/api/suppliers", "/api/suppliers/**", "/api/notices", "/api/notices/**").permitAll()
+                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/bootstrap/**", "/actuator/**", "/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/suppliers", "/api/suppliers/**", "/api/notices", "/api/notices/**").permitAll()
                     .anyExchange().authenticated()
             }
+            // 참고: LoginRateLimitWebFilter 는 @Bean 으로 노출되어 Spring WebFlux 글로벌 체인에
+            // 자동 등록되므로 여기 별도 추가하지 않음 (이중 호출 방지).
             .addFilterAt(jwtAuthenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .build()
     }

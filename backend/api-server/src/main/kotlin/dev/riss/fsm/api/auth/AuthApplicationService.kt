@@ -50,6 +50,30 @@ class AuthApplicationService(
             }
     }
 
+    /**
+     * refresh token 으로 새 access token 발급.
+     * - tokenType=="refresh" 가 아니면 거부 (access 또는 forge 차단).
+     * - 서명/만료 검증 실패도 거부 (parseClaims 가 throw).
+     */
+    fun refresh(request: RefreshRequest): Mono<RefreshResponse> {
+        return Mono.fromCallable {
+            val claims = jwtTokenProvider.parseClaims(request.refreshToken)
+            if (claims["tokenType"]?.toString() != "refresh") {
+                throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token required")
+            }
+            val userId = claims.subject ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token subject")
+            val email = claims["email"]?.toString() ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token email")
+            val role = UserRole.fromKey(claims["role"]?.toString() ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token role"))
+            RefreshResponse(
+                accessToken = jwtTokenProvider.createAccessToken(userId, email, role),
+                expiresIn = jwtTokenProvider.accessTokenExpiresInSeconds(),
+            )
+        }.onErrorResume { error ->
+            if (error is ResponseStatusException) Mono.error(error)
+            else Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token"))
+        }
+    }
+
     fun me(principal: AuthenticatedUserPrincipal): Mono<MeResponse> {
         return userMeService.findMe(principal.userId)
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))

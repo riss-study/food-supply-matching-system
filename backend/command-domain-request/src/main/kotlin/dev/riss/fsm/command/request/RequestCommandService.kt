@@ -90,11 +90,15 @@ class RequestCommandService(
                     return@flatMap Mono.error(RequestStateTransitionException("Only draft requests can be published"))
                 }
 
-                val publishedEntity = request.copy(
-                    state = "open",
-                    updatedAt = LocalDateTime.now(),
-                )
-                requestRepository.save(publishedEntity)
+                val now = LocalDateTime.now()
+                requestRepository.publishIfDraft(request.requestId, now)
+                    .flatMap { affected ->
+                        if (affected == 0L) {
+                            Mono.error(RequestStateTransitionException("Request is no longer in draft (concurrent publish or already published)"))
+                        } else {
+                            Mono.just(request.copy(state = "open", updatedAt = now))
+                        }
+                    }
             }
     }
 
@@ -109,11 +113,15 @@ class RequestCommandService(
                     return@flatMap Mono.error(RequestStateTransitionException("Only open requests can be closed"))
                 }
 
-                val closedEntity = request.copy(
-                    state = "closed",
-                    updatedAt = LocalDateTime.now(),
-                )
-                requestRepository.save(closedEntity)
+                val now = LocalDateTime.now()
+                requestRepository.closeIfOpen(request.requestId, now)
+                    .flatMap { affected ->
+                        if (affected == 0L) {
+                            Mono.error(RequestStateTransitionException("Request is no longer open (concurrent close or already closed)"))
+                        } else {
+                            Mono.just(request.copy(state = "closed", updatedAt = now))
+                        }
+                    }
             }
     }
 
@@ -128,11 +136,15 @@ class RequestCommandService(
                     return@flatMap Mono.error(RequestStateTransitionException("Only draft or open requests can be cancelled"))
                 }
 
-                val cancelledEntity = request.copy(
-                    state = "cancelled",
-                    updatedAt = LocalDateTime.now(),
-                )
-                requestRepository.save(cancelledEntity)
+                val now = LocalDateTime.now()
+                requestRepository.cancelIfActive(request.requestId, now)
+                    .flatMap { affected ->
+                        if (affected == 0L) {
+                            Mono.error(RequestStateTransitionException("Request is no longer cancellable (concurrent transition)"))
+                        } else {
+                            Mono.just(request.copy(state = "cancelled", updatedAt = now))
+                        }
+                    }
             }
     }
 
