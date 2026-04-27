@@ -46,7 +46,7 @@ class NoticeApplicationServiceTest {
         val response = service.create(principal, request).block()!!
 
         assertEquals("published", response.state)
-        assertEquals(entity.createdAt, response.createdAt.atOffset(java.time.ZoneOffset.UTC).toLocalDateTime())
+        assertEquals(entity.createdAt, response.createdAt.atZone(java.time.ZoneId.systemDefault()).toLocalDateTime())
         verify(noticeCommandService).createNotice(entity.title, entity.body, principal.userId, "published", false)
     }
 

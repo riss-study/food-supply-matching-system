@@ -103,8 +103,9 @@ class ThreadApplicationServiceTest {
             .assertNext { response ->
                 assertEquals("mutually_approved", response.contactShareState)
                 assertEquals("requester", response.requestedBy)
-                assertEquals(Instant.parse("2026-03-25T09:00:00Z"), response.requestedAt)
-                assertEquals(Instant.parse("2026-03-25T10:30:00Z"), response.approvedAt)
+                // LocalDateTime 을 시스템 timezone 으로 해석한 Instant 와 비교 (KST 라면 -9h).
+                assertEquals(java.time.LocalDateTime.of(2026, 3, 25, 9, 0).atZone(java.time.ZoneId.systemDefault()).toInstant(), response.requestedAt)
+                assertEquals(java.time.LocalDateTime.of(2026, 3, 25, 10, 30).atZone(java.time.ZoneId.systemDefault()).toInstant(), response.approvedAt)
                 assertEquals("supplier-contact@example.com", response.sharedContact?.supplier?.email)
             }
             .verifyComplete()

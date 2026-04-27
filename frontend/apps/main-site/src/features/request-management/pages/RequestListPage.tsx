@@ -91,7 +91,7 @@ export function RequestListPage() {
                   {data.items.map((request) => (
                     <tr key={request.requestId} onClick={() => navigate(`/requests/${request.requestId}`)} className="cursor-pointer">
                       <td className="font-semibold" data-label={t("list.headers.title")}>{request.title}</td>
-                      <td className="text-muted" data-label={t("list.headers.category")}>{request.category}</td>
+                      <td className="text-muted" data-label={t("list.headers.category")}>{t(`common:supplierCategory.${request.category}`, { defaultValue: request.category })}</td>
                       <td className="text-muted" data-label={t("list.headers.mode")}>
                         {request.mode === "public" ? t("list.modePublic") : t("list.modeTargeted")}
                       </td>

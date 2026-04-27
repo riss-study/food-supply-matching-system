@@ -44,7 +44,7 @@ export function SupplierRequestFeedPage() {
           <option value="">{t("feed.categorySelect")}</option>
           {categories?.map((item) => (
             <option key={item.category} value={item.category}>
-              {item.category}
+              {t(`common:supplierCategory.${item.category}`, { defaultValue: item.category })}
             </option>
           ))}
         </select>
@@ -68,7 +68,7 @@ export function SupplierRequestFeedPage() {
                 <h2 className="section-title mb-8">{request.title}</h2>
 
                 <p className="text-sm text-muted mb-8">
-                  {t("feed.categoryPrefix", { category: request.category })} &nbsp;&nbsp; {t("feed.volumePrefix", { volume: request.desiredVolume })} &nbsp;&nbsp;
+                  {t("feed.categoryPrefix", { category: t(`common:supplierCategory.${request.category}`, { defaultValue: request.category }) })} &nbsp;&nbsp; {t("feed.volumePrefix", { volume: request.desiredVolume })} &nbsp;&nbsp;
                   {request.targetPriceRange && (
                     <>
                       {t("feed.priceRangePrefix", { min: request.targetPriceRange.min?.toLocaleString() ?? "", max: request.targetPriceRange.max?.toLocaleString() ?? "" })}

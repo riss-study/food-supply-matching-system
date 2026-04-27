@@ -89,7 +89,7 @@ export function SupplierRequestDetailPage() {
           <h2 className="section-title mb-16">{t("detail.requestInfoTitle")}</h2>
           <dl className="detail-grid">
             <dt>{t("detail.categoryLabel")}</dt>
-            <dd>{request.category}</dd>
+            <dd>{t(`common:supplierCategory.${request.category}`, { defaultValue: request.category })}</dd>
 
             <dt>{t("detail.desiredVolumeLabel")}</dt>
             <dd>{request.desiredVolume}</dd>
@@ -137,7 +137,7 @@ export function SupplierRequestDetailPage() {
             {request.deliveryRequirement && (
               <>
                 <dt>{t("detail.deliveryLabel")}</dt>
-                <dd>{new Date(request.deliveryRequirement).toLocaleDateString("ko-KR")}</dd>
+                <dd>{request.deliveryRequirement}</dd>
               </>
             )}
 

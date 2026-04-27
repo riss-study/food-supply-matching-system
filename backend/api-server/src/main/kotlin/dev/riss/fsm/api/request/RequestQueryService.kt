@@ -130,7 +130,15 @@ class RequestQueryService(
                     Mono.just(emptyList())
                 }
 
-                Mono.zip(requesterMono, targetSuppliersMono)
+                val quoteCountMono = databaseClient.sql(
+                    "SELECT COUNT(*) FROM quote WHERE request_id = :requestId AND state != 'withdrawn'"
+                )
+                    .bind("requestId", entity.requestId)
+                    .map { row, _ -> ((row.get(0) as? Number) ?: 0L).toLong() }
+                    .one()
+                    .defaultIfEmpty(0L)
+
+                Mono.zip(requesterMono, targetSuppliersMono, quoteCountMono)
                     .map { tuple ->
                         RequestDetailResponse(
                             requestId = entity.requestId,
@@ -154,6 +162,7 @@ class RequestQueryService(
                             state = entity.state,
                             requester = tuple.t1,
                             targetSuppliers = tuple.t2.ifEmpty { null },
+                            quoteCount = tuple.t3.toInt(),
                             createdAt = entity.createdAt.toInstant(ZoneOffset.UTC),
                         )
                     }

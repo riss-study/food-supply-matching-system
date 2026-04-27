@@ -65,7 +65,7 @@ export function RequestDetailPage() {
               <RequestStateBadge state={request.state} />
             </div>
             <div className="flex gap-12 text-muted text-sm">
-              <span>{request.category}</span>
+              <span>{t(`common:supplierCategory.${request.category}`, { defaultValue: request.category })}</span>
               <span>·</span>
               <span>{request.mode === "public" ? t("list.modePublic") : t("list.modeTargeted")}</span>
               <span>·</span>

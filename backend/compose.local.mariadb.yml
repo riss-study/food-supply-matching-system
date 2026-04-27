@@ -6,11 +6,14 @@ name: fsm-local-mariadb
 services:
   mariadb:
     image: mariadb:11.4
+    # 컨테이너 OS 와 mariadb 둘 다 UTC. JVM 도 UTC. 모든 timestamp 일관 처리.
     environment:
+      TZ: UTC
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?env MARIADB_ROOT_PASSWORD required (see .env.example)}
       MARIADB_DATABASE: fsm_command
       MARIADB_USER: ${MARIADB_USER:?env MARIADB_USER required}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD:?env MARIADB_PASSWORD required}
+    command: ["--default-time-zone=+00:00"]
     ports:
       - "127.0.0.1:13306:3306"
     healthcheck:

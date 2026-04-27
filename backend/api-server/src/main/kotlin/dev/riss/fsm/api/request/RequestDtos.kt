@@ -137,6 +137,8 @@ data class RequestDetailResponse(
     val requester: RequestDetailRequester?,
     @Schema(description = "Target suppliers (for targeted mode)")
     val targetSuppliers: List<RequestDetailTargetSupplier>?,
+    @Schema(description = "Active(received) quote count — submitted/selected/declined 합계")
+    val quoteCount: Int,
     @Schema(description = "Creation timestamp")
     val createdAt: Instant,
 )
