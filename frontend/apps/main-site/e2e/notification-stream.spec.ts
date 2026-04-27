@@ -125,4 +125,49 @@ test.describe("글로벌 알림 stream", () => {
       await buyerCtx.close()
     }
   })
+
+  test("SPA 페이지 이동 (Link 클릭) 시에도 stream connection 이 유지되어 알림이 끊기지 않는다", async ({ browser }) => {
+    const buyerCtx: BrowserContext = await browser.newContext()
+    const supplierCtx: BrowserContext = await browser.newContext()
+    const buyerPage = await buyerCtx.newPage()
+    const supplierPage = await supplierCtx.newPage()
+
+    // SSE 요청 추적 — SPA navigation 후에도 새 connection 안 열려야 함
+    const streamRequests: string[] = []
+    supplierPage.on("request", (req) => {
+      if (req.url().includes("/api/notifications/stream")) {
+        streamRequests.push(req.url())
+      }
+    })
+
+    try {
+      await login(buyerPage, BUYER)
+      await login(supplierPage, SUPPLIER)
+      await openFirstThread(buyerPage)
+      // 초기 stream 연결될 시간
+      await supplierPage.waitForTimeout(500)
+      const initialCount = streamRequests.length
+
+      // SPA navigation (Link 클릭) — page reload 없이 React Router 가 처리
+      await supplierPage.getByRole("link", { name: "공급자 탐색" }).first().click()
+      await expect(supplierPage).toHaveURL(/\/suppliers$/)
+      await supplierPage.getByRole("link", { name: "공지사항" }).first().click()
+      await expect(supplierPage).toHaveURL(/\/notices$/)
+      await supplierPage.waitForTimeout(500)
+
+      // buyer 가 메시지 보냄 — stream 살아있으면 toast 등장
+      const uniqueText = `notif-persist-${Date.now()}`
+      await sendMessage(buyerPage, uniqueText)
+
+      const matchingToast = supplierPage.getByRole("alert").filter({ hasText: uniqueText })
+      await expect(matchingToast).toBeVisible({ timeout: 5_000 })
+
+      // SPA navigation 후 추가 stream 연결 발생하지 않아야 — 초기와 같은 수
+      const navCount = streamRequests.length - initialCount
+      expect(navCount).toBe(0)
+    } finally {
+      await buyerCtx.close()
+      await supplierCtx.close()
+    }
+  })
 })

@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 import { fetchEventSource } from "@microsoft/fetch-event-source"
 import { useAuthStore } from "../../auth/store/auth-store"
@@ -18,19 +18,34 @@ interface NewMessageEvent {
 /**
  * 글로벌 알림 SSE stream 구독.
  *
- * App 레벨 (모든 페이지) 에서 한 번만 호출. 로그인한 사용자만 stream 활성.
- * - 자기가 현재 보고 있는 thread 의 알림은 toast 와 unread 모두 생략 (이미 화면에 보임).
- * - 그 외엔 toast push + unread 증가.
+ * App 레벨에서 한 번만 호출. 로그인한 사용자만 stream 활성.
+ *
+ * **핵심 설계**: stream 은 **accessToken 변경 시에만** abort + 재구독.
+ *   페이지 이동 / 다른 store 변경 등에는 영향 받지 않음. 이를 위해 모든 동적
+ *   참조 (pathname / store action) 를 useRef 에 저장 → effect deps 최소화.
+ *
+ * 자기가 현재 보고 있는 thread 의 알림은 toast / unread 모두 생략.
  */
 export function useNotificationStream() {
   const accessToken = useAuthStore((s) => s.accessToken)
-  const user = useAuthStore((s) => s.user)
+  const userId = useAuthStore((s) => s.user?.userId ?? null)
   const pushToast = useNotificationStore((s) => s.pushToast)
   const incrementUnread = useNotificationStore((s) => s.incrementUnread)
   const location = useLocation()
 
+  // 모든 동적 값을 ref 로 보관 — onmessage 시점에 최신 값 참조.
+  // ref 갱신은 별도 effect 라 stream effect 의 deps 안정.
+  const pathnameRef = useRef(location.pathname)
+  const pushToastRef = useRef(pushToast)
+  const incrementUnreadRef = useRef(incrementUnread)
   useEffect(() => {
-    if (!accessToken || !user) return
+    pathnameRef.current = location.pathname
+    pushToastRef.current = pushToast
+    incrementUnreadRef.current = incrementUnread
+  })
+
+  useEffect(() => {
+    if (!accessToken || !userId) return
     const ctrl = new AbortController()
 
     fetchEventSource("/api/notifications/stream", {
@@ -47,11 +62,10 @@ export function useNotificationStream() {
           const event = JSON.parse(ev.data) as NewMessageEvent
           if (event.type !== "NewMessage") return
 
-          // 현재 보고 있는 thread 의 알림이면 toast / unread 모두 생략
-          const onThisThread = location.pathname === `/threads/${event.threadId}`
+          const onThisThread = pathnameRef.current === `/threads/${event.threadId}`
           if (onThisThread) return
 
-          pushToast({
+          pushToastRef.current({
             id: event.messageId,
             threadId: event.threadId,
             threadTitle: event.threadTitle,
@@ -59,17 +73,16 @@ export function useNotificationStream() {
             preview: event.preview,
             sentAt: event.sentAt,
           })
-          incrementUnread(event.threadId)
+          incrementUnreadRef.current(event.threadId)
         } catch {
           // 잘못된 JSON / heartbeat 등 무시
         }
       },
       onerror(err) {
-        // 의도적 abort 면 throw → polyfill 영구 종료. 그 외는 자동 재연결.
         if (ctrl.signal.aborted) throw err
       },
     })
 
     return () => ctrl.abort()
-  }, [accessToken, user, pushToast, incrementUnread, location.pathname])
+  }, [accessToken, userId])   // accessToken / userId 만 deps. 그 외 변경엔 stream 유지.
 }
