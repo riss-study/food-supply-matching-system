@@ -31,7 +31,7 @@ export function SupplierDetailPage() {
         <div className="flex items-center gap-16 text-muted text-sm">
           <span>{data.region}</span>
           <span>·</span>
-          <span>{data.categories.join(", ")}</span>
+          <span>{data.categories.map((code) => t(`common:supplierCategory.${code}`, { defaultValue: code })).join(", ")}</span>
           <span>·</span>
           <div className="flex gap-6">
             {data.oemAvailable && <span className="badge badge-blue">OEM</span>}

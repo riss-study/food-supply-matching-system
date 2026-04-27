@@ -76,7 +76,7 @@ export function ReviewDetailPage() {
               <dt>{t("detail.representative")}</dt>
               <dd>{data.representativeName}</dd>
               <dt>{t("detail.categories")}</dt>
-              <dd>{data.categories.join(", ")}</dd>
+              <dd>{data.categories.map((code) => t(`common:supplierCategory.${code}`, { defaultValue: code })).join(", ")}</dd>
               <dt>{t("detail.submittedAt")}</dt>
               <dd>{new Date(data.submittedAt).toLocaleString("ko-KR")}</dd>
               {data.reviewedAt && (

@@ -52,6 +52,7 @@ class ThreadApplicationService(
     private val businessProfileRepository: BusinessProfileRepository,
     private val readStateRepository: ThreadParticipantReadStateRepository,
     private val auditLogRepository: dev.riss.fsm.command.supplier.AuditLogRepository,
+    private val threadStreamService: ThreadStreamService,
 ) {
     fun createThread(
         principal: AuthenticatedUserPrincipal,
@@ -210,7 +211,7 @@ class ThreadApplicationService(
     ): Mono<SendThreadMessageResponse> {
         return loadParticipantContext(principal)
             .flatMap { context ->
-                loadAccessibleThread(principal, threadId).flatMap { _ ->
+                loadAccessibleThread(principal, threadId).flatMap { thread ->
                     validateAttachmentIds(threadId, request.attachmentIds.orEmpty())
                         .then(
                             threadCommandService.sendMessage(
@@ -223,14 +224,22 @@ class ThreadApplicationService(
                                 )
                             )
                         )
+                        .flatMap { message ->
+                            // SSE event 용 상세 response 만들고 stream 으로 publish (best-effort).
+                            // publish 실패해도 메시지 저장 응답은 정상 반환 (onErrorResume).
+                            val publishStep = toMessageResponse(thread, message)
+                                .flatMap { detail ->
+                                    threadStreamService.publish(threadId, ThreadStreamEvent.NewMessage(detail))
+                                }
+                                .onErrorResume { Mono.empty() }
+
+                            publishStep.then(Mono.just(SendThreadMessageResponse(
+                                messageId = message.messageId,
+                                threadId = message.threadId,
+                                createdAt = message.createdAt.toInstant(ZoneOffset.UTC),
+                            )))
+                        }
                 }
-            }
-            .map { message ->
-                SendThreadMessageResponse(
-                    messageId = message.messageId,
-                    threadId = message.threadId,
-                    createdAt = message.createdAt.toInstant(ZoneOffset.UTC),
-                )
             }
     }
 
@@ -408,6 +417,14 @@ class ThreadApplicationService(
         UserRole.REQUESTER -> ThreadOtherPartyResponse(supplierCompanyName, "supplier", "supplier", supplierProfileId)
         else -> ThreadOtherPartyResponse(requesterBusinessName, "requester", "requester", null)
     }
+
+    /**
+     * Stream / 별도 endpoint 등 외부에서 thread 접근 권한만 검증하고 싶을 때 사용.
+     * loadAccessibleThread 가 private 이라 그것 그대로 노출하기보다 부수효과 (ADMIN audit) 까지
+     * 동일하게 트리거되는 얇은 wrapper 로 제공.
+     */
+    fun ensureParticipant(principal: AuthenticatedUserPrincipal, threadId: String): Mono<Void> =
+        loadAccessibleThread(principal, threadId).then()
 
     private fun loadAccessibleThread(principal: AuthenticatedUserPrincipal, threadId: String): Mono<MessageThreadEntity> {
         return loadParticipantContext(principal)

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { Link, useParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useThreadDetail } from "../hooks/useThreadDetail"
+import { useThreadStream } from "../hooks/useThreadStream"
 import { useSendMessage } from "../hooks/useSendMessage"
 import { useMarkThreadRead } from "../hooks/useMarkThreadRead"
 import { useUploadAttachment } from "../hooks/useUploadAttachment"
@@ -24,7 +25,9 @@ export function ThreadDetailPage() {
   const { t } = useTranslation("threads")
   const { threadId = "" } = useParams<{ threadId: string }>()
   const currentUser = useAuthStore((state) => state.user)
-  const { data: thread, isLoading, error } = useThreadDetail(threadId)
+  const { data: thread, isLoading, error, addMessageToCache } = useThreadDetail(threadId)
+  // SSE 실시간 메시지 수신. dedup / updatedAt 갱신은 addMessageToCache 가 처리.
+  useThreadStream(threadId, addMessageToCache)
   const sendMessageMutation = useSendMessage(threadId)
   const markReadMutation = useMarkThreadRead()
   const uploadAttachmentMutation = useUploadAttachment(threadId)

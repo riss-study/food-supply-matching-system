@@ -886,6 +886,7 @@ __metadata:
     "@fsm/types": "workspace:*"
     "@fsm/ui": "workspace:*"
     "@fsm/utils": "workspace:*"
+    "@microsoft/fetch-event-source": "npm:^2.0.1"
     "@playwright/test": "npm:^1.59.1"
     "@radix-ui/react-slot": "npm:^1.1.2"
     "@tanstack/react-query": "npm:^5.75.7"
@@ -1083,6 +1084,13 @@ __metadata:
     "@jridgewell/resolve-uri": "npm:^3.1.0"
     "@jridgewell/sourcemap-codec": "npm:^1.4.14"
   checksum: 10c0/4b30ec8cd56c5fd9a661f088230af01e0c1a3888d11ffb6b47639700f71225be21d1f7e168048d6d4f9449207b978a235c07c8f15c07705685d16dc06280e9d9
+  languageName: node
+  linkType: hard
+
+"@microsoft/fetch-event-source@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@microsoft/fetch-event-source@npm:2.0.1"
+  checksum: 10c0/38c69e9b9990e6cee715c7bbfa2752f943b42575acadb36facf19bb831f1520c469f854277439154258e0e1dc8650cc85038230d1f451e3f6b62e8faeaa1126c
   languageName: node
   linkType: hard
 

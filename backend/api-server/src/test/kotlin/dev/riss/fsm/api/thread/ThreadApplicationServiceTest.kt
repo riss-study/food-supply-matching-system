@@ -40,6 +40,7 @@ class ThreadApplicationServiceTest {
     private val businessProfileRepository = mock(BusinessProfileRepository::class.java)
     private val readStateRepository = mock(ThreadParticipantReadStateRepository::class.java)
     private val auditLogRepository = mock(dev.riss.fsm.command.supplier.AuditLogRepository::class.java)
+    private val threadStreamService = mock(ThreadStreamService::class.java)
     private val service = ThreadApplicationService(
         requestRepository,
         targetedSupplierLinkRepository,
@@ -52,6 +53,7 @@ class ThreadApplicationServiceTest {
         businessProfileRepository,
         readStateRepository,
         auditLogRepository,
+        threadStreamService,
     )
 
     @Test
@@ -103,9 +105,9 @@ class ThreadApplicationServiceTest {
             .assertNext { response ->
                 assertEquals("mutually_approved", response.contactShareState)
                 assertEquals("requester", response.requestedBy)
-                // LocalDateTime 을 시스템 timezone 으로 해석한 Instant 와 비교 (KST 라면 -9h).
-                assertEquals(java.time.LocalDateTime.of(2026, 3, 25, 9, 0).atZone(java.time.ZoneId.systemDefault()).toInstant(), response.requestedAt)
-                assertEquals(java.time.LocalDateTime.of(2026, 3, 25, 10, 30).atZone(java.time.ZoneId.systemDefault()).toInstant(), response.approvedAt)
+                // backend 가 LocalDateTime.toInstant(ZoneOffset.UTC) 로 변환 (R16 정석 timezone 정책).
+                assertEquals(java.time.LocalDateTime.of(2026, 3, 25, 9, 0).toInstant(java.time.ZoneOffset.UTC), response.requestedAt)
+                assertEquals(java.time.LocalDateTime.of(2026, 3, 25, 10, 30).toInstant(java.time.ZoneOffset.UTC), response.approvedAt)
                 assertEquals("supplier-contact@example.com", response.sharedContact?.supplier?.email)
             }
             .verifyComplete()

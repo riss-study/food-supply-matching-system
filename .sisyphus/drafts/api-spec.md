@@ -2469,6 +2469,103 @@ Authorization: Bearer <JWT>
 
 ---
 
+#### GET /api/threads/{threadId}/stream
+
+**설명:** Server-Sent Events 기반 thread 실시간 이벤트 stream. 새 메시지 등 push 받음.
+
+**인증:** 필요 (thread 참여자 — 요청자 본인 또는 그 thread 의 supplier 본인. ADMIN override 시 audit_log 기록)
+
+**Path Parameters:**
+
+| 파라미터 | 타입 | 설명 |
+|---------|------|------|
+| threadId | string | 스레드 ID |
+
+**Request Headers:**
+
+| 헤더 | 값 | 설명 |
+|------|----|------|
+| Authorization | `Bearer <accessToken>` | 필수. native `EventSource` 가 헤더 못 보내므로 클라이언트는 `@microsoft/fetch-event-source` 같은 polyfill 사용 |
+| Accept | `text/event-stream` | 권장 (생략 가능, 응답 Content-Type 으로 결정) |
+
+**Response Headers:**
+
+| 헤더 | 값 | 설명 |
+|------|-----|------|
+| Content-Type | `text/event-stream;charset=UTF-8` | SSE 표준 |
+| Cache-Control | `no-cache, no-store, max-age=0, must-revalidate` | 중간 cache 차단 |
+| Connection | `keep-alive` | HTTP/1.1 한정. HTTP/2 환경에선 무시됨 |
+| X-Accel-Buffering | `no` | nginx/CloudFront 의 SSE buffering 회피 — frame 이 즉시 client 에 전달되게 |
+
+**Stream 동작:**
+- 연결 성공 시 즉시 "open" 상태. 별도 welcome event 없음.
+- 새 이벤트 발생 시 SSE frame 으로 push.
+- **30초마다 빈 comment frame** (`:heartbeat\n\n`) — 프록시/로드밸런서 idle timeout 회피. heartbeat 에는 `id` 필드 없음 → polyfill 의 `lastEventId` 갱신 안 됨 (의도). 재연결 시 마지막 정상 메시지의 messageId 가 `Last-Event-ID` 헤더로 전송.
+- 클라이언트가 abort 또는 페이지 떠남 → 서버 측 connection cleanup. 마지막 구독자 떠난 후 30초 지연 후 thread 별 sink 도 정리.
+- 자동 재연결: 폴리필 (`@microsoft/fetch-event-source`) 또는 native `EventSource` 가 처리. `Last-Event-ID` 헤더 표준 지원 (현재는 dedup 만 사용, 메시지 복구는 첫 GET 으로).
+
+**인증 만료 정책 (중요):**
+- 본 endpoint 는 long-lived stream — 첫 연결 시점에만 Bearer 토큰 검증. stream 진행 중 token 만료 / logout 이 즉시 stream 을 끊지 못함 (stateless JWT 한계).
+- **클라이언트 책임**: access token 갱신 / logout 시 stream 을 abort 후 재연결. React 의 useEffect deps 에 accessToken 두면 자동 재구독.
+- 운영 보안 강화 시 BE 측 자동 종료 (`Mono.delay(tokenExpiresAt - now).then(close)`) 추가 검토 (별도 backlog).
+
+**SSE Frame 형식:**
+
+```
+event: NewMessage
+id: <messageId>
+data: {"type":"NewMessage","message":{...}}
+
+```
+
+(빈 줄 1개로 frame 종료)
+
+**이벤트 타입:**
+
+| event | 설명 | data 페이로드 |
+|-------|------|---------------|
+| `NewMessage` | 새 메시지 (자기/상대 모두 echo) | `{ type: "NewMessage", message: <ThreadMessageResponse> }` |
+
+**`ThreadMessageResponse` 페이로드** (코드의 `ThreadDtos.kt:84` `ThreadMessageResponse` data class 와 동일):
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| messageId | string | 메시지 ID |
+| senderUserId | string | 보낸 사람 user ID |
+| senderType | string | `"requester"` \| `"supplier"` (UI 에서 발신자 측 구분) |
+| body | string \| null | 본문 (첨부만 있으면 null) |
+| attachments | array | `{ attachmentId, fileName, contentType, fileSize, url, createdAt }[]` |
+| sentAt | string | ISO 8601 UTC — 메시지 작성 시각 (브라우저가 로컬 timezone 변환) |
+| createdAt | string | ISO 8601 UTC — DB 저장 시각 (sentAt 과 동일하지만 audit/sort 용) |
+
+> 참고: `threadId` 는 응답 페이로드에 포함되지 않음. SSE stream URL path 의 `{threadId}` 로 이미 컨텍스트 결정. 클라이언트는 stream 별로 분리해서 처리.
+
+**클라이언트 처리 가이드:**
+- messageId 기반 dedup (자기 메시지도 echo 옴).
+- React Query 의 `threadKeys.detail(threadId)` 캐시에 추가 — 캐시 모양은 `ThreadDetail` 객체이며 `messages: ThreadMessage[]` 필드에 append. 기존 `useThreadDetail` 의 `addMessageToCache` 헬퍼 재사용 권고.
+- ordering: 동시 발송 시 SSE 도착 순서가 createdAt 순서와 다를 수 있음. **frontend 가 `createdAt` + `messageId` tie-break 으로 정렬 보강** 권고.
+- 페이지 떠날 때 AbortController 로 cleanup 필수.
+
+**Error Responses:**
+
+연결 시점:
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 401 | 4011 | accessToken 만료/무효 / refresh token 으로 호출 시도 |
+| 403 | 4039 | thread 비참여자 (ADMIN 아님) |
+| 404 | 4041 | threadId 없음 |
+| 503 | 5030 | stream 인프라 일시 장애 (단일 인스턴스 가정 유지). 응답 헤더에 `Retry-After: <seconds>` 함께 권고 (클라이언트 polyfill 의 backoff 참고). |
+
+연결 후 stream 중간에 에러 발생 시 stream 종료 (HTTP status 가 아닌 connection close). 클라이언트는 polyfill 의 자동 재연결 정책에 맡김.
+
+**Notes:**
+- Phase 1 은 단일 인스턴스 in-memory `Sinks.Many` 사용 — 다중 인스턴스 broadcast 안 됨. 운영 다중화 시점에 Redis pub/sub 으로 교체 (interface 추상화 유지).
+- 별도 페이지 (의뢰 목록 등) 에서 thread 알림 받으려면 향후 `/api/notifications/stream` (Phase 2) 사용.
+- 브라우저 닫혀있을 때 OS 알림은 Web Push API (Phase 3) 별도 구현.
+
+---
+
 ### 3.8 연락처 공유
 
 #### POST /api/threads/{threadId}/contact-share/request
@@ -4027,9 +4124,11 @@ Authorization: Bearer <JWT>
 | 4097 | Contact share approval conflict | 연락처 공유 승인 상태 충돌 (자기 요청 자기 승인 / 이미 승인됨) |
 | 4098 | Contact share not requested | 연락처 공유 요청 전 승인/거절 시도 |
 | 4099 | Cannot revoke after approval | mutually_approved 후 철회 시도 |
+| 4131 | Payload too large | 본문 / multipart 한도 초과 (`DataBufferLimitException` / `DecodingException`) — **413** |
 | 4221 | Invalid field modification | 허용되지 않은 필드 수정 (Supplier profile state immutable) |
 | 4222 | Review content violation | 금칙어 포함 등 모더레이션 위반 |
 | 4223 | Non-patchable field | 수정 불가 필드 포함 |
+| 4290 | Too many login attempts | `/api/auth/login` 의 IP 기반 rate limit 초과 — **429** (1분 / 10회 실패 → 60초 lockout) |
 
 ### 5.2 System Error Codes (5xxx)
 
@@ -4037,6 +4136,7 @@ Authorization: Bearer <JWT>
 |------|------|
 | 5000 | Internal server error (fallback, 생성자 실패 / 미분류 예외) |
 | 5001 | Password encoding failed |
+| 5030 | Service unavailable — token revocation store / stream backend 등 인프라 일시 장애 (Redis 다운 등) |
 
 ---
 
@@ -4086,12 +4186,17 @@ Authorization: Bearer <JWT>
 | 1.9 | 2026-04-20 | DOC-2 해소: §5.1/§5.2 registry 를 실제 code 와 일치시킴. 제거: 4001 (실제 validation 은 4000), 4002 (미구현), 4003 (미구현), 5002/5003 (미구현). 추가: 4000 Validation, 4010 Authentication required, 4030 Access denied, 4097/4098 ContactShare 관련. 수정: 5000 Internal fallback, 5001 Password encoding failed. §2.5 404→4040 fallback 언급은 예약이나 실제 핸들러는 4041 을 사용한다는 주석 추가. |
 | 1.10 | 2026-04-20 | Task 06.5 (admin review moderation UI) 용 계약 추가: §4.4 에 `GET /api/admin/supplier-reviews` (목록, hidden/supplierId 필터, 페이지네이션). 관리자 시점 응답은 hidden 포함 + requesterCompanyName 마스킹 없이 노출 (공개 목록의 P3 와 차이). |
 | 1.11 | 2026-04-20 | Task 06 BE 리뷰 (B2) 해소: POST /api/reviews `text` 필드 타입을 `string\|null` 로 정정하고 "빈 문자열 또는 null 은 본문 없음과 동일 (저장 시 null 로 정규화)" 를 명시. PATCH 의 clear 시맨틱과 일원화 (비대칭 제거). 기존 구현은 이미 이 동작을 하고 있었고, spec 문구만 의미 drift 가 있었음. |
+| 1.12 | 2026-04-27 | R12~R15 누적 반영: §5.1 에 4080-4086 (state-violation 409 재배치), 4131 (payload too large), 4290 (login rate limit) 추가. §5.2 에 5030 (service unavailable, Redis 등 인프라 일시 장애) 추가. 4036 description 정확화 (리뷰 본인 의뢰 아님 / 권한 위반 / 403). |
+| 1.13 | 2026-04-27 | Phase 3 Task B SSE 채팅 계약 선반영: §3.7 끝에 `GET /api/threads/{threadId}/stream` (Server-Sent Events) 추가. 이벤트 타입 `NewMessage`, heartbeat 30s, polyfill 인증 가이드. §8 Out of Scope 의 "WebSocket / 실시간 계약" 항목은 SSE 도입으로 해소. |
 
 ---
 
 ## 8. Out of Scope
 
-- WebSocket / 실시간 계약
-- 이벤트 버스 payload 상세
+- WebSocket (양방향 socket) — Phase 1 채팅은 SSE + POST 로 충분. 향후 음성/영상 등 양방향 stream 필요 시 별도 task
+- RSocket / STOMP 등 메시징 프로토콜
+- Web Push API / VAPID (브라우저 닫혀있을 때 OS 알림) — 별도 task (Phase 3-D)
+- APNs / FCM (모바일 native push) — 모바일 앱 도입 시
+- 이벤트 버스 payload 상세 (Kafka 등 backend 내부 비동기)
 - OpenAPI YAML/JSON 명세
 - SDK/client library 생성 규칙

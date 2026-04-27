@@ -17,6 +17,9 @@ export function useThreadDetail(threadId: string, params: ThreadDetailParams = {
     (message: ThreadMessage) => {
       queryClient.setQueryData<ThreadDetail>(threadKeys.detail(threadId), (old) => {
         if (!old) return old
+        // dedup: 같은 messageId 이미 있으면 무시.
+        // 자기 메시지 send POST 의 onSuccess 와 SSE echo 가 중복 도달하는 케이스 방지.
+        if (old.messages.some((m) => m.messageId === message.messageId)) return old
         return {
           ...old,
           messages: [...old.messages, message],

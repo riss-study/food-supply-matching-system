@@ -172,7 +172,7 @@ export function SupplierSearchPage() {
                   <span className="badge badge-green">{t("search.certifiedBadge")}</span>
                 </div>
                 <p className="text-muted text-sm">
-                  {item.region} · {item.categories.join(", ")}
+                  {item.region} · {item.categories.map((code) => t(`common:supplierCategory.${code}`, { defaultValue: code })).join(", ")}
                 </p>
                 <div className="flex gap-8 flex-wrap">
                   {item.oemAvailable && <span className="badge badge-blue">OEM</span>}

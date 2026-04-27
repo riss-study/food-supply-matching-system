@@ -374,7 +374,7 @@ export function RequestForm({
                   <div>
                     <div className="font-medium">{supplier.companyName}</div>
                     <div className="text-sm text-muted">
-                      {supplier.region} · {supplier.categories.join(", ")}
+                      {supplier.region} · {supplier.categories.map((code) => t(`common:supplierCategory.${code}`, { defaultValue: code })).join(", ")}
                     </div>
                   </div>
                 </label>

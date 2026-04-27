@@ -30,5 +30,15 @@
   "admin": "관리자",
   "openMenu": "메뉴 열기",
   "closeMenu": "메뉴 닫기",
-  "notAvailable": "—"
+  "notAvailable": "—",
+  "supplierCategory": {
+    "snack": "스낵 / 간식",
+    "beverage": "음료",
+    "sauce": "소스 / 조미료",
+    "bakery": "제과 / 베이커리",
+    "dairy": "유제품",
+    "health": "건강식품",
+    "frozen": "냉동식품",
+    "other": "기타"
+  }
 }
