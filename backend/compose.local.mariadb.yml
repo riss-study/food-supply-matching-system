@@ -20,13 +20,20 @@ services:
       - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
 
   # refresh token 폐기 / 향후 rate-limit 분산화 / WebSocket pub-sub / 분산 락 등에 사용.
+  # - --requirepass 로 인증 강제 (인증 없이 연결 차단).
+  # - 포트 바인딩을 127.0.0.1 로 제한 → 호스트 머신 안에서만 접근 (LAN/외부 노출 차단).
   redis:
     image: redis:7.4-alpine
-    command: ["redis-server", "--appendonly", "yes"]
+    command:
+      - "redis-server"
+      - "--appendonly"
+      - "yes"
+      - "--requirepass"
+      - "${REDIS_PASSWORD:-fsm-local-redis}"
     ports:
-      - "16379:6379"
+      - "127.0.0.1:16379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-fsm-local-redis}", "--no-auth-warning", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10

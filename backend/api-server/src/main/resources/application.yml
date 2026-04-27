@@ -7,9 +7,9 @@ spring:
     password: ${SPRING_R2DBC_PASSWORD:fsm}
   data:
     redis:
+      # password 는 application-local.yml 또는 운영 env (SPRING_DATA_REDIS_PASSWORD) 로 주입.
       host: ${SPRING_REDIS_HOST:localhost}
       port: ${SPRING_REDIS_PORT:6379}
-      password: ${SPRING_REDIS_PASSWORD:}
       timeout: 2s
   codec:
     # JSON 본문 등 in-memory buffer 한도. 1MB 초과 응답/요청 본문은 거부.
