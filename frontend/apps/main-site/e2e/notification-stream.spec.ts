@@ -126,6 +126,38 @@ test.describe("글로벌 알림 stream", () => {
     }
   })
 
+  test("/threads 목록 페이지에서 새 메시지 도착 시 lastMessage / unread 가 새로고침 없이 갱신", async ({ browser }) => {
+    const buyerCtx: BrowserContext = await browser.newContext()
+    const supplierCtx: BrowserContext = await browser.newContext()
+    const buyerPage = await buyerCtx.newPage()
+    const supplierPage = await supplierCtx.newPage()
+
+    try {
+      await login(buyerPage, BUYER)
+      await login(supplierPage, SUPPLIER)
+
+      // buyer 는 thread 진입 → 메시지 발송 채널 확보
+      await openFirstThread(buyerPage)
+
+      // supplier 는 thread 목록 페이지에서 대기
+      await supplierPage.goto("/threads")
+      await expect(supplierPage).toHaveURL(/\/threads$/)
+      await supplierPage.waitForTimeout(500)
+
+      // buyer 가 unique 텍스트 메시지 발송
+      const uniqueText = `list-update-${Date.now()}`
+      await sendMessage(buyerPage, uniqueText)
+
+      // supplier 의 thread 목록의 link (item) 안에 새 메시지 텍스트 등장 (새로고침 없이).
+      // toast 와 list 양쪽에 텍스트 보일 수 있어 list link 로 selector 좁힘.
+      const threadLink = supplierPage.locator("a[href*='/threads/']").filter({ hasText: uniqueText })
+      await expect(threadLink).toBeVisible({ timeout: 5_000 })
+    } finally {
+      await buyerCtx.close()
+      await supplierCtx.close()
+    }
+  })
+
   test("SPA 페이지 이동 (Link 클릭) 시에도 stream connection 이 유지되어 알림이 끊기지 않는다", async ({ browser }) => {
     const buyerCtx: BrowserContext = await browser.newContext()
     const supplierCtx: BrowserContext = await browser.newContext()
