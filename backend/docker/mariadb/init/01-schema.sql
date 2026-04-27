@@ -202,8 +202,34 @@ CREATE TABLE IF NOT EXISTS audit_log (
   target_type VARCHAR(64) NOT NULL,
   target_id VARCHAR(64) NOT NULL,
   payload_snapshot TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_audit_created_at (created_at),
+  INDEX idx_audit_actor (actor_user_id, created_at),
+  INDEX idx_audit_target (target_type, target_id, created_at)
 );
+
+-- audit_log 변조/삭제 차단 — trigger 로 일반 user 의 UPDATE/DELETE 거부.
+-- root (또는 SUPER 권한) 는 트리거 우회 가능 — 진짜 cleanup/archive 는 root 직접 수행.
+DROP TRIGGER IF EXISTS audit_log_block_update;
+DROP TRIGGER IF EXISTS audit_log_block_delete;
+
+DELIMITER //
+CREATE TRIGGER audit_log_block_update BEFORE UPDATE ON audit_log
+FOR EACH ROW
+BEGIN
+  IF USER() NOT LIKE 'root@%' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'audit_log is append-only';
+  END IF;
+END//
+
+CREATE TRIGGER audit_log_block_delete BEFORE DELETE ON audit_log
+FOR EACH ROW
+BEGIN
+  IF USER() NOT LIKE 'root@%' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'audit_log is append-only';
+  END IF;
+END//
+DELIMITER ;
 
 ALTER TABLE business_profile
   ADD COLUMN IF NOT EXISTS business_name VARCHAR(100) NOT NULL DEFAULT 'Unknown';

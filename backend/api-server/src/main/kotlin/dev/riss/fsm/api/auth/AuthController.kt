@@ -47,6 +47,13 @@ class AuthController(
             .map { response -> ApiSuccessResponse(message = "Access token refreshed", data = response) }
     }
 
+    @PostMapping("/auth/logout")
+    @Operation(summary = "Logout", description = "Revoke a refresh token (client should also clear local storage)")
+    fun logout(@Valid @RequestBody request: RefreshRequest): Mono<ApiSuccessResponse<Unit>> {
+        return authApplicationService.logout(request)
+            .thenReturn(ApiSuccessResponse(message = "Logged out", data = Unit))
+    }
+
     @GetMapping("/me")
     @Operation(summary = "Me", description = "Get the currently authenticated user", security = [SecurityRequirement(name = "bearerAuth")])
     fun me(@AuthenticationPrincipal principal: AuthenticatedUserPrincipal): Mono<ApiSuccessResponse<MeResponse>> {

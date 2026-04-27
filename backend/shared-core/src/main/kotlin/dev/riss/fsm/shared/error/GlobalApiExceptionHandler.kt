@@ -2,6 +2,8 @@ package dev.riss.fsm.shared.error
 
 import dev.riss.fsm.shared.api.ApiErrorDetail
 import dev.riss.fsm.shared.api.ApiErrorResponse
+import org.springframework.core.codec.DecodingException
+import org.springframework.core.io.buffer.DataBufferLimitException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
@@ -281,6 +283,36 @@ class GlobalApiExceptionHandler {
                 code = 4000,
                 message = "Validation failed",
                 errors = details,
+            )
+        )
+    }
+
+    /**
+     * 본문 / multipart 한도 초과 (1MB JSON, 10MB 파일 part 등).
+     * fallback handleGeneric 으로 떨어지면 HTTP 500/5000 leak 되므로 명시 매핑.
+     */
+    @ExceptionHandler(DataBufferLimitException::class)
+    fun handleDataBufferLimit(exception: DataBufferLimitException): ResponseEntity<ApiErrorResponse> {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
+            ApiErrorResponse(
+                code = 4131,
+                message = "요청 본문이 너무 큽니다 (최대 1MB).",
+            )
+        )
+    }
+
+    /**
+     * Spring WebFlux 의 codec/multipart 디코딩 실패. cause 가 DataBufferLimitException 이면 한도 초과 분기.
+     */
+    @ExceptionHandler(DecodingException::class)
+    fun handleDecoding(exception: DecodingException): ResponseEntity<ApiErrorResponse> {
+        if (exception.cause is DataBufferLimitException) {
+            return handleDataBufferLimit(exception.cause as DataBufferLimitException)
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            ApiErrorResponse(
+                code = 4000,
+                message = "요청 디코딩에 실패했습니다.",
             )
         )
     }

@@ -22,11 +22,12 @@ class JwtTokenProviderTest {
 
     @Test
     fun `create and parse refresh token`() {
-        val token = provider.createRefreshToken(subject = "user-1", email = "user@example.com", role = UserRole.REQUESTER)
-        val claims = provider.parseClaims(token)
+        val issued = provider.createRefreshToken(subject = "user-1", email = "user@example.com", role = UserRole.REQUESTER)
+        val claims = provider.parseClaims(issued.token)
 
         assertEquals("user-1", claims.subject)
         assertEquals("refresh", claims["tokenType"])
+        assertEquals(issued.jti, claims.id)
         assertTrue(provider.accessTokenExpiresInSeconds() > 0)
     }
 }

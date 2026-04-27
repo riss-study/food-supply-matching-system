@@ -54,7 +54,7 @@ class AdminAuthController(
                             message = "Login successful",
                             data = AdminLoginResponse(
                                 accessToken = jwtTokenProvider.createAccessToken(user.userId, user.email, user.role),
-                                refreshToken = jwtTokenProvider.createRefreshToken(user.userId, user.email, user.role),
+                                refreshToken = jwtTokenProvider.createRefreshToken(user.userId, user.email, user.role).token,
                                 expiresIn = jwtTokenProvider.accessTokenExpiresInSeconds(),
                                 user = AdminUserResponse(
                                     userId = user.userId,

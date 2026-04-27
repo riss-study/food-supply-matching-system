@@ -25,6 +25,13 @@ import org.springframework.http.HttpStatus
 class ApiSecurityConfig(
     @org.springframework.beans.factory.annotation.Value("\${fsm.cors.allowed-origin-patterns:http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174}")
     private val allowedOriginPatterns: String,
+    /**
+     * X-Forwarded-For 신뢰 가능한 직전 hop(reverse proxy) IP 목록.
+     * 운영에서는 nginx/CloudFront 등 IP 또는 localhost(개발) 명시.
+     * 비어있으면 XFF 무시 — 직결 클라이언트가 위조해도 영향 없음.
+     */
+    @org.springframework.beans.factory.annotation.Value("\${fsm.security.trusted-proxies:}")
+    private val trustedProxiesRaw: String,
 ) {
 
     @Bean
@@ -46,7 +53,10 @@ class ApiSecurityConfig(
     }
 
     @Bean
-    fun loginRateLimitWebFilter(): LoginRateLimitWebFilter = LoginRateLimitWebFilter()
+    fun loginRateLimitWebFilter(): LoginRateLimitWebFilter {
+        val trusted = trustedProxiesRaw.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        return LoginRateLimitWebFilter(trustedProxies = trusted)
+    }
 
     @Bean
     fun apiSecurityFilterChain(
@@ -68,7 +78,7 @@ class ApiSecurityConfig(
             }
             .authorizeExchange { exchanges ->
                 exchanges
-                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/bootstrap/**", "/actuator/**", "/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/suppliers", "/api/suppliers/**", "/api/notices", "/api/notices/**").permitAll()
+                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**", "/v3/api-docs/**", "/api/bootstrap/**", "/actuator/**", "/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout", "/api/suppliers", "/api/suppliers/**", "/api/notices", "/api/notices/**").permitAll()
                     .anyExchange().authenticated()
             }
             // 참고: LoginRateLimitWebFilter 는 @Bean 으로 노출되어 Spring WebFlux 글로벌 체인에

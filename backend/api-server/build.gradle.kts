@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.webflux.actuator)
     implementation(libs.spring.boot.starter.data.r2dbc)
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.reactor.kotlin.extensions)

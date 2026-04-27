@@ -25,6 +25,12 @@ class LoginRateLimitWebFilter(
     private val maxFailures: Int = 10,
     private val windowSeconds: Long = 60,
     private val lockoutSeconds: Long = 60,
+    /**
+     * X-Forwarded-For 헤더를 신뢰할 수 있는 직전 hop(reverse proxy) 들의 IP 목록.
+     * 비어있으면 XFF 헤더는 모두 무시 (직결 클라이언트는 위조 가능).
+     * 운영에서는 nginx/CloudFront 등의 IP/CIDR 을 명시 (env: FSM_SECURITY_TRUSTED_PROXIES).
+     */
+    private val trustedProxies: Set<String> = emptySet(),
 ) : WebFilter {
 
     private val attempts = ConcurrentHashMap<String, AttemptRecord>()
@@ -78,12 +84,21 @@ class LoginRateLimitWebFilter(
             exchange.request.path.value() == "/api/auth/login"
     }
 
+    /**
+     * 클라이언트 실제 IP 추출.
+     * - 직전 hop(remoteAddress) 가 trustedProxies 안에 있을 때만 X-Forwarded-For 신뢰.
+     * - XFF 는 "client, proxy1, proxy2" 형태 — 우측에서부터 trustedProxies 빼고 남는 마지막 토큰이 진짜 client.
+     * - 신뢰 안 되는 직결 또는 trustedProxies 없으면 remoteAddress 그대로 사용 (XFF 무시).
+     */
     private fun clientIp(exchange: ServerWebExchange): String {
-        val xff = exchange.request.headers.getFirst("X-Forwarded-For")
-        if (!xff.isNullOrBlank()) {
-            return xff.split(",").first().trim()
+        val remote = exchange.request.remoteAddress?.address?.hostAddress ?: "unknown"
+        if (remote == "unknown" || remote !in trustedProxies) {
+            return remote
         }
-        return exchange.request.remoteAddress?.address?.hostAddress ?: "unknown"
+        val xff = exchange.request.headers.getFirst("X-Forwarded-For") ?: return remote
+        val tokens = xff.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        // 우측에서부터 trustedProxies 빼고 남는 마지막 토큰
+        return tokens.lastOrNull { it !in trustedProxies } ?: remote
     }
 
     private class AttemptRecord {

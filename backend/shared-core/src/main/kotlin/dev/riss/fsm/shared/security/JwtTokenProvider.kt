@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.Date
+import java.util.UUID
 import javax.crypto.SecretKey
 
 class JwtTokenProvider(
@@ -30,11 +31,16 @@ class JwtTokenProvider(
             .compact()
     }
 
-    fun createRefreshToken(subject: String, email: String, role: UserRole): String {
+    /**
+     * @return 발급된 토큰 + 그 토큰의 jti (server side blacklist 용 키).
+     */
+    fun createRefreshToken(subject: String, email: String, role: UserRole): RefreshTokenIssued {
         val now = Instant.now()
         val expiry = now.plusSeconds(properties.refreshTokenTtlSeconds)
+        val jti = UUID.randomUUID().toString()
 
-        return Jwts.builder()
+        val token = Jwts.builder()
+            .id(jti)
             .issuer(properties.issuer)
             .subject(subject)
             .claim("email", email)
@@ -44,7 +50,10 @@ class JwtTokenProvider(
             .expiration(Date.from(expiry))
             .signWith(signingKey)
             .compact()
+        return RefreshTokenIssued(token = token, jti = jti, expiresAt = expiry)
     }
+
+    fun refreshTokenTtlSeconds(): Long = properties.refreshTokenTtlSeconds
 
     fun accessTokenExpiresInSeconds(): Long = properties.accessTokenTtlSeconds
 
@@ -56,3 +65,9 @@ class JwtTokenProvider(
             .payload
     }
 }
+
+data class RefreshTokenIssued(
+    val token: String,
+    val jti: String,
+    val expiresAt: Instant,
+)

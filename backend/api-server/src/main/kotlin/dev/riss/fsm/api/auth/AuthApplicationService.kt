@@ -15,6 +15,7 @@ class AuthApplicationService(
     private val authCommandService: AuthCommandService,
     private val userMeService: UserMeService,
     private val jwtTokenProvider: JwtTokenProvider,
+    private val revocationStore: RefreshTokenRevocationStore,
 ) {
 
     fun signup(request: SignupRequest): Mono<SignupResponse> {
@@ -37,9 +38,10 @@ class AuthApplicationService(
     fun login(request: LoginRequest): Mono<LoginResponse> {
         return authCommandService.authenticate(request.email, request.password)
             .map { user ->
+                val refresh = jwtTokenProvider.createRefreshToken(user.userId, user.email, user.role)
                 LoginResponse(
                     accessToken = jwtTokenProvider.createAccessToken(user.userId, user.email, user.role),
-                    refreshToken = jwtTokenProvider.createRefreshToken(user.userId, user.email, user.role),
+                    refreshToken = refresh.token,
                     expiresIn = jwtTokenProvider.accessTokenExpiresInSeconds(),
                     user = AuthenticatedUserResponse(
                         userId = user.userId,
@@ -52,26 +54,58 @@ class AuthApplicationService(
 
     /**
      * refresh token 으로 새 access token 발급.
-     * - tokenType=="refresh" 가 아니면 거부 (access 또는 forge 차단).
-     * - 서명/만료 검증 실패도 거부 (parseClaims 가 throw).
+     *  - tokenType=="refresh" 검증 (access 또는 forge 차단).
+     *  - 서명/만료 검증 (parseClaims throw).
+     *  - jti 가 RefreshTokenRevocationStore 에 폐기 등록되어 있으면 거부 (logout 후 재사용 차단).
      */
     fun refresh(request: RefreshRequest): Mono<RefreshResponse> {
-        return Mono.fromCallable {
-            val claims = jwtTokenProvider.parseClaims(request.refreshToken)
-            if (claims["tokenType"]?.toString() != "refresh") {
-                throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token required")
+        return Mono.fromCallable { jwtTokenProvider.parseClaims(request.refreshToken) }
+            .onErrorMap { error ->
+                if (error is ResponseStatusException) error
+                else ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token")
             }
-            val userId = claims.subject ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token subject")
-            val email = claims["email"]?.toString() ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token email")
-            val role = UserRole.fromKey(claims["role"]?.toString() ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token role"))
-            RefreshResponse(
-                accessToken = jwtTokenProvider.createAccessToken(userId, email, role),
-                expiresIn = jwtTokenProvider.accessTokenExpiresInSeconds(),
-            )
-        }.onErrorResume { error ->
-            if (error is ResponseStatusException) Mono.error(error)
-            else Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token"))
-        }
+            .flatMap { claims ->
+                if (claims["tokenType"]?.toString() != "refresh") {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token required"))
+                }
+                val jti = claims.id ?: return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing jti"))
+                val userId = claims.subject ?: return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token subject"))
+                val email = claims["email"]?.toString() ?: return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token email"))
+                val role = UserRole.fromKey(claims["role"]?.toString() ?: return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token role")))
+
+                revocationStore.isRevoked(jti).flatMap { revoked ->
+                    if (revoked) {
+                        Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token has been revoked"))
+                    } else {
+                        Mono.just(RefreshResponse(
+                            accessToken = jwtTokenProvider.createAccessToken(userId, email, role),
+                            expiresIn = jwtTokenProvider.accessTokenExpiresInSeconds(),
+                        ))
+                    }
+                }
+            }
+    }
+
+    /**
+     * logout: 클라이언트가 보낸 refresh token 의 jti 를 revocation store 에 등록.
+     *  - TTL = 토큰 만료까지 남은 시간 → 만료 후 자동 정리.
+     *  - 이미 만료된 토큰이면 no-op.
+     *  - 잘못된 / 변조된 토큰은 401.
+     */
+    fun logout(request: RefreshRequest): Mono<Void> {
+        return Mono.fromCallable { jwtTokenProvider.parseClaims(request.refreshToken) }
+            .onErrorMap { error ->
+                if (error is ResponseStatusException) error
+                else ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token")
+            }
+            .flatMap { claims ->
+                if (claims["tokenType"]?.toString() != "refresh") {
+                    return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token required"))
+                }
+                val jti = claims.id ?: return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing jti"))
+                val expiresAt = claims.expiration?.toInstant() ?: return@flatMap Mono.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing expiration"))
+                revocationStore.revoke(jti, expiresAt).then()
+            }
     }
 
     fun me(principal: AuthenticatedUserPrincipal): Mono<MeResponse> {

@@ -19,7 +19,23 @@ services:
       - mariadb-data:/var/lib/mysql
       - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
 
+  # refresh token 폐기 / 향후 rate-limit 분산화 / WebSocket pub-sub / 분산 락 등에 사용.
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "16379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - redis-data:/data
+
 volumes:
   mariadb-data:
     name: backend_mariadb-data
     external: true
+  redis-data:
+    name: backend_redis-data
