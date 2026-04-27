@@ -53,6 +53,7 @@ class ThreadApplicationService(
     private val readStateRepository: ThreadParticipantReadStateRepository,
     private val auditLogRepository: dev.riss.fsm.command.supplier.AuditLogRepository,
     private val threadStreamService: ThreadStreamService,
+    private val notificationStreamService: dev.riss.fsm.api.notification.NotificationStreamService,
 ) {
     fun createThread(
         principal: AuthenticatedUserPrincipal,
@@ -225,11 +226,24 @@ class ThreadApplicationService(
                             )
                         )
                         .flatMap { message ->
-                            // SSE event 용 상세 response 만들고 stream 으로 publish (best-effort).
+                            // SSE event 들 (thread stream + notification stream) publish — best-effort.
                             // publish 실패해도 메시지 저장 응답은 정상 반환 (onErrorResume).
                             val publishStep = toMessageResponse(thread, message)
                                 .flatMap { detail ->
-                                    threadStreamService.publish(threadId, ThreadStreamEvent.NewMessage(detail))
+                                    val threadPublish = threadStreamService.publish(threadId, ThreadStreamEvent.NewMessage(detail))
+
+                                    val notifyStep = Mono.zip(
+                                        computeNotifyTargets(thread, principal.userId),
+                                        buildNotificationEvent(thread, message, principal.userId),
+                                    ).flatMap { tuple ->
+                                        val targets = tuple.t1
+                                        val event = tuple.t2
+                                        Flux.fromIterable(targets)
+                                            .flatMap { uid -> notificationStreamService.publish(uid, event) }
+                                            .then()
+                                    }
+
+                                    Mono.`when`(threadPublish, notifyStep)
                                 }
                                 .onErrorResume { Mono.empty() }
 
@@ -626,6 +640,69 @@ class ThreadApplicationService(
     }
 
     private fun attachmentUrl(threadId: String, attachmentId: String): String = "/api/threads/$threadId/attachments/$attachmentId"
+
+    /**
+     * 글로벌 알림 stream 으로 push 할 대상 userId 들 — 발신자 본인 제외.
+     * thread 의 requesterUserId, supplier_profile 의 supplierUserId 두 명이 잠재 대상.
+     */
+    private fun computeNotifyTargets(thread: MessageThreadEntity, senderUserId: String): Mono<List<String>> {
+        val requesterTarget =
+            if (thread.requesterUserId != senderUserId) Mono.just(listOf(thread.requesterUserId))
+            else Mono.just(emptyList())
+        val supplierTarget = supplierProfileRepository.findById(thread.supplierProfileId)
+            .map { profile -> if (profile.supplierUserId != senderUserId) listOf(profile.supplierUserId) else emptyList() }
+            .defaultIfEmpty(emptyList())
+        return Mono.zip(requesterTarget, supplierTarget).map { tuple -> tuple.t1 + tuple.t2 }
+    }
+
+    /**
+     * 글로벌 알림 페이로드 — 의뢰 제목 + 발신자 표시명 조회 (DB). fallback 으로 모든 조회 실패에도 알림은 발행됨.
+     */
+    private fun buildNotificationEvent(
+        thread: MessageThreadEntity,
+        message: dev.riss.fsm.command.thread.MessageEntity,
+        senderUserId: String,
+    ): Mono<dev.riss.fsm.api.notification.NotificationStreamEvent.NewMessage> {
+        val titleMono = requestRepository.findById(thread.requestId)
+            .map { it.title }
+            .defaultIfEmpty("의뢰")
+
+        val senderNameMono: Mono<String> = if (senderUserId == thread.requesterUserId) {
+            businessProfileRepository.findByUserAccountId(senderUserId)
+                .map { it.businessName }
+                .defaultIfEmpty("(이름 미상)")
+        } else {
+            supplierProfileRepository.findById(thread.supplierProfileId)
+                .map { it.companyName }
+                .defaultIfEmpty("(이름 미상)")
+        }
+
+        return Mono.zip(titleMono, senderNameMono).map { tuple ->
+            dev.riss.fsm.api.notification.NotificationStreamEvent.NewMessage(
+                threadId = thread.threadId,
+                threadTitle = tuple.t1,
+                senderUserId = senderUserId,
+                senderDisplayName = tuple.t2,
+                preview = buildPreview(message),
+                messageId = message.messageId,
+                sentAt = message.createdAt.toInstant(ZoneOffset.UTC),
+            )
+        }
+    }
+
+    /** body 우선, 없으면 attachment placeholder. 60자 초과 시 ellipsis 추가. */
+    private fun buildPreview(message: dev.riss.fsm.command.thread.MessageEntity): String {
+        val body = message.body
+        if (!body.isNullOrBlank()) {
+            return if (body.length <= 60) body else body.substring(0, 60) + "…"
+        }
+        val attachmentIds = message.getAttachmentIdList()
+        return when {
+            attachmentIds.isEmpty() -> ""
+            attachmentIds.size == 1 -> "[파일]"
+            else -> "[첨부 ${attachmentIds.size}건]"
+        }
+    }
 
     private data class ParticipantContext(
         val supplierProfileId: String?,

@@ -5,6 +5,9 @@ import { ProtectedRoute } from "./features/auth/components/ProtectedRoute"
 import { LoginPage } from "./features/auth/pages/LoginPage"
 import { SignupPage } from "./features/auth/pages/SignupPage"
 import { useAuthStore } from "./features/auth/store/auth-store"
+import { useNotificationStream } from "./features/notifications/hooks/useNotificationStream"
+import { ToastContainer } from "./features/notifications/components/ToastContainer"
+import { useNotificationStore, selectTotalUnread } from "./features/notifications/store/notification-store"
 import { BusinessProfilePage, RequesterApprovalRoute } from "./features/business-profile"
 import { SupplierSearchPage, SupplierDetailPage } from "./features/discovery"
 import { QuoteComparisonPage } from "./features/quotes"
@@ -114,6 +117,39 @@ function DashboardPage() {
   )
 }
 
+/**
+ * "메시지" nav Link + 글로벌 unread count 뱃지.
+ * NotificationStream 으로 누적되는 unread 합산이 0보다 크면 표시.
+ */
+function MessagesNavLink({ to, label }: { to: string; label: string }) {
+  const totalUnread = useNotificationStore(selectTotalUnread)
+  return (
+    <Link to={to} style={{ position: "relative" }}>
+      {label}
+      {totalUnread > 0 && (
+        <span
+          aria-label={`읽지 않은 메시지 ${totalUnread}건`}
+          style={{
+            marginLeft: 6,
+            display: "inline-block",
+            background: "var(--danger, #dc2626)",
+            color: "#fff",
+            borderRadius: 10,
+            padding: "0 6px",
+            fontSize: 11,
+            fontWeight: 600,
+            minWidth: 18,
+            textAlign: "center",
+            lineHeight: "18px",
+          }}
+        >
+          {totalUnread > 99 ? "99+" : totalUnread}
+        </span>
+      )}
+    </Link>
+  )
+}
+
 export default function App() {
   const { t } = useTranslation("app")
   const user = useAuthStore((state) => state.user)
@@ -121,6 +157,9 @@ export default function App() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // 로그인 사용자만 글로벌 알림 stream 활성화. hook 내부에서 단락 처리.
+  useNotificationStream()
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -159,9 +198,13 @@ export default function App() {
           {publicNav.map((item) => (
             <Link key={item.to} to={item.to}>{item.label}</Link>
           ))}
-          {activeNav.map((item) => (
-            <Link key={item.to} to={item.to}>{item.label}</Link>
-          ))}
+          {activeNav.map((item) =>
+            item.to === "/threads" ? (
+              <MessagesNavLink key={item.to} to={item.to} label={item.label} />
+            ) : (
+              <Link key={item.to} to={item.to}>{item.label}</Link>
+            ),
+          )}
           {!user && (
             <>
               <Link to="/login">{t("nav.login")}</Link>
@@ -225,6 +268,8 @@ export default function App() {
           </nav>
         </>
       )}
+      <ToastContainer />
+
       <main className="main-content">
         <Routes>
           <Route path="/" element={<HomePage />} />

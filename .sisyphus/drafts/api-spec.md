@@ -2561,8 +2561,65 @@ data: {"type":"NewMessage","message":{...}}
 
 **Notes:**
 - Phase 1 은 단일 인스턴스 in-memory `Sinks.Many` 사용 — 다중 인스턴스 broadcast 안 됨. 운영 다중화 시점에 Redis pub/sub 으로 교체 (interface 추상화 유지).
-- 별도 페이지 (의뢰 목록 등) 에서 thread 알림 받으려면 향후 `/api/notifications/stream` (Phase 2) 사용.
-- 브라우저 닫혀있을 때 OS 알림은 Web Push API (Phase 3) 별도 구현.
+- 별도 페이지 (의뢰 목록 등) 에서 thread 알림 받으려면 `/api/notifications/stream` (아래 §3.7.x) 사용.
+- 브라우저 닫혀있을 때 OS 알림은 Web Push API (Phase 3-D) 별도 구현.
+
+---
+
+#### GET /api/notifications/stream
+
+**설명:** 사용자별 글로벌 알림 SSE stream. 어느 페이지에 있든 받음. 새 메시지 / 시스템 알림 등 통합.
+
+**인증:** 필요 (Bearer 토큰의 userId 기준 자동 본인 stream)
+
+**Request Headers:**
+
+| 헤더 | 값 | 설명 |
+|------|----|------|
+| Authorization | `Bearer <accessToken>` | 필수. 클라이언트는 `@microsoft/fetch-event-source` polyfill 사용 |
+| Accept | `text/event-stream` | 권장 |
+
+**Response Headers:** `/api/threads/{id}/stream` 와 동일 (`Content-Type: text/event-stream`, `X-Accel-Buffering: no`, `Cache-Control: no-cache, ...`).
+
+**Stream 동작:** `/api/threads/{id}/stream` 와 동일 패턴 — 30초 heartbeat, 자동 재연결, Last-Event-ID 표준. 인증 만료 시 클라이언트 재연결 책임.
+
+**이벤트 타입:**
+
+| event | 설명 | data 페이로드 |
+|-------|------|---------------|
+| `NewMessage` | 다른 사용자가 보낸 새 thread 메시지 (자기 메시지는 echo 안 됨) | `{ type, threadId, threadTitle, senderUserId, senderDisplayName, preview, messageId, sentAt }` |
+
+**`NewMessage` 페이로드:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| type | string | `"NewMessage"` |
+| threadId | string | 알림이 발생한 스레드 ID — 클릭 시 이동 대상 |
+| threadTitle | string | 의뢰 제목 (toast 표시 용) |
+| senderUserId | string | 보낸 사람 user ID |
+| senderDisplayName | string | 보낸 사람 표시명 — supplier 면 회사명, requester 면 business name |
+| preview | string | 본문 우선: body 가 비어있지 않으면 첫 60자 (60자 초과 시 끝에 `…` 추가, 총 최대 61자). body 가 비어있고 attachment 가 1개면 `[파일]`, 2개 이상이면 `[첨부 N건]`. 실제 fileName 은 toast 표시용으로 너무 길어 단순 placeholder 만 사용. |
+| messageId | string | 메시지 ID (dedup 용) |
+| sentAt | string | ISO 8601 UTC |
+
+**클라이언트 처리 가이드:**
+- 자기가 현재 보고 있는 thread (`location.pathname === /threads/{threadId}`) 의 알림은 toast 생략 (이미 화면에 보임). 단 unread count 증가는 안 함 (열려 있으니).
+- 그 외엔 toast (5초 자동 사라짐, 클릭 시 thread 이동) + 사이드바 메시지 메뉴의 unread 뱃지 +1.
+- thread 진입 시 store 의 unread count 0 으로 reset.
+
+**Error Responses:**
+
+| HTTP | code | 상황 |
+|------|------|------|
+| 401 | 4011 | accessToken 만료/무효 |
+| 503 | 5030 | stream 인프라 일시 장애. `Retry-After` 헤더 권고 |
+
+**Notes:**
+- 발신자 본인은 자기 메시지의 알림 받지 않음 (`computeNotifyTargets` 가 발신자 userId 제외).
+- thread stream (`/api/threads/{id}/stream`) 과 별개로 동시 구독 가능 — 역할 분리 (thread stream = 메시지 cache 추가, notification stream = toast/뱃지). 메시지 dedup 은 양쪽이 messageId 기반 자체 처리.
+- 페이로드는 toast 표시용 가벼운 메타데이터로 의도. ThreadMessageResponse 의 `attachments[]`, `senderType`, `body` 같은 상세 정보는 의도적으로 생략 (필요 시 thread stream 에서).
+- 발신자 표시명 / 의뢰 제목 조회 실패 시 fallback (`"(이름 미상)"` / `"의뢰"`). 알림 발행 자체가 실패해도 메시지 저장 응답은 정상 (best-effort, `onErrorResume`).
+- Phase 1 은 단일 인스턴스 in-memory. 다중화 시점에 Redis pub/sub 으로 교체 (P1 backlog).
 
 ---
 

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useThreadDetail } from "../hooks/useThreadDetail"
 import { useThreadStream } from "../hooks/useThreadStream"
+import { useNotificationStore } from "../../notifications/store/notification-store"
 import { useSendMessage } from "../hooks/useSendMessage"
 import { useMarkThreadRead } from "../hooks/useMarkThreadRead"
 import { useUploadAttachment } from "../hooks/useUploadAttachment"
@@ -56,6 +57,7 @@ export function ThreadDetailPage() {
     scrollToBottom()
   }, [thread?.messages, scrollToBottom])
 
+  const clearUnreadNotification = useNotificationStore((s) => s.clearUnread)
   useEffect(() => {
     if (lastMarkedThreadIdRef.current !== threadId) {
       lastMarkedThreadIdRef.current = null
@@ -64,8 +66,10 @@ export function ThreadDetailPage() {
     if (threadId && thread && lastMarkedThreadIdRef.current !== threadId) {
       lastMarkedThreadIdRef.current = threadId
       markReadMutation.mutate(threadId)
+      // 글로벌 알림 store 의 unread 카운트도 reset (사이드바 뱃지)
+      clearUnreadNotification(threadId)
     }
-  }, [threadId, thread, markReadMutation])
+  }, [threadId, thread, markReadMutation, clearUnreadNotification])
 
   const handleSendMessage = useCallback(() => {
     if (sendMessageMutation.isPending) return
