@@ -4,7 +4,7 @@ const SEED_REQUESTER = { email: "buyer@test.com", password: "Test1234!" }
 const SEED_SUPPLIER = { email: "supplier@test.com", password: "Test1234!" }
 
 test.describe("Auth flows", () => {
-  test("requester can log in and reach dashboard", async ({ page }) => {
+  test("requester can log in and reach home (/)", async ({ page }) => {
     await page.goto("/login")
 
     await page.getByPlaceholder("name@company.com").fill(SEED_REQUESTER.email)
@@ -14,15 +14,12 @@ test.describe("Auth flows", () => {
     await page.getByRole("button", { name: "로그인" }).click()
 
     await expect(page).toHaveURL(/\/$/)
-    // / 화면은 [로그인 사용자 시작 화면 (AuthenticatedHome)] + [마케팅 랜딩 (PublicLandingHome)] 이
-    // 함께 렌더되므로 h1 이 둘 (시작 화면 + Hero). 시작 화면 헤딩만 정확히 매칭.
-    await expect(
-      page.getByRole("heading", { level: 1, name: /시작 화면/ }),
-    ).toBeVisible()
-    await expect(page.getByText(SEED_REQUESTER.email)).toBeVisible()
+    // 로그인 후 / 화면 = 배너/스테퍼 (조건부) + 마케팅 랜딩.
+    // requester 전용 바로가기 카드 "내 의뢰" heading 으로 사용자 컨텍스트 검증.
+    await expect(page.getByRole("heading", { name: "내 의뢰" })).toBeVisible()
   })
 
-  test("supplier can log in and reach dashboard with supplier guide text", async ({
+  test("supplier can log in and reach home (/) with supplier shortcuts", async ({
     page,
   }) => {
     await page.goto("/login")
@@ -34,9 +31,8 @@ test.describe("Auth flows", () => {
     await page.getByRole("button", { name: "로그인" }).click()
 
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByText(SEED_SUPPLIER.email)).toBeVisible()
-    // dashboard surfaces supplier-specific shortcut card "의뢰 피드"
-    // (heading 으로 검색해 헤더 nav link 와 구분)
+    // supplier 전용 바로가기 카드 "의뢰 피드" heading
+    // (헤더 nav link 가 아니라 카드 안 heading 만 매칭)
     await expect(
       page.getByRole("heading", { name: "의뢰 피드" }),
     ).toBeVisible()
@@ -61,7 +57,7 @@ test.describe("Auth flows", () => {
     ).toBeVisible()
   })
 
-  test("logout from dashboard returns to public state", async ({ page }) => {
+  test("logout from header dropdown returns to public state", async ({ page }) => {
     await page.goto("/login")
     await page.getByPlaceholder("name@company.com").fill(SEED_REQUESTER.email)
     await page
@@ -70,9 +66,11 @@ test.describe("Auth flows", () => {
     await page.getByRole("button", { name: "로그인" }).click()
     await expect(page).toHaveURL(/\/$/)
 
-    await page.getByRole("button", { name: "로그아웃" }).first().click()
+    // 헤더 사용자 chip 클릭 → 드롭다운 → 로그아웃
+    await page.locator(".main-header-user").click()
+    await page.getByRole("button", { name: "로그아웃" }).click()
 
-    // After logout, header should expose 로그인 link again
+    // 로그아웃 후 헤더에 다시 "로그인" link 노출
     await expect(
       page.getByRole("link", { name: "로그인" }).first(),
     ).toBeVisible()

@@ -47,8 +47,56 @@ function HomePage() {
   )
 }
 
+type Shortcut = {
+  to: string
+  icon: string
+  title: string
+  desc: string
+  action: string
+}
+
+/**
+ * 컨텍스트별 바로가기 카드 목록.
+ *  - 비로그인 / role 미상 : 마케팅 기본 3종 (탐색·의뢰등록·내의뢰)
+ *  - Requester             : 역할별 4종 (탐색·의뢰등록·내의뢰·메시지)
+ *  - Supplier              : 역할별 4종 (의뢰피드·내견적·내프로필·메시지)
+ *
+ * "/" 화면에서 단 한 번만 노출되며, 위쪽 시작 화면(AuthenticatedHome) 은
+ * 환영·배너·스테퍼 등 즉시 액션이 필요한 안내만 담당한다.
+ */
+function buildHomeShortcuts(
+  role: string | null | undefined,
+  t: (key: string) => string,
+): Shortcut[] {
+  if (role === "supplier") {
+    return [
+      { to: "/supplier/requests", icon: "📥", title: t("dashboard.supplierShortcut.feedTitle"), desc: t("dashboard.supplierShortcut.feedDesc"), action: t("dashboard.supplierShortcut.feedAction") },
+      { to: "/supplier/quotes", icon: "📝", title: t("dashboard.supplierShortcut.quotesTitle"), desc: t("dashboard.supplierShortcut.quotesDesc"), action: t("dashboard.supplierShortcut.quotesAction") },
+      { to: "/supplier/profile", icon: "👤", title: t("dashboard.supplierShortcut.profileTitle"), desc: t("dashboard.supplierShortcut.profileDesc"), action: t("dashboard.supplierShortcut.profileAction") },
+      { to: "/threads", icon: "💬", title: t("dashboard.supplierShortcut.messagesTitle"), desc: t("dashboard.supplierShortcut.messagesDesc"), action: t("dashboard.supplierShortcut.messagesAction") },
+    ]
+  }
+  if (role === "requester") {
+    return [
+      { to: "/suppliers", icon: "🔍", title: t("dashboard.requesterShortcut.exploreTitle"), desc: t("dashboard.requesterShortcut.exploreDesc"), action: t("dashboard.requesterShortcut.exploreAction") },
+      { to: "/requests/new", icon: "➕", title: t("dashboard.requesterShortcut.createRequestTitle"), desc: t("dashboard.requesterShortcut.createRequestDesc"), action: t("dashboard.requesterShortcut.createRequestAction") },
+      { to: "/requests", icon: "☰", title: t("dashboard.requesterShortcut.myRequestsTitle"), desc: t("dashboard.requesterShortcut.myRequestsDesc"), action: t("dashboard.requesterShortcut.myRequestsAction") },
+      { to: "/threads", icon: "💬", title: t("dashboard.requesterShortcut.messagesTitle"), desc: t("dashboard.requesterShortcut.messagesDesc"), action: t("dashboard.requesterShortcut.messagesAction") },
+    ]
+  }
+  // 비로그인 (기존 마케팅 랜딩 그대로)
+  return [
+    { to: "/suppliers", icon: "🔍", title: t("home.shortcutExploreTitle"), desc: t("home.shortcutExploreDesc"), action: t("home.shortcutExploreAction") },
+    { to: "/requests/new", icon: "➕", title: t("home.shortcutCreateRequestTitle"), desc: t("home.shortcutCreateRequestDesc"), action: t("home.shortcutCreateRequestAction") },
+    { to: "/requests", icon: "☰", title: t("home.shortcutMyRequestsTitle"), desc: t("home.shortcutMyRequestsDesc"), action: t("home.shortcutMyRequestsAction") },
+  ]
+}
+
 function PublicLandingHome() {
   const { t } = useTranslation("app")
+  const user = useAuthStore((state) => state.user)
+  const shortcuts = buildHomeShortcuts(user?.role, t)
+
   return (
     <div className="home-page">
       {/* Hero Banner */}
@@ -94,98 +142,39 @@ function PublicLandingHome() {
         </div>
       </section>
 
-      {/* 바로가기 */}
+      {/* 바로가기 — / 화면에서 한 번만 노출. 로그인 시 역할별 4종으로 자동 확장 */}
       <section className="home-section">
         <h2 className="home-section-title" style={{ textAlign: "left" }}>{t("home.shortcutSectionTitle")}</h2>
         <div className="card-grid">
-          <Link to="/suppliers" className="surface home-shortcut">
-            <div className="home-feature-icon">&#x1F50D;</div>
-            <h3 className="font-bold mb-4">{t("home.shortcutExploreTitle")}</h3>
-            <p className="text-muted text-sm mb-12">{t("home.shortcutExploreDesc")}</p>
-            <span className="text-accent text-sm font-medium">{t("home.shortcutExploreAction")}</span>
-          </Link>
-          <Link to="/requests/new" className="surface home-shortcut">
-            <div className="home-feature-icon">&#x2795;</div>
-            <h3 className="font-bold mb-4">{t("home.shortcutCreateRequestTitle")}</h3>
-            <p className="text-muted text-sm mb-12">{t("home.shortcutCreateRequestDesc")}</p>
-            <span className="text-accent text-sm font-medium">{t("home.shortcutCreateRequestAction")}</span>
-          </Link>
-          <Link to="/requests" className="surface home-shortcut">
-            <div className="home-feature-icon">&#x2630;</div>
-            <h3 className="font-bold mb-4">{t("home.shortcutMyRequestsTitle")}</h3>
-            <p className="text-muted text-sm mb-12">{t("home.shortcutMyRequestsDesc")}</p>
-            <span className="text-accent text-sm font-medium">{t("home.shortcutMyRequestsAction")}</span>
-          </Link>
+          {shortcuts.map((sc) => (
+            <Link key={sc.to} to={sc.to} className="surface home-shortcut">
+              <div className="home-feature-icon">{sc.icon}</div>
+              <h3 className="font-bold mb-4">{sc.title}</h3>
+              <p className="text-muted text-sm mb-12">{sc.desc}</p>
+              <span className="text-accent text-sm font-medium">{sc.action}</span>
+            </Link>
+          ))}
         </div>
       </section>
     </div>
   )
 }
 
-type DashboardShortcut = {
-  to: string
-  icon: string
-  title: string
-  desc: string
-  action: string
-}
-
+/**
+ * "/" 화면에서 로그인 사용자에게만 노출되는 안내 영역.
+ *
+ * 이메일 / 로그아웃 버튼 / "시작 화면" 제목 같은 메타 정보는 헤더 드롭다운과
+ * 중복이라 두지 않는다. 즉시 액션이 필요한 안내 — 가이드 티저, 사업자 승인 배너,
+ * 공급자 온보딩 스테퍼 — 만 띄운다. 조건이 모두 false 면 통째로 비어있어
+ * 곧바로 PublicLandingHome 으로 이어진다.
+ */
 function AuthenticatedHome() {
-  const { t } = useTranslation("app")
   const user = useAuthStore((state) => state.user)
-  const logout = useLogout()
-  const roleLabel = user?.role === "supplier" ? t("role.supplier") : user?.role === "requester" ? t("role.requester") : t("role.default")
-  const guideText =
-    user?.role === "supplier"
-      ? t("dashboard.guideSupplier")
-      : t("dashboard.guideRequester")
-
-  const shortcuts: DashboardShortcut[] =
-    user?.role === "supplier"
-      ? [
-          { to: "/supplier/requests", icon: "📥", title: t("dashboard.supplierShortcut.feedTitle"), desc: t("dashboard.supplierShortcut.feedDesc"), action: t("dashboard.supplierShortcut.feedAction") },
-          { to: "/supplier/quotes", icon: "📝", title: t("dashboard.supplierShortcut.quotesTitle"), desc: t("dashboard.supplierShortcut.quotesDesc"), action: t("dashboard.supplierShortcut.quotesAction") },
-          { to: "/supplier/profile", icon: "👤", title: t("dashboard.supplierShortcut.profileTitle"), desc: t("dashboard.supplierShortcut.profileDesc"), action: t("dashboard.supplierShortcut.profileAction") },
-          { to: "/threads", icon: "💬", title: t("dashboard.supplierShortcut.messagesTitle"), desc: t("dashboard.supplierShortcut.messagesDesc"), action: t("dashboard.supplierShortcut.messagesAction") },
-        ]
-      : user?.role === "requester"
-      ? [
-          { to: "/suppliers", icon: "🔍", title: t("dashboard.requesterShortcut.exploreTitle"), desc: t("dashboard.requesterShortcut.exploreDesc"), action: t("dashboard.requesterShortcut.exploreAction") },
-          { to: "/requests/new", icon: "➕", title: t("dashboard.requesterShortcut.createRequestTitle"), desc: t("dashboard.requesterShortcut.createRequestDesc"), action: t("dashboard.requesterShortcut.createRequestAction") },
-          { to: "/requests", icon: "☰", title: t("dashboard.requesterShortcut.myRequestsTitle"), desc: t("dashboard.requesterShortcut.myRequestsDesc"), action: t("dashboard.requesterShortcut.myRequestsAction") },
-          { to: "/threads", icon: "💬", title: t("dashboard.requesterShortcut.messagesTitle"), desc: t("dashboard.requesterShortcut.messagesDesc"), action: t("dashboard.requesterShortcut.messagesAction") },
-        ]
-      : []
-
   return (
-    <div className="page" style={{ padding: "32px 0" }}>
+    <div className="page" style={{ padding: "32px 0 0" }}>
       <GuideTeaserBanner />
       <BusinessApprovalBanner />
       {user?.role === "supplier" && <SupplierOnboardingStepper />}
-      <div className="surface" style={{ padding: 32 }}>
-        <h1 className="font-bold mb-8" style={{ fontSize: "1.5rem" }}>{roleLabel} {t("dashboard.titleSuffix")}</h1>
-        <p className="text-muted mb-4">{user ? t("dashboard.loggedInAs", { email: user.email }) : t("dashboard.noUserInfo")}</p>
-        <p className="text-muted mb-16">{guideText}</p>
-        <div>
-          <button type="button" className="btn btn-secondary" onClick={logout}>{t("common:logout")}</button>
-        </div>
-      </div>
-
-      {shortcuts.length > 0 && (
-        <section className="home-section" style={{ marginTop: 32 }}>
-          <h2 className="home-section-title" style={{ textAlign: "left" }}>{t("dashboard.shortcutSectionTitle")}</h2>
-          <div className="card-grid">
-            {shortcuts.map((sc) => (
-              <Link key={sc.to} to={sc.to} className="surface home-shortcut">
-                <div className="home-feature-icon">{sc.icon}</div>
-                <h3 className="font-bold mb-4">{sc.title}</h3>
-                <p className="text-muted text-sm mb-12">{sc.desc}</p>
-                <span className="text-accent text-sm font-medium">{sc.action}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   )
 }
