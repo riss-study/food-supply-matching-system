@@ -1,4 +1,5 @@
 export { ApprovalGate } from "./components/ApprovalGate"
+export { BusinessApprovalBanner } from "./components/BusinessApprovalBanner"
 export { RequesterApprovalRoute } from "./components/RequesterApprovalRoute"
 export { BusinessProfilePage } from "./pages/BusinessProfilePage"
 export { useBusinessProfile } from "./hooks/useBusinessProfile"

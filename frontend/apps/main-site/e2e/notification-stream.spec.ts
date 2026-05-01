@@ -11,7 +11,7 @@ async function login(page: Page, creds: { email: string; password: string }) {
   await page.getByPlaceholder("name@company.com").fill(creds.email)
   await page.getByPlaceholder("비밀번호를 입력하세요").fill(creds.password)
   await page.getByRole("button", { name: "로그인" }).click()
-  await expect(page).toHaveURL(/\/dashboard$/)
+  await expect(page).toHaveURL(/\/$/)
 }
 
 async function openFirstThread(page: Page): Promise<string> {
@@ -53,8 +53,8 @@ test.describe("글로벌 알림 stream", () => {
       // buyer 는 thread 진입해서 메시지 보낼 채널 확보
       await openFirstThread(buyerPage)
 
-      // supplier 는 대시보드 그대로 — useNotificationStream 이 글로벌로 활성화돼 있어야
-      await expect(supplierPage).toHaveURL(/\/dashboard$/)
+      // supplier 는 시작 화면 (/) 그대로 — useNotificationStream 이 글로벌로 활성화돼 있어야
+      await expect(supplierPage).toHaveURL(/\/$/)
       // stream 연결이 안정될 시간 잠깐 부여 (SSE open 직후 race 회피)
       await supplierPage.waitForTimeout(500)
 

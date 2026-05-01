@@ -9,13 +9,13 @@ const SEED_REQUESTER = { email: "buyer@test.com", password: "Test1234!" }
 const SEED_SUPPLIER = { email: "supplier@test.com", password: "Test1234!" }
 
 const REQUESTER_PATHS = [
-  "/dashboard",
+  "/",
   "/requests",
   "/threads",
   "/business-profile",
 ]
 const SUPPLIER_PATHS = [
-  "/dashboard",
+  "/",
   "/supplier/profile",
   "/supplier/requests",
   "/supplier/quotes",
@@ -46,7 +46,7 @@ async function login(page: Page, email: string, password: string) {
   await page.getByPlaceholder("name@company.com").fill(email)
   await page.getByPlaceholder("비밀번호를 입력하세요").fill(password)
   await page.getByRole("button", { name: "로그인" }).click()
-  await page.waitForURL(/\/dashboard$/)
+  await page.waitForURL(/\/$/)
 }
 
 test.describe("UX audit - requester authenticated pages", () => {

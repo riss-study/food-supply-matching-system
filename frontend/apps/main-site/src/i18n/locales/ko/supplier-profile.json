@@ -31,6 +31,26 @@
   "route": {
     "loading": "로딩 중..."
   },
+  "onboarding": {
+    "title": "시작하기",
+    "step1Title": "프로필 작성",
+    "step1Desc": "회사 정보와 생산 역량 등록",
+    "step2Title": "검수 제출",
+    "step2Desc": "사업자등록증 등 서류 업로드",
+    "step3Title": "의뢰 받기",
+    "step3Desc": "의뢰 피드에서 신규 의뢰 확인",
+    "stepStatus": {
+      "done": "완료",
+      "current": "진행 중",
+      "todo": "대기",
+      "pending": "심사 중",
+      "rejected": "반려됨",
+      "suspended": "중단됨"
+    },
+    "rejectedHint": "반려되었습니다. 프로필을 수정하고 다시 제출해 주세요.",
+    "holdHint": "검수가 보류되었습니다. 안내 메시지를 확인하세요.",
+    "suspendedHint": "프로필이 중단된 상태입니다. 운영자에게 문의하세요."
+  },
   "page": {
     "title": "공급자 프로필",
     "manageTitle": "공급자 프로필 관리",

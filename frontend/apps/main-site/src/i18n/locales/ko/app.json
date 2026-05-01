@@ -24,14 +24,44 @@
     "shortcutCreateRequestAction": "등록하기 →",
     "shortcutMyRequestsTitle": "내 의뢰",
     "shortcutMyRequestsDesc": "의뢰 현황과 견적 관리",
-    "shortcutMyRequestsAction": "확인하기 →"
+    "shortcutMyRequestsAction": "확인하기 →",
+    "guideCta": "전체 사용 흐름 보기 →"
   },
   "dashboard": {
     "titleSuffix": "시작 화면",
     "loggedInAs": "{{email}} 계정으로 로그인되어 있습니다.",
     "noUserInfo": "사용자 정보를 불러오지 못했습니다.",
-    "guideSupplier": "의뢰 피드, 내 견적, 메시지 화면으로 이동해 다음 작업을 이어가세요.",
-    "guideRequester": "공급자 탐색, 내 의뢰, 메시지 화면으로 이동해 다음 작업을 이어가세요."
+    "guideSupplier": "다음 작업을 바로 시작해 보세요.",
+    "guideRequester": "다음 작업을 바로 시작해 보세요.",
+    "shortcutSectionTitle": "바로가기",
+    "requesterShortcut": {
+      "exploreTitle": "공급자 탐색",
+      "exploreDesc": "검증된 식품 제조사 찾기",
+      "exploreAction": "탐색하기 →",
+      "createRequestTitle": "새 의뢰 작성",
+      "createRequestDesc": "제조 의뢰 등록하기",
+      "createRequestAction": "작성하기 →",
+      "myRequestsTitle": "내 의뢰",
+      "myRequestsDesc": "의뢰 현황과 견적 관리",
+      "myRequestsAction": "확인하기 →",
+      "messagesTitle": "메시지",
+      "messagesDesc": "공급자와 대화 이어가기",
+      "messagesAction": "확인하기 →"
+    },
+    "supplierShortcut": {
+      "feedTitle": "의뢰 피드",
+      "feedDesc": "신규 의뢰 살펴보기",
+      "feedAction": "확인하기 →",
+      "quotesTitle": "내 견적",
+      "quotesDesc": "제출한 견적 관리",
+      "quotesAction": "확인하기 →",
+      "profileTitle": "내 프로필",
+      "profileDesc": "공급 역량 정보 관리",
+      "profileAction": "관리하기 →",
+      "messagesTitle": "메시지",
+      "messagesDesc": "구매자와 대화 이어가기",
+      "messagesAction": "확인하기 →"
+    }
   },
   "role": {
     "supplier": "공급자",
@@ -41,6 +71,7 @@
   "nav": {
     "home": "홈",
     "supplierSearch": "공급자 탐색",
+    "guide": "이용 가이드",
     "notices": "공지사항",
     "myRequests": "내 의뢰",
     "messages": "메시지",

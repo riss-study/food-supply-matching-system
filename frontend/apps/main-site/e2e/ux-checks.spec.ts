@@ -72,9 +72,9 @@ test.describe("UX checks - 404 / unknown route", () => {
 })
 
 test.describe("UX checks - protected routes", () => {
-  test("/dashboard without auth redirects to /login", async ({ page }) => {
+  test("/dashboard 는 / 로 redirect (라우트 폐기 후 backward compat)", async ({ page }) => {
     await page.goto("/dashboard")
-    await expect(page).toHaveURL(/\/login$/)
+    await expect(page).toHaveURL(/\/$/)
   })
 
   test("/threads without auth redirects to /login", async ({ page }) => {

@@ -13,7 +13,7 @@ test.describe("Auth flows", () => {
       .fill(SEED_REQUESTER.password)
     await page.getByRole("button", { name: "로그인" }).click()
 
-    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(page).toHaveURL(/\/$/)
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "시작 화면",
     )
@@ -31,11 +31,12 @@ test.describe("Auth flows", () => {
       .fill(SEED_SUPPLIER.password)
     await page.getByRole("button", { name: "로그인" }).click()
 
-    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(page).toHaveURL(/\/$/)
     await expect(page.getByText(SEED_SUPPLIER.email)).toBeVisible()
-    // dashboard guide paragraph (specific phrase, not header link)
+    // dashboard surfaces supplier-specific shortcut card "의뢰 피드"
+    // (heading 으로 검색해 헤더 nav link 와 구분)
     await expect(
-      page.getByText(/의뢰 피드, 내 견적, 메시지 화면으로 이동해/),
+      page.getByRole("heading", { name: "의뢰 피드" }),
     ).toBeVisible()
   })
 
@@ -50,9 +51,9 @@ test.describe("Auth flows", () => {
       .fill("WrongPassword!1")
     await page.getByRole("button", { name: "로그인" }).click()
 
-    // Interceptor on 401 clears auth and forces window.location -> /login
-    // (full page reload). Wait for the bounce to settle.
-    await page.waitForURL(/\/login$/)
+    // 401 인터셉터는 더 이상 강제 reload 하지 않음 — /login 페이지에 그대로 머무르며
+    // mutation.isError 로 에러 메시지를 표시한다.
+    await expect(page).toHaveURL(/\/login$/)
     await expect(
       page.getByRole("heading", { name: "로그인" }),
     ).toBeVisible()
@@ -65,7 +66,7 @@ test.describe("Auth flows", () => {
       .getByPlaceholder("비밀번호를 입력하세요")
       .fill(SEED_REQUESTER.password)
     await page.getByRole("button", { name: "로그인" }).click()
-    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(page).toHaveURL(/\/$/)
 
     await page.getByRole("button", { name: "로그아웃" }).first().click()
 

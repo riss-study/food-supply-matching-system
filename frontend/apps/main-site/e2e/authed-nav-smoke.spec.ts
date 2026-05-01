@@ -8,7 +8,7 @@ async function login(page: Page, email: string, password: string) {
   await page.getByPlaceholder("name@company.com").fill(email)
   await page.getByPlaceholder("비밀번호를 입력하세요").fill(password)
   await page.getByRole("button", { name: "로그인" }).click()
-  await page.waitForURL(/\/dashboard$/)
+  await page.waitForURL(/\/$/)
 }
 
 test.describe("Authenticated requester pages render", () => {

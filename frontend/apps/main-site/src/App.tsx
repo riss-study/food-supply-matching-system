@@ -5,25 +5,40 @@ import { ProtectedRoute } from "./features/auth/components/ProtectedRoute"
 import { LoginPage } from "./features/auth/pages/LoginPage"
 import { SignupPage } from "./features/auth/pages/SignupPage"
 import { useAuthStore } from "./features/auth/store/auth-store"
+import { useLogout } from "./features/auth/hooks/useLogout"
 import { useNotificationStream } from "./features/notifications/hooks/useNotificationStream"
 import { ToastContainer } from "./features/notifications/components/ToastContainer"
 import { useNotificationStore, selectTotalUnread } from "./features/notifications/store/notification-store"
-import { BusinessProfilePage, RequesterApprovalRoute } from "./features/business-profile"
+import { BusinessProfilePage, RequesterApprovalRoute, BusinessApprovalBanner } from "./features/business-profile"
 import { SupplierSearchPage, SupplierDetailPage } from "./features/discovery"
 import { QuoteComparisonPage } from "./features/quotes"
-import { SupplierProfilePage, SupplierRoute } from "./features/supplier-profile"
+import { SupplierProfilePage, SupplierRoute, SupplierOnboardingStepper } from "./features/supplier-profile"
 import { RequestListPage, RequestCreatePage, RequestDetailPage } from "./features/request-management"
 import { SupplierRequestFeedPage, SupplierRequestDetailPage } from "./features/supplier-requests"
 import { QuoteCreatePage, SupplierQuoteListPage } from "./features/supplier-quotes"
 import { ThreadListPage, ThreadDetailPage } from "./features/threads"
 import { NoticeListDetailPage } from "./features/notices"
+import { GuidePage, GuideTeaserBanner } from "./features/guide"
 
 type NavItem = {
   to: string
   label: string
 }
 
+/**
+ * "/" 단일 진입점.
+ *  - 비로그인 → 마케팅 랜딩 (서비스 소개 + 바로가기)
+ *  - 로그인  → 사용자 시작 화면 (환영 + 배너/스테퍼 + 역할별 카드)
+ *
+ * 별도 /dashboard 라우트를 두지 않음 — 한 곳에서 컨텍스트별로 분기해
+ * 헤더 "홈" / 브랜드 로고가 항상 사용자의 시작점이 되도록.
+ */
 function HomePage() {
+  const user = useAuthStore((state) => state.user)
+  return user ? <AuthenticatedHome /> : <PublicLandingHome />
+}
+
+function PublicLandingHome() {
   const { t } = useTranslation("app")
   return (
     <div className="home-page">
@@ -63,6 +78,11 @@ function HomePage() {
             <p className="text-muted text-sm">{t("home.featureCommunicationDesc")}</p>
           </div>
         </div>
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <Link to="/guide" className="text-accent text-sm font-medium">
+            {t("home.guideCta", { defaultValue: "전체 사용 흐름 보기 →" })}
+          </Link>
+        </div>
       </section>
 
       {/* 바로가기 */}
@@ -93,26 +113,70 @@ function HomePage() {
   )
 }
 
-function DashboardPage() {
+type DashboardShortcut = {
+  to: string
+  icon: string
+  title: string
+  desc: string
+  action: string
+}
+
+function AuthenticatedHome() {
   const { t } = useTranslation("app")
   const user = useAuthStore((state) => state.user)
-  const clearAuth = useAuthStore((state) => state.clearAuth)
+  const logout = useLogout()
   const roleLabel = user?.role === "supplier" ? t("role.supplier") : user?.role === "requester" ? t("role.requester") : t("role.default")
   const guideText =
     user?.role === "supplier"
       ? t("dashboard.guideSupplier")
       : t("dashboard.guideRequester")
 
+  const shortcuts: DashboardShortcut[] =
+    user?.role === "supplier"
+      ? [
+          { to: "/supplier/requests", icon: "📥", title: t("dashboard.supplierShortcut.feedTitle"), desc: t("dashboard.supplierShortcut.feedDesc"), action: t("dashboard.supplierShortcut.feedAction") },
+          { to: "/supplier/quotes", icon: "📝", title: t("dashboard.supplierShortcut.quotesTitle"), desc: t("dashboard.supplierShortcut.quotesDesc"), action: t("dashboard.supplierShortcut.quotesAction") },
+          { to: "/supplier/profile", icon: "👤", title: t("dashboard.supplierShortcut.profileTitle"), desc: t("dashboard.supplierShortcut.profileDesc"), action: t("dashboard.supplierShortcut.profileAction") },
+          { to: "/threads", icon: "💬", title: t("dashboard.supplierShortcut.messagesTitle"), desc: t("dashboard.supplierShortcut.messagesDesc"), action: t("dashboard.supplierShortcut.messagesAction") },
+        ]
+      : user?.role === "requester"
+      ? [
+          { to: "/suppliers", icon: "🔍", title: t("dashboard.requesterShortcut.exploreTitle"), desc: t("dashboard.requesterShortcut.exploreDesc"), action: t("dashboard.requesterShortcut.exploreAction") },
+          { to: "/requests/new", icon: "➕", title: t("dashboard.requesterShortcut.createRequestTitle"), desc: t("dashboard.requesterShortcut.createRequestDesc"), action: t("dashboard.requesterShortcut.createRequestAction") },
+          { to: "/requests", icon: "☰", title: t("dashboard.requesterShortcut.myRequestsTitle"), desc: t("dashboard.requesterShortcut.myRequestsDesc"), action: t("dashboard.requesterShortcut.myRequestsAction") },
+          { to: "/threads", icon: "💬", title: t("dashboard.requesterShortcut.messagesTitle"), desc: t("dashboard.requesterShortcut.messagesDesc"), action: t("dashboard.requesterShortcut.messagesAction") },
+        ]
+      : []
+
   return (
     <div className="page" style={{ padding: "32px 0" }}>
+      <GuideTeaserBanner />
+      <BusinessApprovalBanner />
+      {user?.role === "supplier" && <SupplierOnboardingStepper />}
       <div className="surface" style={{ padding: 32 }}>
         <h1 className="font-bold mb-8" style={{ fontSize: "1.5rem" }}>{roleLabel} {t("dashboard.titleSuffix")}</h1>
         <p className="text-muted mb-4">{user ? t("dashboard.loggedInAs", { email: user.email }) : t("dashboard.noUserInfo")}</p>
         <p className="text-muted mb-16">{guideText}</p>
         <div>
-          <button type="button" className="btn btn-secondary" onClick={clearAuth}>{t("common:logout")}</button>
+          <button type="button" className="btn btn-secondary" onClick={logout}>{t("common:logout")}</button>
         </div>
       </div>
+
+      {shortcuts.length > 0 && (
+        <section className="home-section" style={{ marginTop: 32 }}>
+          <h2 className="home-section-title" style={{ textAlign: "left" }}>{t("dashboard.shortcutSectionTitle")}</h2>
+          <div className="card-grid">
+            {shortcuts.map((sc) => (
+              <Link key={sc.to} to={sc.to} className="surface home-shortcut">
+                <div className="home-feature-icon">{sc.icon}</div>
+                <h3 className="font-bold mb-4">{sc.title}</h3>
+                <p className="text-muted text-sm mb-12">{sc.desc}</p>
+                <span className="text-accent text-sm font-medium">{sc.action}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }
@@ -153,7 +217,7 @@ function MessagesNavLink({ to, label }: { to: string; label: string }) {
 export default function App() {
   const { t } = useTranslation("app")
   const user = useAuthStore((state) => state.user)
-  const clearAuth = useAuthStore((state) => state.clearAuth)
+  const logout = useLogout()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
@@ -174,6 +238,7 @@ export default function App() {
   const publicNav: NavItem[] = [
     { to: "/", label: t("nav.home") },
     { to: "/suppliers", label: t("nav.supplierSearch") },
+    { to: "/guide", label: t("nav.guide") },
     { to: "/notices", label: t("nav.notices") },
   ]
 
@@ -225,7 +290,7 @@ export default function App() {
                   <Link to={user?.role === "supplier" ? "/supplier/profile" : "/business-profile"} className="user-dropdown-item" onClick={() => setUserMenuOpen(false)}>
                     {t("common:myProfile")}
                   </Link>
-                  <button type="button" className="user-dropdown-item" onClick={() => { clearAuth(); setUserMenuOpen(false); }}>
+                  <button type="button" className="user-dropdown-item" onClick={() => { logout(); setUserMenuOpen(false); }}>
                     {t("common:logout")}
                   </button>
                 </div>
@@ -257,7 +322,7 @@ export default function App() {
             {user ? (
               <>
                 <Link to={user?.role === "supplier" ? "/supplier/profile" : "/business-profile"} onClick={() => setMobileMenuOpen(false)}>{t("common:myProfile")}</Link>
-                <button type="button" className="mobile-nav-logout" onClick={() => { clearAuth(); setMobileMenuOpen(false); }}>{t("common:logout")}</button>
+                <button type="button" className="mobile-nav-logout" onClick={() => { logout(); setMobileMenuOpen(false); }}>{t("common:logout")}</button>
               </>
             ) : (
               <>
@@ -275,14 +340,8 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* /dashboard 는 폐기 — 외부 북마크/이전 링크 호환을 위해 / 로 redirect */}
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
           <Route
             path="/suppliers"
             element={<SupplierSearchPage />}
@@ -390,6 +449,10 @@ export default function App() {
           <Route
             path="/notices"
             element={<NoticeListDetailPage />}
+          />
+          <Route
+            path="/guide"
+            element={<GuidePage />}
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

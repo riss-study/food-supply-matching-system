@@ -23,7 +23,7 @@ export function SupplierRoute({ children }: SupplierRouteProps) {
   }
 
   if (me?.role !== "supplier") {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>

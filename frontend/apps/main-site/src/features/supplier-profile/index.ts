@@ -1,5 +1,6 @@
 export { SupplierProfilePage } from "./pages/SupplierProfilePage"
 export { SupplierRoute } from "./components/SupplierRoute"
+export { SupplierOnboardingStepper } from "./components/SupplierOnboardingStepper"
 export { useSupplierProfile } from "./hooks/useSupplierProfile"
 export { useCreateSupplierProfile } from "./hooks/useCreateSupplierProfile"
 export { useUpdateSupplierProfile } from "./hooks/useUpdateSupplierProfile"

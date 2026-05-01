@@ -1,7 +1,34 @@
 import { useState } from "react"
+import axios from "axios"
 import { Link, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useLogin } from "../hooks/useLogin"
+
+/**
+ * 로그인 실패 응답을 사용자 메시지로 변환.
+ *
+ * 백엔드 분기 (이미 다양화됨):
+ *   - 401 (4011): InvalidCredentials → 자격증명 불일치
+ *   - 429 (4290): LoginRateLimit → "Too many login attempts; retry in Ns"
+ *   - 400        : Validation → 입력 형식 오류
+ *   - 5xx        : 서버 오류
+ *   - network    : 응답 없음 (CORS/오프라인)
+ */
+function deriveLoginErrorKey(error: unknown, t: (k: string, opts?: Record<string, unknown>) => string): string {
+  if (!axios.isAxiosError(error)) return t("login.errorMessage")
+  if (!error.response) return t("login.errorNetwork")
+  const status = error.response.status
+  if (status === 401) return t("login.errorInvalidCredentials")
+  if (status === 429) {
+    const message = (error.response.data as { message?: string } | undefined)?.message ?? ""
+    const m = message.match(/retry in (\d+)s/)
+    if (m) return t("login.errorTooManyAttempts", { seconds: m[1] })
+    return t("login.errorTooManyAttemptsGeneric")
+  }
+  if (status === 400) return t("login.errorBadRequest")
+  if (status >= 500) return t("login.errorServer")
+  return t("login.errorMessage")
+}
 
 export function LoginPage() {
   const { t } = useTranslation("auth")
@@ -12,9 +39,16 @@ export function LoginPage() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    await loginMutation.mutateAsync({ email, password })
-    navigate("/dashboard")
+    try {
+      await loginMutation.mutateAsync({ email, password })
+      navigate("/")
+    } catch {
+      // 메시지는 mutation.error 에서 derive — 화면에 isError 로 표시.
+      // throw 하지 않아 unhandled rejection 경고 회피.
+    }
   }
+
+  const errorMessage = loginMutation.isError ? deriveLoginErrorKey(loginMutation.error, t) : null
 
   return (
     <div className="auth-layout">
@@ -43,7 +77,7 @@ export function LoginPage() {
           <h2>{t("login.title")}</h2>
           <p className="text-muted" style={{ marginTop: -12 }}>{t("login.subtitle")}</p>
 
-          {loginMutation.isError && (
+          {errorMessage && (
             <div role="alert" className="font-medium" style={{
               padding: "12px 16px",
               borderRadius: "var(--radius-sm)",
@@ -51,7 +85,7 @@ export function LoginPage() {
               color: "var(--danger)",
               fontSize: "0.875rem",
             }}>
-              {t("login.errorMessage")}
+              {errorMessage}
             </div>
           )}
 

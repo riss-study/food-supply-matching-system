@@ -47,5 +47,16 @@
     "title": "사업자 승인 필요",
     "description": "의뢰를 등록하려면 사업자 정보 승인이 필요합니다.",
     "link": "사업자 정보 등록하기 →"
+  },
+  "dashboardBanner": {
+    "notSubmittedTitle": "사업자 정보 등록이 필요합니다",
+    "notSubmittedDesc": "의뢰를 등록하려면 먼저 사업자 정보를 제출해야 합니다.",
+    "notSubmittedAction": "지금 등록하기 →",
+    "submittedTitle": "사업자 정보 심사 중",
+    "submittedDesc": "관리자 검토가 끝나면 의뢰를 등록할 수 있습니다. 보통 영업일 기준 1-2일 소요됩니다.",
+    "submittedAction": "상태 보기 →",
+    "rejectedTitle": "사업자 정보가 반려되었습니다",
+    "rejectedDesc": "반려 사유를 확인하고 정보를 수정해 다시 제출해 주세요.",
+    "rejectedAction": "사유 확인하기 →"
   }
 }

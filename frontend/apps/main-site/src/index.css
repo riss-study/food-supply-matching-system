@@ -439,6 +439,199 @@
   font-size: 14px;
   font-weight: 500;
 }
+.alert-info {
+  background: var(--accent-soft);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+}
+.alert-danger {
+  background: var(--danger-soft, rgba(220, 38, 38, 0.08));
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--danger, #dc2626);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ===== Guide Page ===== */
+.guide-page { max-width: 960px; margin: 0 auto; }
+.guide-glossary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px 24px;
+}
+.guide-glossary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 1px dashed var(--line);
+}
+.guide-glossary-term { font-size: 14px; }
+.guide-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.guide-tab {
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 150ms, border-color 150ms;
+}
+.guide-tab:hover { color: var(--ink); }
+.guide-tab-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.guide-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.guide-step-card {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  align-items: flex-start;
+}
+.guide-step-num {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 18px;
+}
+.guide-step-body { flex: 1; min-width: 0; }
+.guide-step-title { font-size: 1.05rem; margin: 0 0 6px; }
+.guide-step-summary {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.6;
+}
+.guide-step-details {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  line-height: 1.7;
+}
+.guide-step-details li { margin-bottom: 2px; }
+.guide-step-cta { display: inline-block; }
+@media (max-width: 600px) {
+  .guide-step-card { flex-direction: column; gap: 12px; padding: 20px; }
+}
+
+/* ===== Onboarding Stepper ===== */
+.onboarding-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .onboarding-steps { grid-template-columns: 1fr; }
+}
+.onboarding-step {
+  position: relative;
+}
+.onboarding-step-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+  height: 100%;
+}
+.onboarding-step-inner:hover {
+  border-color: var(--accent);
+  background: var(--panel);
+}
+.onboarding-step-marker {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--panel);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.onboarding-step-body { min-width: 0; }
+.onboarding-step-title {
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.onboarding-step-desc { margin-top: 4px; }
+.onboarding-step-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.onboarding-step-done .onboarding-step-marker {
+  background: var(--accent);
+  color: var(--inverse-fg, #fff);
+  border-color: var(--accent);
+}
+.onboarding-step-done .onboarding-step-inner {
+  border-color: var(--accent-soft);
+}
+.onboarding-step-current .onboarding-step-marker {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.onboarding-step-current .onboarding-step-inner {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.onboarding-step-todo .onboarding-step-inner {
+  opacity: 0.7;
+}
 
 /* ===== Data Table Row Selected ===== */
 .data-table .row-selected { background: var(--accent-soft); }

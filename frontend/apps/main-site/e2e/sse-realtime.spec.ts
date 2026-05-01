@@ -8,7 +8,7 @@ async function login(page: Page, creds: { email: string; password: string }) {
   await page.getByPlaceholder("name@company.com").fill(creds.email)
   await page.getByPlaceholder("비밀번호를 입력하세요").fill(creds.password)
   await page.getByRole("button", { name: "로그인" }).click()
-  await expect(page).toHaveURL(/\/dashboard$/)
+  await expect(page).toHaveURL(/\/$/)
 }
 
 async function openFirstThread(page: Page): Promise<string> {
