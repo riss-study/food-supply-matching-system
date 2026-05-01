@@ -14,9 +14,11 @@ test.describe("Auth flows", () => {
     await page.getByRole("button", { name: "로그인" }).click()
 
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "시작 화면",
-    )
+    // / 화면은 [로그인 사용자 시작 화면 (AuthenticatedHome)] + [마케팅 랜딩 (PublicLandingHome)] 이
+    // 함께 렌더되므로 h1 이 둘 (시작 화면 + Hero). 시작 화면 헤딩만 정확히 매칭.
+    await expect(
+      page.getByRole("heading", { level: 1, name: /시작 화면/ }),
+    ).toBeVisible()
     await expect(page.getByText(SEED_REQUESTER.email)).toBeVisible()
   })
 

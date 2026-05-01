@@ -27,15 +27,24 @@ type NavItem = {
 
 /**
  * "/" 단일 진입점.
- *  - 비로그인 → 마케팅 랜딩 (서비스 소개 + 바로가기)
- *  - 로그인  → 사용자 시작 화면 (환영 + 배너/스테퍼 + 역할별 카드)
  *
- * 별도 /dashboard 라우트를 두지 않음 — 한 곳에서 컨텍스트별로 분기해
- * 헤더 "홈" / 브랜드 로고가 항상 사용자의 시작점이 되도록.
+ * 비로그인:  마케팅 랜딩 (Hero + 핵심기능 + 바로가기) 만 표시.
+ * 로그인:    개인화된 시작 화면 (환영 + 배너/스테퍼 + 역할별 카드) 을 **위에**
+ *            추가하고, 그 아래에는 기존 마케팅 랜딩을 그대로 유지한다 — 서비스
+ *            소개 / 바로가기 카드 등은 로그인 사용자에게도 가치가 있어 손실 없이
+ *            남긴다.
+ *
+ * 별도 /dashboard 라우트는 두지 않음. 헤더 "홈" / 브랜드 로고가 항상 사용자의
+ * 시작점이 된다.
  */
 function HomePage() {
   const user = useAuthStore((state) => state.user)
-  return user ? <AuthenticatedHome /> : <PublicLandingHome />
+  return (
+    <>
+      {user && <AuthenticatedHome />}
+      <PublicLandingHome />
+    </>
+  )
 }
 
 function PublicLandingHome() {
